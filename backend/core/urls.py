@@ -1,5 +1,9 @@
-from django.urls import path
+from django.urls import include, path
+from rest_framework.routers import DefaultRouter
+
 from .views import (
+    ProductViewSet,
+    ShopViewSet,
     SignupView,
     LoginView,
     TokenRefreshView,
@@ -15,6 +19,10 @@ from .views import (
     RejectOrderView,
 )
 
+router = DefaultRouter()
+router.register(r'products', ProductViewSet, basename='product')
+router.register(r'shops', ShopViewSet, basename='shop')
+
 urlpatterns = [
     path('auth/signup/', SignupView.as_view(), name='signup'),
     path('auth/login/', LoginView.as_view(), name='login'),
@@ -29,4 +37,5 @@ urlpatterns = [
     path('orders/shop-orders/', ShopOrdersView.as_view(), name='shop_orders'),
     path('orders/accept/', AcceptOrderView.as_view(), name='accept_order'),
     path('orders/reject/', RejectOrderView.as_view(), name='reject_order'),
+    path('', include(router.urls)),
 ]
