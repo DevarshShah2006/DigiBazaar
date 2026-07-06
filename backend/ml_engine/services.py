@@ -39,21 +39,21 @@ class RecommendationService:
         if user_id:
             recent_orders = (
                 Order.objects.filter(user_id=user_id)
-                .order_by('-ordered_at')
-                .select_related('product__shop')[:5]
+                .order_by('-created_at')
+                .select_related('shop')[:5]
             )
             if recent_orders.exists():
-                shop_ids = {order.product.shop_id for order in recent_orders}
+                shop_ids = {order.shop_id for order in recent_orders}
                 recommendations = (
-                    Product.objects.filter(shop_id__in=shop_ids)
-                    .exclude(orders__user_id=user_id)
-                    .annotate(order_count=Count('orders'))
+                    Product.objects.filter(shops__id__in=shop_ids)
+                    .exclude(order_items__order__user_id=user_id)
+                    .annotate(order_count=Count('order_items'))
                     .order_by('-order_count', '-created_at')
                 )
                 return recommendations[:limit]
 
         popular_products = (
-            Product.objects.annotate(order_count=Count('orders'))
+            Product.objects.annotate(order_count=Count('order_items'))
             .order_by('-order_count', '-created_at')
         )
         return popular_products[:limit]

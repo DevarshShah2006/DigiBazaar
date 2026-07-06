@@ -75,6 +75,20 @@ class Product(models.Model):
         return self.name
 
 
+class ShopProduct(models.Model):
+    shop = models.ForeignKey('Shop', on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['shop', 'product'], name='unique_shop_product'),
+        ]
+
+    def __str__(self):
+        return f'{self.shop.name} - {self.product.name}'
+
+
 # -----------------------------
 # ShopOwner (extends User via OneToOne — Django's built-in auth handles login)
 # -----------------------------
@@ -121,6 +135,7 @@ class Shop(models.Model):
 
     # Category-level "inventory" — not SKU-level (per inventory design decision)
     categories = models.ManyToManyField(Category, related_name="shops", blank=True)
+    products = models.ManyToManyField(Product, related_name='shops', through='ShopProduct', blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
