@@ -113,7 +113,23 @@ class ShopSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
+    user_name = serializers.CharField(source="user.username", read_only=True)
+    shop_name = serializers.CharField(source="shop.name", read_only=True)
+
     class Meta:
         model = Order
-        fields = ('id', 'shop', 'user', 'status', 'created_at', 'updated_at')
-        read_only_fields = ('status', 'created_at', 'updated_at')
+        fields = (
+            "id",
+            "shop",
+            "shop_name",
+            "user",
+            "user_name",
+            "status",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = (
+            "status",
+            "created_at",
+            "updated_at",
+        )
