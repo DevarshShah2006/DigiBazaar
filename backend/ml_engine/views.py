@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .recommendations import get_recommendations
-from .trending import trending_products
+from .trending import trending
 from .ranking import score_products
 from core.serializers import ProductSerializer
 
@@ -15,10 +15,12 @@ class RecommendationView(APIView):
 
 class TrendingView(APIView):
     def get(self, request):
-        trending = trending_products(limit=10)
-        serializer = ProductSerializer(trending, many=True)
-        return Response(serializer.data)
+        hours = int(request.query_params.get("hours", 24))
+        limit = int(request.query_params.get("limit", 10))
 
+        return Response(
+            trending(hours=hours, limit=limit)
+        )
 
 class RankedView(APIView):
     def get(self, request):

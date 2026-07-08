@@ -209,15 +209,25 @@ class ShopOrdersView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        shop_id = request.query_params.get('shop_id')
-        if not shop_id:
-            return Response({'detail': 'shop_id query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+        owner = getattr(request.user, "shop_owner_profile", None)
 
-        orders = Order.objects.filter(shop_id=shop_id)
+        if owner is None:
+            return Response(
+                {"detail": "You are not registered as a shop owner."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        orders = (
+            Order.objects
+            .filter(shop__owner=owner)
+            .select_related("shop", "user")
+            .prefetch_related("items", "items__product")
+            .order_by("-created_at")
+        )
+
         serializer = OrderSerializer(orders, many=True)
         return Response(serializer.data)
-
-
+    
 class AcceptOrderView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -226,9 +236,22 @@ class AcceptOrderView(APIView):
         order = Order.objects.filter(pk=order_id).first()
         if not order:
             return Response({'detail': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        owner = getattr(request.user, "shop_owner_profile", None)
 
-        order.status = 'accepted'
-        order.save()
+        if owner is None or order.shop.owner != owner:
+            return Response(
+                {"detail": "You are not allowed to manage this order."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            order.update_status("accepted")
+        except ValueError as e:
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         return Response(OrderSerializer(order).data)
 
 
@@ -241,6 +264,19 @@ class RejectOrderView(APIView):
         if not order:
             return Response({'detail': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        order.status = 'rejected'
-        order.save()
+        owner = getattr(request.user, "shop_owner_profile", None)
+
+        if owner is None or order.shop.owner != owner:
+            return Response(
+                {"detail": "You are not allowed to manage this order."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            order.update_status("rejected")
+        except ValueError as e:
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         return Response(OrderSerializer(order).data)
