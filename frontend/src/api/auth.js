@@ -1,15 +1,15 @@
 import { fetchJson } from './api'
 
-export function login(credentials) {
+export function loginUser(credentials) {
   return fetchJson('/auth/login/', {
     method: 'POST',
     body: JSON.stringify(credentials),
   })
 }
 
-export function signup(details) {
+export function signupUser(data) {
   return fetchJson('/auth/signup/', {
     method: 'POST',
-    body: JSON.stringify(details),
+    body: JSON.stringify(data),
   })
 }

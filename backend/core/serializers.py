@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from .models import Category, Shop, Product, Order
+from .models import Category, Shop, Product, Order, OrderItem, Wishlist
 
 User = get_user_model()
 
@@ -112,9 +112,23 @@ class ShopSerializer(serializers.ModelSerializer):
         return shop
 
 
+class OrderItemSerializer(serializers.ModelSerializer):
+    product_name = serializers.CharField(source="product.name", read_only=True)
+    image_url = serializers.CharField(source="product.image_url", read_only=True)
+
+    class Meta:
+        model = OrderItem
+        fields = ("id", "product", "product_name", "image_url", "quantity", "price_at_order")
+
+
 class OrderSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(source="user.username", read_only=True)
     shop_name = serializers.CharField(source="shop.name", read_only=True)
+    items = OrderItemSerializer(many=True, read_only=True)
+    total_price = serializers.SerializerMethodField()
+
+    def get_total_price(self, obj):
+        return sum(item.price_at_order * item.quantity for item in obj.items.all())
 
     class Meta:
         model = Order
@@ -125,6 +139,8 @@ class OrderSerializer(serializers.ModelSerializer):
             "user",
             "user_name",
             "status",
+            "items",
+            "total_price",
             "created_at",
             "updated_at",
         )
@@ -133,3 +149,12 @@ class OrderSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         )
+
+
+class WishlistSerializer(serializers.ModelSerializer):
+    product_details = ProductSerializer(source="product", read_only=True)
+
+    class Meta:
+        model = Wishlist
+        fields = ("id", "product", "product_details", "created_at")
+

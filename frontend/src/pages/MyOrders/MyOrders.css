@@ -1,0 +1,130 @@
+.my-orders {
+  padding: 40px 24px 64px;
+  min-height: 80vh;
+}
+
+.my-orders__title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin: 0 0 28px;
+}
+
+.my-orders__empty {
+  text-align: center;
+  padding: 80px 20px;
+  color: #888;
+  font-size: 18px;
+}
+
+.my-orders__empty a {
+  color: #43a047;
+  text-decoration: none;
+  font-weight: 600;
+  display: block;
+  margin-top: 12px;
+}
+
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.order-row {
+  background: #fff;
+  border-radius: 16px;
+  padding: 22px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  border: 1px solid #f0f0f0;
+  transition: box-shadow 0.2s;
+}
+
+.order-row:hover {
+  box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+}
+
+.order-row__id {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 4px;
+}
+
+.order-row__shop {
+  font-size: 14px;
+  color: #555;
+  margin: 0 0 4px;
+}
+
+.order-row__date {
+  font-size: 12px;
+  color: #aaa;
+  margin: 0;
+}
+
+.order-row__status {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 18px;
+  border-radius: 20px;
+}
+
+.order-skeleton {
+  height: 90px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 16px;
+  margin-bottom: 16px;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.order-row__right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.order-row__reorder-btn {
+  background: #1b5e20;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.order-row__reorder-btn:hover {
+  background: #2e7d32;
+  transform: translateY(-1px);
+}
+
+.order-row__items-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.order-row__item-pill {
+  background: #f1f8e9;
+  border: 1px solid #c8e6c9;
+  color: #1b5e20;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+

@@ -1,0 +1,6057 @@
+[
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Style Corner",
+    "status": "completed",
+    "created_at": "2026-06-29T19:03:18.415982+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 2,
+        "price": 189.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 3,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Market Square",
+    "status": "completed",
+    "created_at": "2026-06-13T07:03:18.416145+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 3,
+        "price": 89.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_3",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "accepted",
+    "created_at": "2026-06-16T02:03:18.416211+00:00",
+    "items": [
+      {
+        "product_name": "Dupatta",
+        "quantity": 3,
+        "price": 299.0
+      },
+      {
+        "product_name": "Notebook Set",
+        "quantity": 1,
+        "price": 129.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Urban Basket",
+    "status": "preparing",
+    "created_at": "2026-06-09T01:03:18.416278+00:00",
+    "items": [
+      {
+        "product_name": "Sneaker Socks",
+        "quantity": 1,
+        "price": 199.0
+      },
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 2,
+        "price": 199.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 3,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_3",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "accepted",
+    "created_at": "2026-06-07T20:03:18.416332+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 1,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "accepted",
+    "created_at": "2026-07-05T18:03:18.416377+00:00",
+    "items": [
+      {
+        "product_name": "Black Coffee",
+        "quantity": 1,
+        "price": 249.0
+      },
+      {
+        "product_name": "Dupatta",
+        "quantity": 2,
+        "price": 299.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Style Corner",
+    "status": "completed",
+    "created_at": "2026-06-26T08:03:18.416467+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 1,
+        "price": 89.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 3,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Grocery Point",
+    "status": "completed",
+    "created_at": "2026-06-21T06:03:18.416513+00:00",
+    "items": [
+      {
+        "product_name": "Denim Jeans",
+        "quantity": 1,
+        "price": 1499.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_5",
+    "shop_name": "Paldi Value Store",
+    "status": "completed",
+    "created_at": "2026-06-25T15:03:18.416549+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 1,
+        "price": 79.0
+      },
+      {
+        "product_name": "Matte Lipstick",
+        "quantity": 1,
+        "price": 399.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Family Store",
+    "status": "completed",
+    "created_at": "2026-06-28T03:03:18.416610+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 1,
+        "price": 189.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Urban Basket",
+    "status": "ready",
+    "created_at": "2026-06-26T06:03:18.416673+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 2,
+        "price": 189.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Style Corner",
+    "status": "completed",
+    "created_at": "2026-06-09T07:03:18.416707+00:00",
+    "items": [
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 3,
+        "price": 799.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Value Store",
+    "status": "preparing",
+    "created_at": "2026-06-12T20:03:18.416769+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 3,
+        "price": 189.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 3,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_3",
+    "shop_name": "Paldi Style Corner",
+    "status": "accepted",
+    "created_at": "2026-06-28T21:03:18.416833+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 2,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "rejected",
+    "created_at": "2026-06-11T23:03:18.416871+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 1,
+        "price": 159.0
+      },
+      {
+        "product_name": "Cotton Kurti",
+        "quantity": 2,
+        "price": 999.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 2,
+        "price": 79.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "ready",
+    "created_at": "2026-06-17T07:03:18.416911+00:00",
+    "items": [
+      {
+        "product_name": "Denim Jeans",
+        "quantity": 3,
+        "price": 1499.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 1,
+        "price": 189.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 3,
+        "price": 79.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "completed",
+    "created_at": "2026-06-26T21:03:18.416951+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      },
+      {
+        "product_name": "Running Shoes",
+        "quantity": 1,
+        "price": 2999.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 1,
+        "price": 79.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Market Square",
+    "status": "completed",
+    "created_at": "2026-06-29T19:03:18.417012+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 3,
+        "price": 79.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Market Square",
+    "status": "completed",
+    "created_at": "2026-07-06T00:03:18.417050+00:00",
+    "items": [
+      {
+        "product_name": "Saffron Face Cream",
+        "quantity": 1,
+        "price": 499.0
+      },
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 1,
+        "price": 199.0
+      },
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 2,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_4",
+    "shop_name": "Paldi Urban Basket",
+    "status": "ready",
+    "created_at": "2026-07-03T10:03:18.417091+00:00",
+    "items": [
+      {
+        "product_name": "Denim Jeans",
+        "quantity": 2,
+        "price": 1499.0
+      },
+      {
+        "product_name": "Saffron Face Cream",
+        "quantity": 2,
+        "price": 499.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 1,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Value Store",
+    "status": "preparing",
+    "created_at": "2026-06-30T04:03:18.417132+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 3,
+        "price": 159.0
+      },
+      {
+        "product_name": "Sneaker Socks",
+        "quantity": 3,
+        "price": 199.0
+      },
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 2,
+        "price": 799.0
+      },
+      {
+        "product_name": "Ball Pen Pack",
+        "quantity": 1,
+        "price": 49.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "preparing",
+    "created_at": "2026-06-24T02:03:18.417170+00:00",
+    "items": [
+      {
+        "product_name": "Dupatta",
+        "quantity": 1,
+        "price": 299.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 1,
+        "price": 89.0
+      },
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 2,
+        "price": 249.0
+      },
+      {
+        "product_name": "Black Coffee",
+        "quantity": 2,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Urban Basket",
+    "status": "completed",
+    "created_at": "2026-06-29T22:03:18.417208+00:00",
+    "items": [
+      {
+        "product_name": "Dupatta",
+        "quantity": 1,
+        "price": 299.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_9",
+    "shop_name": "Paldi Urban Basket",
+    "status": "completed",
+    "created_at": "2026-06-26T17:03:18.417239+00:00",
+    "items": [
+      {
+        "product_name": "Matte Lipstick",
+        "quantity": 1,
+        "price": 399.0
+      },
+      {
+        "product_name": "Dupatta",
+        "quantity": 2,
+        "price": 299.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Grocery Point",
+    "status": "completed",
+    "created_at": "2026-06-25T11:03:18.417286+00:00",
+    "items": [
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 1,
+        "price": 799.0
+      },
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 1,
+        "price": 299.0
+      },
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 2,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Family Store",
+    "status": "completed",
+    "created_at": "2026-07-02T20:03:18.417365+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 2,
+        "price": 79.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 3,
+        "price": 89.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Daily Needs",
+    "status": "completed",
+    "created_at": "2026-07-04T01:03:18.417403+00:00",
+    "items": [
+      {
+        "product_name": "Matte Lipstick",
+        "quantity": 1,
+        "price": 399.0
+      }
+    ]
+  },
+  {
+    "username": "digibazaar",
+    "shop_name": "Paldi Market Square",
+    "status": "completed",
+    "created_at": "2026-06-13T23:03:18.417439+00:00",
+    "items": [
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 1,
+        "price": 799.0
+      },
+      {
+        "product_name": "Saffron Face Cream",
+        "quantity": 2,
+        "price": 499.0
+      }
+    ]
+  },
+  {
+    "username": "digibazaar",
+    "shop_name": "Paldi Urban Basket",
+    "status": "accepted",
+    "created_at": "2026-06-18T02:03:18.417476+00:00",
+    "items": [
+      {
+        "product_name": "Denim Jeans",
+        "quantity": 3,
+        "price": 1499.0
+      },
+      {
+        "product_name": "Cotton Kurti",
+        "quantity": 1,
+        "price": 999.0
+      },
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 1,
+        "price": 799.0
+      },
+      {
+        "product_name": "Saffron Face Cream",
+        "quantity": 2,
+        "price": 499.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Daily Needs",
+    "status": "completed",
+    "created_at": "2026-06-19T16:03:18.417515+00:00",
+    "items": [
+      {
+        "product_name": "Dupatta",
+        "quantity": 1,
+        "price": 299.0
+      },
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 1,
+        "price": 299.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Urban Basket",
+    "status": "completed",
+    "created_at": "2026-07-04T18:03:18.417576+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 2,
+        "price": 189.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 3,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_4",
+    "shop_name": "Paldi Family Store",
+    "status": "accepted",
+    "created_at": "2026-06-17T08:03:18.417648+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 2,
+        "price": 89.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 3,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_5",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "accepted",
+    "created_at": "2026-06-17T18:03:18.417689+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 2,
+        "price": 79.0
+      },
+      {
+        "product_name": "Running Shoes",
+        "quantity": 3,
+        "price": 2999.0
+      },
+      {
+        "product_name": "Sneaker Socks",
+        "quantity": 2,
+        "price": 199.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Market Square",
+    "status": "completed",
+    "created_at": "2026-07-07T12:03:18.417731+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 1,
+        "price": 89.0
+      },
+      {
+        "product_name": "Ball Pen Pack",
+        "quantity": 3,
+        "price": 49.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_4",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "pending",
+    "created_at": "2026-06-08T18:03:18.417784+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 1,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "accepted",
+    "created_at": "2026-06-14T05:03:18.417850+00:00",
+    "items": [
+      {
+        "product_name": "Casual Sneakers",
+        "quantity": 1,
+        "price": 2499.0
+      }
+    ]
+  },
+  {
+    "username": "digibazaar",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "completed",
+    "created_at": "2026-06-22T23:03:18.417887+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 1,
+        "price": 89.0
+      },
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 2,
+        "price": 799.0
+      },
+      {
+        "product_name": "Running Shoes",
+        "quantity": 3,
+        "price": 2999.0
+      },
+      {
+        "product_name": "Notebook Set",
+        "quantity": 1,
+        "price": 129.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_3",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "completed",
+    "created_at": "2026-06-10T13:03:18.417924+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 1,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Grocery Point",
+    "status": "preparing",
+    "created_at": "2026-06-22T11:03:18.417997+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 3,
+        "price": 79.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 3,
+        "price": 89.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Style Corner",
+    "status": "preparing",
+    "created_at": "2026-06-14T00:03:18.418032+00:00",
+    "items": [
+      {
+        "product_name": "Running Shoes",
+        "quantity": 2,
+        "price": 2999.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Grocery Point",
+    "status": "ready",
+    "created_at": "2026-06-09T17:03:18.418092+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 3,
+        "price": 159.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 2,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Family Store",
+    "status": "preparing",
+    "created_at": "2026-06-15T07:03:18.418124+00:00",
+    "items": [
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 1,
+        "price": 199.0
+      },
+      {
+        "product_name": "Dupatta",
+        "quantity": 1,
+        "price": 299.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "completed",
+    "created_at": "2026-07-08T07:03:18.418159+00:00",
+    "items": [
+      {
+        "product_name": "Denim Jeans",
+        "quantity": 1,
+        "price": 1499.0
+      },
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 1,
+        "price": 299.0
+      },
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 3,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Style Corner",
+    "status": "pending",
+    "created_at": "2026-07-03T12:03:18.418240+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 1,
+        "price": 89.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 2,
+        "price": 79.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 3,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_4",
+    "shop_name": "Paldi Daily Needs",
+    "status": "completed",
+    "created_at": "2026-06-21T06:03:18.418295+00:00",
+    "items": [
+      {
+        "product_name": "Saffron Face Cream",
+        "quantity": 3,
+        "price": 499.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 3,
+        "price": 159.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 2,
+        "price": 89.0
+      },
+      {
+        "product_name": "Ball Pen Pack",
+        "quantity": 2,
+        "price": 49.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_5",
+    "shop_name": "Paldi Daily Needs",
+    "status": "preparing",
+    "created_at": "2026-06-19T15:03:18.418359+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 2,
+        "price": 189.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_9",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "accepted",
+    "created_at": "2026-06-26T15:03:18.418419+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 3,
+        "price": 79.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 1,
+        "price": 89.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Value Store",
+    "status": "completed",
+    "created_at": "2026-06-11T15:03:18.418459+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      },
+      {
+        "product_name": "Running Shoes",
+        "quantity": 2,
+        "price": 2999.0
+      },
+      {
+        "product_name": "Sneaker Socks",
+        "quantity": 1,
+        "price": 199.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "completed",
+    "created_at": "2026-07-07T00:03:18.418494+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 1,
+        "price": 79.0
+      },
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 3,
+        "price": 299.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 1,
+        "price": 189.0
+      },
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 2,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_3",
+    "shop_name": "Paldi Style Corner",
+    "status": "accepted",
+    "created_at": "2026-06-28T12:03:18.418528+00:00",
+    "items": [
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 1,
+        "price": 199.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Daily Needs",
+    "status": "rejected",
+    "created_at": "2026-06-16T05:03:18.418595+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 1,
+        "price": 89.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 2,
+        "price": 79.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Style Corner",
+    "status": "completed",
+    "created_at": "2026-06-29T10:03:18.418630+00:00",
+    "items": [
+      {
+        "product_name": "Casual Sneakers",
+        "quantity": 3,
+        "price": 2499.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Family Store",
+    "status": "completed",
+    "created_at": "2026-06-30T03:03:18.418661+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 2,
+        "price": 79.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Family Store",
+    "status": "completed",
+    "created_at": "2026-06-30T02:03:18.418693+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      },
+      {
+        "product_name": "Cotton Kurti",
+        "quantity": 3,
+        "price": 999.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Value Store",
+    "status": "completed",
+    "created_at": "2026-06-19T02:03:18.418750+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 1,
+        "price": 189.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 1,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Style Corner",
+    "status": "completed",
+    "created_at": "2026-06-15T06:03:18.418783+00:00",
+    "items": [
+      {
+        "product_name": "Notebook Set",
+        "quantity": 3,
+        "price": 129.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "accepted",
+    "created_at": "2026-06-09T16:03:18.418813+00:00",
+    "items": [
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 1,
+        "price": 299.0
+      },
+      {
+        "product_name": "Saffron Face Cream",
+        "quantity": 2,
+        "price": 499.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 1,
+        "price": 89.0
+      },
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 1,
+        "price": 199.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Family Store",
+    "status": "accepted",
+    "created_at": "2026-07-05T08:03:18.418848+00:00",
+    "items": [
+      {
+        "product_name": "Sneaker Socks",
+        "quantity": 1,
+        "price": 199.0
+      },
+      {
+        "product_name": "Denim Jeans",
+        "quantity": 1,
+        "price": 1499.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_4",
+    "shop_name": "Paldi Style Corner",
+    "status": "completed",
+    "created_at": "2026-06-30T03:03:18.418880+00:00",
+    "items": [
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 3,
+        "price": 299.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_9",
+    "shop_name": "Paldi Urban Basket",
+    "status": "completed",
+    "created_at": "2026-06-12T22:03:18.418935+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 3,
+        "price": 159.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 3,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Value Store",
+    "status": "completed",
+    "created_at": "2026-06-21T09:03:18.418969+00:00",
+    "items": [
+      {
+        "product_name": "Sneaker Socks",
+        "quantity": 1,
+        "price": 199.0
+      },
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 1,
+        "price": 799.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 3,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_9",
+    "shop_name": "Paldi Urban Basket",
+    "status": "rejected",
+    "created_at": "2026-06-21T09:03:18.419048+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 2,
+        "price": 89.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Urban Basket",
+    "status": "preparing",
+    "created_at": "2026-06-17T08:03:18.419098+00:00",
+    "items": [
+      {
+        "product_name": "Sneaker Socks",
+        "quantity": 2,
+        "price": 199.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_3",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "completed",
+    "created_at": "2026-06-21T06:03:18.419163+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 3,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Style Corner",
+    "status": "preparing",
+    "created_at": "2026-07-05T18:03:18.419229+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 2,
+        "price": 189.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_5",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "completed",
+    "created_at": "2026-07-03T21:03:18.419285+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 1,
+        "price": 159.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 2,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "completed",
+    "created_at": "2026-07-04T10:03:18.419325+00:00",
+    "items": [
+      {
+        "product_name": "Matte Lipstick",
+        "quantity": 2,
+        "price": 399.0
+      },
+      {
+        "product_name": "Running Shoes",
+        "quantity": 2,
+        "price": 2999.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 3,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Daily Needs",
+    "status": "completed",
+    "created_at": "2026-07-06T03:03:18.419363+00:00",
+    "items": [
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 2,
+        "price": 199.0
+      },
+      {
+        "product_name": "Black Coffee",
+        "quantity": 1,
+        "price": 249.0
+      },
+      {
+        "product_name": "Running Shoes",
+        "quantity": 3,
+        "price": 2999.0
+      }
+    ]
+  },
+  {
+    "username": "digibazaar",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "completed",
+    "created_at": "2026-07-03T22:03:18.419401+00:00",
+    "items": [
+      {
+        "product_name": "Ball Pen Pack",
+        "quantity": 2,
+        "price": 49.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "completed",
+    "created_at": "2026-06-14T04:03:18.419466+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 3,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "digibazaar",
+    "shop_name": "Paldi Grocery Point",
+    "status": "accepted",
+    "created_at": "2026-07-04T01:03:18.419506+00:00",
+    "items": [
+      {
+        "product_name": "Matte Lipstick",
+        "quantity": 2,
+        "price": 399.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_9",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "accepted",
+    "created_at": "2026-07-06T21:03:18.419542+00:00",
+    "items": [
+      {
+        "product_name": "Cotton Kurti",
+        "quantity": 1,
+        "price": 999.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_9",
+    "shop_name": "Paldi Style Corner",
+    "status": "completed",
+    "created_at": "2026-07-07T08:03:18.419582+00:00",
+    "items": [
+      {
+        "product_name": "Matte Lipstick",
+        "quantity": 3,
+        "price": 399.0
+      },
+      {
+        "product_name": "Cotton Kurti",
+        "quantity": 2,
+        "price": 999.0
+      },
+      {
+        "product_name": "Ball Pen Pack",
+        "quantity": 3,
+        "price": 49.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 1,
+        "price": 79.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Style Corner",
+    "status": "completed",
+    "created_at": "2026-07-06T06:03:18.419623+00:00",
+    "items": [
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 3,
+        "price": 799.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      },
+      {
+        "product_name": "Casual Sneakers",
+        "quantity": 3,
+        "price": 2499.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_4",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "accepted",
+    "created_at": "2026-07-07T20:03:18.419662+00:00",
+    "items": [
+      {
+        "product_name": "Black Coffee",
+        "quantity": 2,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_3",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "completed",
+    "created_at": "2026-07-01T09:03:18.419699+00:00",
+    "items": [
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 2,
+        "price": 799.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_5",
+    "shop_name": "Paldi Style Corner",
+    "status": "completed",
+    "created_at": "2026-07-08T14:03:18.419734+00:00",
+    "items": [
+      {
+        "product_name": "Casual Sneakers",
+        "quantity": 3,
+        "price": 2499.0
+      },
+      {
+        "product_name": "Ball Pen Pack",
+        "quantity": 2,
+        "price": 49.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Family Store",
+    "status": "completed",
+    "created_at": "2026-07-07T02:03:18.419839+00:00",
+    "items": [
+      {
+        "product_name": "Notebook Set",
+        "quantity": 2,
+        "price": 129.0
+      },
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 3,
+        "price": 799.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 3,
+        "price": 79.0
+      },
+      {
+        "product_name": "Matte Lipstick",
+        "quantity": 3,
+        "price": 399.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Value Store",
+    "status": "completed",
+    "created_at": "2026-06-28T12:03:18.419916+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 3,
+        "price": 159.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 1,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Grocery Point",
+    "status": "rejected",
+    "created_at": "2026-06-16T05:03:18.419955+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 1,
+        "price": 189.0
+      },
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 2,
+        "price": 799.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "preparing",
+    "created_at": "2026-06-30T04:03:18.420020+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 3,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "digibazaar",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "completed",
+    "created_at": "2026-07-02T23:03:18.420057+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 1,
+        "price": 79.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      },
+      {
+        "product_name": "Notebook Set",
+        "quantity": 3,
+        "price": 129.0
+      },
+      {
+        "product_name": "Casual Sneakers",
+        "quantity": 2,
+        "price": 2499.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Value Store",
+    "status": "completed",
+    "created_at": "2026-06-29T01:03:18.420103+00:00",
+    "items": [
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 2,
+        "price": 799.0
+      },
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 3,
+        "price": 299.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      },
+      {
+        "product_name": "Black Coffee",
+        "quantity": 1,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "pending",
+    "created_at": "2026-06-25T08:03:18.420142+00:00",
+    "items": [
+      {
+        "product_name": "Denim Jeans",
+        "quantity": 1,
+        "price": 1499.0
+      },
+      {
+        "product_name": "Saffron Face Cream",
+        "quantity": 3,
+        "price": 499.0
+      },
+      {
+        "product_name": "Ball Pen Pack",
+        "quantity": 1,
+        "price": 49.0
+      },
+      {
+        "product_name": "Black Coffee",
+        "quantity": 1,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Market Square",
+    "status": "accepted",
+    "created_at": "2026-06-15T12:03:18.420174+00:00",
+    "items": [
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 1,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_3",
+    "shop_name": "Paldi Family Store",
+    "status": "accepted",
+    "created_at": "2026-06-07T23:03:18.420225+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 1,
+        "price": 189.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 1,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "completed",
+    "created_at": "2026-06-28T11:03:18.420288+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 1,
+        "price": 79.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 3,
+        "price": 89.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Daily Needs",
+    "status": "completed",
+    "created_at": "2026-06-12T07:03:18.420341+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 1,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Value Store",
+    "status": "completed",
+    "created_at": "2026-06-30T01:03:18.420372+00:00",
+    "items": [
+      {
+        "product_name": "Black Coffee",
+        "quantity": 3,
+        "price": 249.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 1,
+        "price": 79.0
+      },
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 2,
+        "price": 199.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "ready",
+    "created_at": "2026-06-20T08:03:18.420403+00:00",
+    "items": [
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 3,
+        "price": 199.0
+      },
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 2,
+        "price": 799.0
+      },
+      {
+        "product_name": "Ball Pen Pack",
+        "quantity": 2,
+        "price": 49.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_4",
+    "shop_name": "Paldi Style Corner",
+    "status": "completed",
+    "created_at": "2026-07-06T16:03:18.420459+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 3,
+        "price": 189.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 1,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Urban Basket",
+    "status": "completed",
+    "created_at": "2026-06-21T10:03:18.420492+00:00",
+    "items": [
+      {
+        "product_name": "Running Shoes",
+        "quantity": 3,
+        "price": 2999.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 2,
+        "price": 79.0
+      },
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 1,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "completed",
+    "created_at": "2026-06-13T13:03:18.420523+00:00",
+    "items": [
+      {
+        "product_name": "Denim Jeans",
+        "quantity": 1,
+        "price": 1499.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 3,
+        "price": 189.0
+      },
+      {
+        "product_name": "Casual Sneakers",
+        "quantity": 3,
+        "price": 2499.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "rejected",
+    "created_at": "2026-06-23T14:03:18.420555+00:00",
+    "items": [
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 1,
+        "price": 249.0
+      },
+      {
+        "product_name": "Cotton Kurti",
+        "quantity": 1,
+        "price": 999.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_4",
+    "shop_name": "Paldi Urban Basket",
+    "status": "accepted",
+    "created_at": "2026-06-30T05:03:18.420586+00:00",
+    "items": [
+      {
+        "product_name": "Notebook Set",
+        "quantity": 1,
+        "price": 129.0
+      },
+      {
+        "product_name": "Running Shoes",
+        "quantity": 3,
+        "price": 2999.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Market Square",
+    "status": "ready",
+    "created_at": "2026-06-19T11:03:18.420636+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 1,
+        "price": 159.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 2,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Value Store",
+    "status": "completed",
+    "created_at": "2026-06-16T12:03:18.420689+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 2,
+        "price": 189.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_3",
+    "shop_name": "Paldi Daily Needs",
+    "status": "pending",
+    "created_at": "2026-07-02T10:03:18.420720+00:00",
+    "items": [
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 2,
+        "price": 799.0
+      }
+    ]
+  },
+  {
+    "username": "digibazaar",
+    "shop_name": "Paldi Daily Needs",
+    "status": "accepted",
+    "created_at": "2026-07-06T18:03:18.420764+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 3,
+        "price": 189.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_5",
+    "shop_name": "Paldi Urban Basket",
+    "status": "completed",
+    "created_at": "2026-06-22T04:03:18.420830+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 1,
+        "price": 89.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_5",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "completed",
+    "created_at": "2026-07-07T02:03:18.420863+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 3,
+        "price": 79.0
+      },
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 2,
+        "price": 249.0
+      },
+      {
+        "product_name": "Denim Jeans",
+        "quantity": 3,
+        "price": 1499.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Grocery Point",
+    "status": "completed",
+    "created_at": "2026-06-24T19:03:18.420891+00:00",
+    "items": [
+      {
+        "product_name": "Casual Sneakers",
+        "quantity": 1,
+        "price": 2499.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "accepted",
+    "created_at": "2026-06-25T16:03:18.420938+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 3,
+        "price": 189.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Grocery Point",
+    "status": "completed",
+    "created_at": "2026-06-30T02:03:18.420986+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 1,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Value Store",
+    "status": "accepted",
+    "created_at": "2026-06-09T22:03:18.421019+00:00",
+    "items": [
+      {
+        "product_name": "Running Shoes",
+        "quantity": 1,
+        "price": 2999.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      },
+      {
+        "product_name": "Saffron Face Cream",
+        "quantity": 3,
+        "price": 499.0
+      },
+      {
+        "product_name": "Matte Lipstick",
+        "quantity": 1,
+        "price": 399.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "accepted",
+    "created_at": "2026-06-26T23:03:18.421049+00:00",
+    "items": [
+      {
+        "product_name": "Cotton Kurti",
+        "quantity": 1,
+        "price": 999.0
+      },
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 1,
+        "price": 199.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 3,
+        "price": 79.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 1,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Family Store",
+    "status": "completed",
+    "created_at": "2026-06-24T13:03:18.421077+00:00",
+    "items": [
+      {
+        "product_name": "Black Coffee",
+        "quantity": 2,
+        "price": 249.0
+      },
+      {
+        "product_name": "Ball Pen Pack",
+        "quantity": 2,
+        "price": 49.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Grocery Point",
+    "status": "completed",
+    "created_at": "2026-07-04T03:03:18.421135+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 2,
+        "price": 89.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 3,
+        "price": 79.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "preparing",
+    "created_at": "2026-06-11T07:03:18.421194+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 1,
+        "price": 79.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "ready",
+    "created_at": "2026-06-22T00:03:18.421229+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 3,
+        "price": 89.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Market Square",
+    "status": "accepted",
+    "created_at": "2026-07-04T23:03:18.421256+00:00",
+    "items": [
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 2,
+        "price": 199.0
+      },
+      {
+        "product_name": "Ball Pen Pack",
+        "quantity": 2,
+        "price": 49.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Market Square",
+    "status": "completed",
+    "created_at": "2026-06-24T00:03:18.421284+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 3,
+        "price": 159.0
+      },
+      {
+        "product_name": "Ball Pen Pack",
+        "quantity": 3,
+        "price": 49.0
+      },
+      {
+        "product_name": "Notebook Set",
+        "quantity": 2,
+        "price": 129.0
+      },
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 1,
+        "price": 199.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_5",
+    "shop_name": "Paldi Urban Basket",
+    "status": "completed",
+    "created_at": "2026-06-10T00:03:18.421335+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 1,
+        "price": 189.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 1,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_9",
+    "shop_name": "Paldi Value Store",
+    "status": "completed",
+    "created_at": "2026-06-08T19:03:18.421363+00:00",
+    "items": [
+      {
+        "product_name": "Denim Jeans",
+        "quantity": 1,
+        "price": 1499.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 1,
+        "price": 189.0
+      },
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 1,
+        "price": 299.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_9",
+    "shop_name": "Paldi Daily Needs",
+    "status": "completed",
+    "created_at": "2026-06-10T09:03:18.421411+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 1,
+        "price": 189.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 1,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Urban Basket",
+    "status": "completed",
+    "created_at": "2026-07-06T06:03:18.421437+00:00",
+    "items": [
+      {
+        "product_name": "Running Shoes",
+        "quantity": 1,
+        "price": 2999.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 3,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_4",
+    "shop_name": "Paldi Value Store",
+    "status": "completed",
+    "created_at": "2026-06-15T11:03:18.421493+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 1,
+        "price": 79.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 2,
+        "price": 89.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Family Store",
+    "status": "preparing",
+    "created_at": "2026-06-21T21:03:18.421523+00:00",
+    "items": [
+      {
+        "product_name": "Ball Pen Pack",
+        "quantity": 3,
+        "price": 49.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 1,
+        "price": 89.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      },
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 3,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Market Square",
+    "status": "completed",
+    "created_at": "2026-07-02T11:03:18.421570+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 1,
+        "price": 159.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 1,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Style Corner",
+    "status": "completed",
+    "created_at": "2026-06-20T00:03:18.421617+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 3,
+        "price": 159.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 2,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "digibazaar",
+    "shop_name": "Paldi Grocery Point",
+    "status": "accepted",
+    "created_at": "2026-06-27T15:03:18.421646+00:00",
+    "items": [
+      {
+        "product_name": "Matte Lipstick",
+        "quantity": 1,
+        "price": 399.0
+      },
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 2,
+        "price": 199.0
+      },
+      {
+        "product_name": "Notebook Set",
+        "quantity": 2,
+        "price": 129.0
+      },
+      {
+        "product_name": "Sneaker Socks",
+        "quantity": 2,
+        "price": 199.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_5",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "completed",
+    "created_at": "2026-06-08T00:03:18.421676+00:00",
+    "items": [
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 3,
+        "price": 199.0
+      },
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 1,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Urban Basket",
+    "status": "completed",
+    "created_at": "2026-07-03T09:03:18.421703+00:00",
+    "items": [
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 3,
+        "price": 299.0
+      },
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 2,
+        "price": 249.0
+      },
+      {
+        "product_name": "Dupatta",
+        "quantity": 2,
+        "price": 299.0
+      }
+    ]
+  },
+  {
+    "username": "digibazaar",
+    "shop_name": "Paldi Grocery Point",
+    "status": "preparing",
+    "created_at": "2026-06-11T16:03:18.421731+00:00",
+    "items": [
+      {
+        "product_name": "Dupatta",
+        "quantity": 2,
+        "price": 299.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 3,
+        "price": 79.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 1,
+        "price": 189.0
+      },
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 1,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Value Store",
+    "status": "accepted",
+    "created_at": "2026-06-22T14:03:18.421760+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      },
+      {
+        "product_name": "Saffron Face Cream",
+        "quantity": 1,
+        "price": 499.0
+      },
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 1,
+        "price": 299.0
+      },
+      {
+        "product_name": "Matte Lipstick",
+        "quantity": 2,
+        "price": 399.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "completed",
+    "created_at": "2026-06-11T09:03:18.421829+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 3,
+        "price": 89.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 2,
+        "price": 79.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "pending",
+    "created_at": "2026-06-12T20:03:18.421861+00:00",
+    "items": [
+      {
+        "product_name": "Matte Lipstick",
+        "quantity": 1,
+        "price": 399.0
+      },
+      {
+        "product_name": "Notebook Set",
+        "quantity": 2,
+        "price": 129.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "ready",
+    "created_at": "2026-06-16T13:03:18.421887+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 3,
+        "price": 189.0
+      },
+      {
+        "product_name": "Ball Pen Pack",
+        "quantity": 1,
+        "price": 49.0
+      },
+      {
+        "product_name": "Running Shoes",
+        "quantity": 1,
+        "price": 2999.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 1,
+        "price": 89.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Urban Basket",
+    "status": "completed",
+    "created_at": "2026-06-30T21:03:18.421917+00:00",
+    "items": [
+      {
+        "product_name": "Cotton Kurti",
+        "quantity": 1,
+        "price": 999.0
+      },
+      {
+        "product_name": "Casual Sneakers",
+        "quantity": 2,
+        "price": 2499.0
+      },
+      {
+        "product_name": "Matte Lipstick",
+        "quantity": 1,
+        "price": 399.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Daily Needs",
+    "status": "accepted",
+    "created_at": "2026-06-11T04:03:18.421946+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      },
+      {
+        "product_name": "Saffron Face Cream",
+        "quantity": 1,
+        "price": 499.0
+      },
+      {
+        "product_name": "Cotton Kurti",
+        "quantity": 3,
+        "price": 999.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 1,
+        "price": 79.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_5",
+    "shop_name": "Paldi Daily Needs",
+    "status": "completed",
+    "created_at": "2026-06-20T03:03:18.421978+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 3,
+        "price": 159.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 1,
+        "price": 89.0
+      },
+      {
+        "product_name": "Denim Jeans",
+        "quantity": 2,
+        "price": 1499.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Market Square",
+    "status": "accepted",
+    "created_at": "2026-07-07T16:03:18.422004+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      },
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 2,
+        "price": 249.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 3,
+        "price": 159.0
+      },
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 2,
+        "price": 199.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Grocery Point",
+    "status": "completed",
+    "created_at": "2026-06-29T04:03:18.422030+00:00",
+    "items": [
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 1,
+        "price": 299.0
+      },
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 1,
+        "price": 799.0
+      },
+      {
+        "product_name": "Denim Jeans",
+        "quantity": 3,
+        "price": 1499.0
+      },
+      {
+        "product_name": "Black Coffee",
+        "quantity": 1,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_5",
+    "shop_name": "Paldi Style Corner",
+    "status": "completed",
+    "created_at": "2026-06-20T17:03:18.422080+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 1,
+        "price": 159.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 2,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_9",
+    "shop_name": "Paldi Urban Basket",
+    "status": "completed",
+    "created_at": "2026-06-08T13:03:18.422105+00:00",
+    "items": [
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 1,
+        "price": 799.0
+      },
+      {
+        "product_name": "Running Shoes",
+        "quantity": 1,
+        "price": 2999.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_9",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "pending",
+    "created_at": "2026-06-25T04:03:18.422129+00:00",
+    "items": [
+      {
+        "product_name": "Notebook Set",
+        "quantity": 2,
+        "price": 129.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_5",
+    "shop_name": "Paldi Grocery Point",
+    "status": "completed",
+    "created_at": "2026-07-05T08:03:18.422154+00:00",
+    "items": [
+      {
+        "product_name": "Running Shoes",
+        "quantity": 1,
+        "price": 2999.0
+      },
+      {
+        "product_name": "Dupatta",
+        "quantity": 1,
+        "price": 299.0
+      },
+      {
+        "product_name": "Casual Sneakers",
+        "quantity": 3,
+        "price": 2499.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 1,
+        "price": 79.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "ready",
+    "created_at": "2026-07-01T01:03:18.422180+00:00",
+    "items": [
+      {
+        "product_name": "Dupatta",
+        "quantity": 3,
+        "price": 299.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "completed",
+    "created_at": "2026-06-25T14:03:18.422205+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 2,
+        "price": 189.0
+      },
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 2,
+        "price": 299.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_3",
+    "shop_name": "Paldi Value Store",
+    "status": "preparing",
+    "created_at": "2026-06-22T20:03:18.422233+00:00",
+    "items": [
+      {
+        "product_name": "Casual Sneakers",
+        "quantity": 3,
+        "price": 2499.0
+      },
+      {
+        "product_name": "Ball Pen Pack",
+        "quantity": 3,
+        "price": 49.0
+      },
+      {
+        "product_name": "Black Coffee",
+        "quantity": 1,
+        "price": 249.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_3",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "preparing",
+    "created_at": "2026-06-11T09:03:18.422262+00:00",
+    "items": [
+      {
+        "product_name": "Dupatta",
+        "quantity": 2,
+        "price": 299.0
+      },
+      {
+        "product_name": "Cotton Kurti",
+        "quantity": 1,
+        "price": 999.0
+      },
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 2,
+        "price": 299.0
+      },
+      {
+        "product_name": "Black Coffee",
+        "quantity": 1,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_4",
+    "shop_name": "Paldi Daily Needs",
+    "status": "completed",
+    "created_at": "2026-06-11T15:03:18.422320+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 2,
+        "price": 79.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 1,
+        "price": 89.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Value Store",
+    "status": "completed",
+    "created_at": "2026-06-20T01:03:18.422348+00:00",
+    "items": [
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 3,
+        "price": 249.0
+      },
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 3,
+        "price": 199.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_3",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "preparing",
+    "created_at": "2026-06-29T20:03:18.422400+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 2,
+        "price": 79.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 3,
+        "price": 89.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Daily Needs",
+    "status": "accepted",
+    "created_at": "2026-06-21T02:03:18.422445+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 1,
+        "price": 189.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 3,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_5",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "accepted",
+    "created_at": "2026-07-02T02:03:18.422490+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 3,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_4",
+    "shop_name": "Paldi Style Corner",
+    "status": "ready",
+    "created_at": "2026-06-10T01:03:18.422518+00:00",
+    "items": [
+      {
+        "product_name": "Notebook Set",
+        "quantity": 1,
+        "price": 129.0
+      },
+      {
+        "product_name": "Cotton Kurti",
+        "quantity": 3,
+        "price": 999.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Daily Needs",
+    "status": "completed",
+    "created_at": "2026-06-10T15:03:18.422544+00:00",
+    "items": [
+      {
+        "product_name": "Black Coffee",
+        "quantity": 2,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "accepted",
+    "created_at": "2026-06-23T06:03:18.422568+00:00",
+    "items": [
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 2,
+        "price": 299.0
+      },
+      {
+        "product_name": "Ball Pen Pack",
+        "quantity": 2,
+        "price": 49.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 3,
+        "price": 89.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 2,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_3",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "completed",
+    "created_at": "2026-07-04T03:03:18.422601+00:00",
+    "items": [
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 2,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Value Store",
+    "status": "completed",
+    "created_at": "2026-06-29T17:03:18.422626+00:00",
+    "items": [
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 1,
+        "price": 199.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "accepted",
+    "created_at": "2026-06-18T14:03:18.422669+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 1,
+        "price": 79.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 2,
+        "price": 89.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Grocery Point",
+    "status": "pending",
+    "created_at": "2026-06-30T17:03:18.422696+00:00",
+    "items": [
+      {
+        "product_name": "Black Coffee",
+        "quantity": 1,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "digibazaar",
+    "shop_name": "Paldi Style Corner",
+    "status": "completed",
+    "created_at": "2026-06-30T22:03:18.422750+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 3,
+        "price": 89.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Family Store",
+    "status": "preparing",
+    "created_at": "2026-07-08T17:03:18.422781+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "completed",
+    "created_at": "2026-06-17T01:03:18.422810+00:00",
+    "items": [
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 1,
+        "price": 299.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Daily Needs",
+    "status": "ready",
+    "created_at": "2026-06-15T07:03:18.422864+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 2,
+        "price": 89.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 1,
+        "price": 79.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_4",
+    "shop_name": "Paldi Grocery Point",
+    "status": "completed",
+    "created_at": "2026-06-19T08:03:18.422893+00:00",
+    "items": [
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 3,
+        "price": 249.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 3,
+        "price": 79.0
+      },
+      {
+        "product_name": "Sneaker Socks",
+        "quantity": 3,
+        "price": 199.0
+      },
+      {
+        "product_name": "Saffron Face Cream",
+        "quantity": 1,
+        "price": 499.0
+      }
+    ]
+  },
+  {
+    "username": "digibazaar",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "accepted",
+    "created_at": "2026-06-15T21:03:18.422920+00:00",
+    "items": [
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 2,
+        "price": 799.0
+      },
+      {
+        "product_name": "Ball Pen Pack",
+        "quantity": 3,
+        "price": 49.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 2,
+        "price": 89.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_3",
+    "shop_name": "Paldi Market Square",
+    "status": "completed",
+    "created_at": "2026-06-25T09:03:18.422964+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 3,
+        "price": 79.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 2,
+        "price": 89.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Market Square",
+    "status": "ready",
+    "created_at": "2026-07-02T15:03:18.422989+00:00",
+    "items": [
+      {
+        "product_name": "Ball Pen Pack",
+        "quantity": 1,
+        "price": 49.0
+      },
+      {
+        "product_name": "Cotton Kurti",
+        "quantity": 2,
+        "price": 999.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Market Square",
+    "status": "ready",
+    "created_at": "2026-06-12T18:03:18.423011+00:00",
+    "items": [
+      {
+        "product_name": "Saffron Face Cream",
+        "quantity": 1,
+        "price": 499.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_4",
+    "shop_name": "Paldi Grocery Point",
+    "status": "completed",
+    "created_at": "2026-06-23T02:03:18.423034+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 2,
+        "price": 79.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 1,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Market Square",
+    "status": "accepted",
+    "created_at": "2026-07-03T17:03:18.423056+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 3,
+        "price": 79.0
+      },
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 2,
+        "price": 199.0
+      }
+    ]
+  },
+  {
+    "username": "digibazaar",
+    "shop_name": "Paldi Urban Basket",
+    "status": "accepted",
+    "created_at": "2026-07-02T17:03:18.423080+00:00",
+    "items": [
+      {
+        "product_name": "Casual Sneakers",
+        "quantity": 3,
+        "price": 2499.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 3,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Style Corner",
+    "status": "completed",
+    "created_at": "2026-06-27T02:03:18.423120+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 1,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "completed",
+    "created_at": "2026-06-17T10:03:18.423143+00:00",
+    "items": [
+      {
+        "product_name": "Black Coffee",
+        "quantity": 3,
+        "price": 249.0
+      },
+      {
+        "product_name": "Casual Sneakers",
+        "quantity": 1,
+        "price": 2499.0
+      },
+      {
+        "product_name": "Saffron Face Cream",
+        "quantity": 3,
+        "price": 499.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_3",
+    "shop_name": "Paldi Style Corner",
+    "status": "accepted",
+    "created_at": "2026-06-30T20:03:18.423184+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 3,
+        "price": 189.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 3,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Daily Needs",
+    "status": "ready",
+    "created_at": "2026-07-05T16:03:18.423206+00:00",
+    "items": [
+      {
+        "product_name": "Dupatta",
+        "quantity": 1,
+        "price": 299.0
+      },
+      {
+        "product_name": "Ball Pen Pack",
+        "quantity": 2,
+        "price": 49.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_5",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "completed",
+    "created_at": "2026-06-26T15:03:18.423227+00:00",
+    "items": [
+      {
+        "product_name": "Notebook Set",
+        "quantity": 2,
+        "price": 129.0
+      },
+      {
+        "product_name": "Running Shoes",
+        "quantity": 3,
+        "price": 2999.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 1,
+        "price": 159.0
+      },
+      {
+        "product_name": "Dupatta",
+        "quantity": 1,
+        "price": 299.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Daily Needs",
+    "status": "completed",
+    "created_at": "2026-06-13T22:03:18.423252+00:00",
+    "items": [
+      {
+        "product_name": "Notebook Set",
+        "quantity": 2,
+        "price": 129.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 1,
+        "price": 79.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_5",
+    "shop_name": "Paldi Daily Needs",
+    "status": "preparing",
+    "created_at": "2026-06-18T21:03:18.423291+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 2,
+        "price": 189.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 1,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Value Store",
+    "status": "completed",
+    "created_at": "2026-07-07T15:03:18.423319+00:00",
+    "items": [
+      {
+        "product_name": "Cotton Kurti",
+        "quantity": 1,
+        "price": 999.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 2,
+        "price": 79.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "completed",
+    "created_at": "2026-07-08T09:03:18.423344+00:00",
+    "items": [
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 2,
+        "price": 199.0
+      },
+      {
+        "product_name": "Dupatta",
+        "quantity": 3,
+        "price": 299.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 1,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Value Store",
+    "status": "completed",
+    "created_at": "2026-06-19T06:03:18.423395+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 2,
+        "price": 89.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 1,
+        "price": 79.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Value Store",
+    "status": "completed",
+    "created_at": "2026-06-15T17:03:18.423447+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 1,
+        "price": 89.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 3,
+        "price": 79.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_9",
+    "shop_name": "Paldi Urban Basket",
+    "status": "completed",
+    "created_at": "2026-07-06T07:03:18.423471+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 2,
+        "price": 189.0
+      },
+      {
+        "product_name": "Saffron Face Cream",
+        "quantity": 1,
+        "price": 499.0
+      }
+    ]
+  },
+  {
+    "username": "digibazaar",
+    "shop_name": "Paldi Family Store",
+    "status": "accepted",
+    "created_at": "2026-06-19T23:03:18.423494+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 2,
+        "price": 79.0
+      },
+      {
+        "product_name": "Casual Sneakers",
+        "quantity": 1,
+        "price": 2499.0
+      },
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 2,
+        "price": 299.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "completed",
+    "created_at": "2026-07-05T11:03:18.423519+00:00",
+    "items": [
+      {
+        "product_name": "Ball Pen Pack",
+        "quantity": 1,
+        "price": 49.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "accepted",
+    "created_at": "2026-06-28T08:03:18.423540+00:00",
+    "items": [
+      {
+        "product_name": "Sneaker Socks",
+        "quantity": 3,
+        "price": 199.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 1,
+        "price": 89.0
+      },
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 3,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_3",
+    "shop_name": "Paldi Family Store",
+    "status": "completed",
+    "created_at": "2026-06-19T19:03:18.423564+00:00",
+    "items": [
+      {
+        "product_name": "Casual Sneakers",
+        "quantity": 1,
+        "price": 2499.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_3",
+    "shop_name": "Paldi Market Square",
+    "status": "completed",
+    "created_at": "2026-07-06T21:03:18.423586+00:00",
+    "items": [
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 1,
+        "price": 249.0
+      },
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 1,
+        "price": 799.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "accepted",
+    "created_at": "2026-07-05T17:03:18.423611+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 2,
+        "price": 189.0
+      },
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 1,
+        "price": 199.0
+      },
+      {
+        "product_name": "Black Coffee",
+        "quantity": 2,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_3",
+    "shop_name": "Paldi Grocery Point",
+    "status": "completed",
+    "created_at": "2026-06-29T02:03:18.423636+00:00",
+    "items": [
+      {
+        "product_name": "Matte Lipstick",
+        "quantity": 1,
+        "price": 399.0
+      },
+      {
+        "product_name": "Sneaker Socks",
+        "quantity": 1,
+        "price": 199.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Value Store",
+    "status": "completed",
+    "created_at": "2026-06-10T12:03:18.423661+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      },
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 2,
+        "price": 199.0
+      },
+      {
+        "product_name": "Saffron Face Cream",
+        "quantity": 2,
+        "price": 499.0
+      },
+      {
+        "product_name": "Ball Pen Pack",
+        "quantity": 3,
+        "price": 49.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_3",
+    "shop_name": "Paldi Daily Needs",
+    "status": "completed",
+    "created_at": "2026-06-26T21:03:18.423718+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 3,
+        "price": 179.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 2,
+        "price": 89.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_4",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "preparing",
+    "created_at": "2026-06-18T12:03:18.423744+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 3,
+        "price": 89.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Urban Basket",
+    "status": "preparing",
+    "created_at": "2026-06-13T08:03:18.423963+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 2,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_4",
+    "shop_name": "Paldi Style Corner",
+    "status": "completed",
+    "created_at": "2026-07-01T10:03:18.424025+00:00",
+    "items": [
+      {
+        "product_name": "Casual Sneakers",
+        "quantity": 3,
+        "price": 2499.0
+      },
+      {
+        "product_name": "Dupatta",
+        "quantity": 3,
+        "price": 299.0
+      },
+      {
+        "product_name": "Denim Jeans",
+        "quantity": 2,
+        "price": 1499.0
+      }
+    ]
+  },
+  {
+    "username": "digibazaar",
+    "shop_name": "Paldi Value Store",
+    "status": "preparing",
+    "created_at": "2026-06-21T11:03:18.424082+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 3,
+        "price": 89.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Family Store",
+    "status": "accepted",
+    "created_at": "2026-07-04T01:03:18.424110+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      },
+      {
+        "product_name": "Casual Sneakers",
+        "quantity": 3,
+        "price": 2499.0
+      },
+      {
+        "product_name": "Ball Pen Pack",
+        "quantity": 2,
+        "price": 49.0
+      },
+      {
+        "product_name": "Matte Lipstick",
+        "quantity": 3,
+        "price": 399.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "completed",
+    "created_at": "2026-06-29T15:03:18.424156+00:00",
+    "items": [
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 3,
+        "price": 799.0
+      }
+    ]
+  },
+  {
+    "username": "digibazaar",
+    "shop_name": "Paldi Style Corner",
+    "status": "accepted",
+    "created_at": "2026-06-20T13:03:18.424186+00:00",
+    "items": [
+      {
+        "product_name": "Sneaker Socks",
+        "quantity": 2,
+        "price": 199.0
+      },
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 1,
+        "price": 299.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 3,
+        "price": 179.0
+      },
+      {
+        "product_name": "Black Coffee",
+        "quantity": 3,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Urban Basket",
+    "status": "completed",
+    "created_at": "2026-06-25T11:03:18.424210+00:00",
+    "items": [
+      {
+        "product_name": "Running Shoes",
+        "quantity": 3,
+        "price": 2999.0
+      },
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 2,
+        "price": 199.0
+      },
+      {
+        "product_name": "Denim Jeans",
+        "quantity": 2,
+        "price": 1499.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "accepted",
+    "created_at": "2026-06-13T06:03:18.424235+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      },
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 2,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "ready",
+    "created_at": "2026-07-08T09:03:18.424259+00:00",
+    "items": [
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 1,
+        "price": 249.0
+      },
+      {
+        "product_name": "Casual Sneakers",
+        "quantity": 3,
+        "price": 2499.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "completed",
+    "created_at": "2026-06-21T13:03:18.424282+00:00",
+    "items": [
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 1,
+        "price": 299.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Style Corner",
+    "status": "accepted",
+    "created_at": "2026-06-24T02:03:18.424307+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 2,
+        "price": 89.0
+      },
+      {
+        "product_name": "Black Coffee",
+        "quantity": 3,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_4",
+    "shop_name": "Paldi Market Square",
+    "status": "accepted",
+    "created_at": "2026-06-24T02:03:18.424333+00:00",
+    "items": [
+      {
+        "product_name": "Cotton Kurti",
+        "quantity": 3,
+        "price": 999.0
+      },
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 1,
+        "price": 799.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 1,
+        "price": 79.0
+      },
+      {
+        "product_name": "Saffron Face Cream",
+        "quantity": 3,
+        "price": 499.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_9",
+    "shop_name": "Paldi Grocery Point",
+    "status": "completed",
+    "created_at": "2026-06-09T08:03:18.424359+00:00",
+    "items": [
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 1,
+        "price": 799.0
+      },
+      {
+        "product_name": "Cotton Kurti",
+        "quantity": 2,
+        "price": 999.0
+      },
+      {
+        "product_name": "Running Shoes",
+        "quantity": 1,
+        "price": 2999.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Daily Needs",
+    "status": "completed",
+    "created_at": "2026-06-24T05:03:18.424386+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 3,
+        "price": 189.0
+      },
+      {
+        "product_name": "Saffron Face Cream",
+        "quantity": 3,
+        "price": 499.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_4",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "completed",
+    "created_at": "2026-07-02T14:03:18.424412+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 2,
+        "price": 89.0
+      },
+      {
+        "product_name": "Matte Lipstick",
+        "quantity": 3,
+        "price": 399.0
+      },
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 2,
+        "price": 799.0
+      },
+      {
+        "product_name": "Saffron Face Cream",
+        "quantity": 3,
+        "price": 499.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_9",
+    "shop_name": "Paldi Urban Basket",
+    "status": "completed",
+    "created_at": "2026-07-04T00:03:18.424466+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 2,
+        "price": 89.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 3,
+        "price": 79.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Daily Needs",
+    "status": "completed",
+    "created_at": "2026-06-15T02:03:18.424494+00:00",
+    "items": [
+      {
+        "product_name": "Sneaker Socks",
+        "quantity": 3,
+        "price": 199.0
+      },
+      {
+        "product_name": "Saffron Face Cream",
+        "quantity": 2,
+        "price": 499.0
+      },
+      {
+        "product_name": "Matte Lipstick",
+        "quantity": 3,
+        "price": 399.0
+      },
+      {
+        "product_name": "Running Shoes",
+        "quantity": 1,
+        "price": 2999.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_9",
+    "shop_name": "Paldi Style Corner",
+    "status": "completed",
+    "created_at": "2026-06-12T18:03:18.424537+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 1,
+        "price": 189.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_3",
+    "shop_name": "Paldi Style Corner",
+    "status": "accepted",
+    "created_at": "2026-06-18T23:03:18.424562+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 3,
+        "price": 89.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 2,
+        "price": 79.0
+      },
+      {
+        "product_name": "Dupatta",
+        "quantity": 2,
+        "price": 299.0
+      },
+      {
+        "product_name": "Saffron Face Cream",
+        "quantity": 2,
+        "price": 499.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_4",
+    "shop_name": "Paldi Urban Basket",
+    "status": "ready",
+    "created_at": "2026-07-07T17:03:18.424587+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 1,
+        "price": 79.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 3,
+        "price": 159.0
+      },
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 2,
+        "price": 299.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Style Corner",
+    "status": "completed",
+    "created_at": "2026-06-12T01:03:18.424612+00:00",
+    "items": [
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 3,
+        "price": 299.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Grocery Point",
+    "status": "completed",
+    "created_at": "2026-06-21T15:03:18.424653+00:00",
+    "items": [
+      {
+        "product_name": "Running Shoes",
+        "quantity": 3,
+        "price": 2999.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_9",
+    "shop_name": "Paldi Urban Basket",
+    "status": "completed",
+    "created_at": "2026-07-04T16:03:18.424678+00:00",
+    "items": [
+      {
+        "product_name": "Black Coffee",
+        "quantity": 2,
+        "price": 249.0
+      },
+      {
+        "product_name": "Saffron Face Cream",
+        "quantity": 1,
+        "price": 499.0
+      },
+      {
+        "product_name": "Matte Lipstick",
+        "quantity": 3,
+        "price": 399.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_9",
+    "shop_name": "Paldi Style Corner",
+    "status": "completed",
+    "created_at": "2026-06-14T17:03:18.424704+00:00",
+    "items": [
+      {
+        "product_name": "Ball Pen Pack",
+        "quantity": 2,
+        "price": 49.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      },
+      {
+        "product_name": "Denim Jeans",
+        "quantity": 1,
+        "price": 1499.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "accepted",
+    "created_at": "2026-06-21T16:03:18.424726+00:00",
+    "items": [
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 2,
+        "price": 199.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Daily Needs",
+    "status": "completed",
+    "created_at": "2026-06-25T23:03:18.424750+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 2,
+        "price": 89.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_3",
+    "shop_name": "Paldi Urban Basket",
+    "status": "rejected",
+    "created_at": "2026-06-17T07:03:18.424773+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 3,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_4",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "completed",
+    "created_at": "2026-06-12T21:03:18.424795+00:00",
+    "items": [
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 1,
+        "price": 799.0
+      },
+      {
+        "product_name": "Dupatta",
+        "quantity": 3,
+        "price": 299.0
+      },
+      {
+        "product_name": "Matte Lipstick",
+        "quantity": 3,
+        "price": 399.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 3,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Grocery Point",
+    "status": "completed",
+    "created_at": "2026-06-29T11:03:18.424817+00:00",
+    "items": [
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 2,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "digibazaar",
+    "shop_name": "Paldi Grocery Point",
+    "status": "pending",
+    "created_at": "2026-06-11T13:03:18.424865+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 3,
+        "price": 89.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 3,
+        "price": 179.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 3,
+        "price": 79.0
+      }
+    ]
+  },
+  {
+    "username": "digibazaar",
+    "shop_name": "Paldi Value Store",
+    "status": "rejected",
+    "created_at": "2026-06-13T00:03:18.424888+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 1,
+        "price": 89.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "accepted",
+    "created_at": "2026-07-08T07:03:18.424911+00:00",
+    "items": [
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 3,
+        "price": 799.0
+      },
+      {
+        "product_name": "Casual Sneakers",
+        "quantity": 3,
+        "price": 2499.0
+      },
+      {
+        "product_name": "Running Shoes",
+        "quantity": 3,
+        "price": 2999.0
+      },
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 1,
+        "price": 199.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Value Store",
+    "status": "accepted",
+    "created_at": "2026-06-22T20:03:18.424935+00:00",
+    "items": [
+      {
+        "product_name": "Running Shoes",
+        "quantity": 3,
+        "price": 2999.0
+      },
+      {
+        "product_name": "Notebook Set",
+        "quantity": 3,
+        "price": 129.0
+      },
+      {
+        "product_name": "Denim Jeans",
+        "quantity": 1,
+        "price": 1499.0
+      },
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 3,
+        "price": 299.0
+      }
+    ]
+  },
+  {
+    "username": "digibazaar",
+    "shop_name": "Paldi Family Store",
+    "status": "preparing",
+    "created_at": "2026-06-25T23:03:18.424960+00:00",
+    "items": [
+      {
+        "product_name": "Dupatta",
+        "quantity": 1,
+        "price": 299.0
+      },
+      {
+        "product_name": "Running Shoes",
+        "quantity": 3,
+        "price": 2999.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 2,
+        "price": 89.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Grocery Point",
+    "status": "completed",
+    "created_at": "2026-07-08T18:03:18.425004+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 1,
+        "price": 159.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 3,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_9",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "accepted",
+    "created_at": "2026-07-02T22:03:18.425054+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 3,
+        "price": 179.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 3,
+        "price": 79.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_9",
+    "shop_name": "Paldi Value Store",
+    "status": "completed",
+    "created_at": "2026-06-29T17:03:18.425077+00:00",
+    "items": [
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 3,
+        "price": 299.0
+      },
+      {
+        "product_name": "Denim Jeans",
+        "quantity": 2,
+        "price": 1499.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "completed",
+    "created_at": "2026-06-10T06:03:18.425101+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 1,
+        "price": 159.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      },
+      {
+        "product_name": "Notebook Set",
+        "quantity": 1,
+        "price": 129.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "pending",
+    "created_at": "2026-06-12T04:03:18.425176+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 1,
+        "price": 79.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 1,
+        "price": 89.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Urban Basket",
+    "status": "completed",
+    "created_at": "2026-07-02T18:03:18.425223+00:00",
+    "items": [
+      {
+        "product_name": "Running Shoes",
+        "quantity": 1,
+        "price": 2999.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 3,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_3",
+    "shop_name": "Paldi Family Store",
+    "status": "accepted",
+    "created_at": "2026-06-09T06:03:18.425271+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 3,
+        "price": 89.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "completed",
+    "created_at": "2026-07-05T02:03:18.425314+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Family Store",
+    "status": "completed",
+    "created_at": "2026-06-15T18:03:18.425356+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 2,
+        "price": 89.0
+      },
+      {
+        "product_name": "Dupatta",
+        "quantity": 3,
+        "price": 299.0
+      },
+      {
+        "product_name": "Notebook Set",
+        "quantity": 3,
+        "price": 129.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 3,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Urban Basket",
+    "status": "pending",
+    "created_at": "2026-06-08T02:03:18.425402+00:00",
+    "items": [
+      {
+        "product_name": "Cotton Kurti",
+        "quantity": 1,
+        "price": 999.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 1,
+        "price": 89.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 3,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_9",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "completed",
+    "created_at": "2026-06-15T06:03:18.425445+00:00",
+    "items": [
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 1,
+        "price": 199.0
+      }
+    ]
+  },
+  {
+    "username": "digibazaar",
+    "shop_name": "Paldi Market Square",
+    "status": "completed",
+    "created_at": "2026-06-07T22:03:18.425485+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 2,
+        "price": 89.0
+      },
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 2,
+        "price": 199.0
+      },
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 1,
+        "price": 799.0
+      },
+      {
+        "product_name": "Matte Lipstick",
+        "quantity": 1,
+        "price": 399.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Family Store",
+    "status": "rejected",
+    "created_at": "2026-07-04T15:03:18.425536+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 1,
+        "price": 89.0
+      },
+      {
+        "product_name": "Notebook Set",
+        "quantity": 3,
+        "price": 129.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Market Square",
+    "status": "completed",
+    "created_at": "2026-06-22T13:03:18.425608+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 1,
+        "price": 159.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 3,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_9",
+    "shop_name": "Paldi Market Square",
+    "status": "completed",
+    "created_at": "2026-06-09T12:03:18.425679+00:00",
+    "items": [
+      {
+        "product_name": "Notebook Set",
+        "quantity": 2,
+        "price": 129.0
+      },
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 2,
+        "price": 799.0
+      },
+      {
+        "product_name": "Ball Pen Pack",
+        "quantity": 1,
+        "price": 49.0
+      },
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 1,
+        "price": 199.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "ready",
+    "created_at": "2026-06-22T00:03:18.425788+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 1,
+        "price": 79.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_3",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "ready",
+    "created_at": "2026-06-28T22:03:18.425833+00:00",
+    "items": [
+      {
+        "product_name": "Denim Jeans",
+        "quantity": 2,
+        "price": 1499.0
+      },
+      {
+        "product_name": "Notebook Set",
+        "quantity": 2,
+        "price": 129.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 1,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Market Square",
+    "status": "completed",
+    "created_at": "2026-06-25T20:03:18.425878+00:00",
+    "items": [
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 2,
+        "price": 199.0
+      },
+      {
+        "product_name": "Notebook Set",
+        "quantity": 3,
+        "price": 129.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Style Corner",
+    "status": "completed",
+    "created_at": "2026-06-28T08:03:18.425972+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 2,
+        "price": 79.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_4",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "accepted",
+    "created_at": "2026-07-05T11:03:18.426017+00:00",
+    "items": [
+      {
+        "product_name": "Dupatta",
+        "quantity": 1,
+        "price": 299.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 1,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_9",
+    "shop_name": "Paldi Style Corner",
+    "status": "ready",
+    "created_at": "2026-06-22T03:03:18.426060+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 1,
+        "price": 189.0
+      },
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 1,
+        "price": 299.0
+      },
+      {
+        "product_name": "Casual Sneakers",
+        "quantity": 3,
+        "price": 2499.0
+      }
+    ]
+  },
+  {
+    "username": "digibazaar",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "accepted",
+    "created_at": "2026-06-19T12:03:18.426105+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 3,
+        "price": 89.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 3,
+        "price": 79.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 3,
+        "price": 179.0
+      },
+      {
+        "product_name": "Black Coffee",
+        "quantity": 3,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_4",
+    "shop_name": "Paldi Family Store",
+    "status": "completed",
+    "created_at": "2026-06-17T08:03:18.426155+00:00",
+    "items": [
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 3,
+        "price": 199.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_9",
+    "shop_name": "Paldi Grocery Point",
+    "status": "completed",
+    "created_at": "2026-07-06T02:03:18.426198+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 1,
+        "price": 159.0
+      },
+      {
+        "product_name": "Denim Jeans",
+        "quantity": 3,
+        "price": 1499.0
+      },
+      {
+        "product_name": "Running Shoes",
+        "quantity": 1,
+        "price": 2999.0
+      },
+      {
+        "product_name": "Notebook Set",
+        "quantity": 3,
+        "price": 129.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "ready",
+    "created_at": "2026-06-15T01:03:18.426253+00:00",
+    "items": [
+      {
+        "product_name": "Casual Sneakers",
+        "quantity": 1,
+        "price": 2499.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 1,
+        "price": 79.0
+      },
+      {
+        "product_name": "Saffron Face Cream",
+        "quantity": 3,
+        "price": 499.0
+      },
+      {
+        "product_name": "Sneaker Socks",
+        "quantity": 2,
+        "price": 199.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Style Corner",
+    "status": "completed",
+    "created_at": "2026-06-15T15:03:18.426298+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 1,
+        "price": 79.0
+      },
+      {
+        "product_name": "Black Coffee",
+        "quantity": 3,
+        "price": 249.0
+      },
+      {
+        "product_name": "Matte Lipstick",
+        "quantity": 3,
+        "price": 399.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 3,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_9",
+    "shop_name": "Paldi Market Square",
+    "status": "completed",
+    "created_at": "2026-06-11T04:03:18.426347+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 1,
+        "price": 159.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      },
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 2,
+        "price": 199.0
+      }
+    ]
+  },
+  {
+    "username": "digibazaar",
+    "shop_name": "Paldi Style Corner",
+    "status": "completed",
+    "created_at": "2026-06-22T20:03:18.426391+00:00",
+    "items": [
+      {
+        "product_name": "Dupatta",
+        "quantity": 3,
+        "price": 299.0
+      },
+      {
+        "product_name": "Running Shoes",
+        "quantity": 3,
+        "price": 2999.0
+      },
+      {
+        "product_name": "Sneaker Socks",
+        "quantity": 2,
+        "price": 199.0
+      },
+      {
+        "product_name": "Notebook Set",
+        "quantity": 1,
+        "price": 129.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Daily Needs",
+    "status": "completed",
+    "created_at": "2026-06-20T14:03:18.426471+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 2,
+        "price": 189.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 3,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Daily Needs",
+    "status": "rejected",
+    "created_at": "2026-06-18T14:03:18.426514+00:00",
+    "items": [
+      {
+        "product_name": "Sneaker Socks",
+        "quantity": 1,
+        "price": 199.0
+      },
+      {
+        "product_name": "Cotton Kurti",
+        "quantity": 3,
+        "price": 999.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_4",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "completed",
+    "created_at": "2026-06-17T13:03:18.426573+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 3,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_4",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "accepted",
+    "created_at": "2026-06-28T18:03:18.426694+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 3,
+        "price": 179.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 1,
+        "price": 79.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "completed",
+    "created_at": "2026-06-28T19:03:18.426747+00:00",
+    "items": [
+      {
+        "product_name": "Denim Jeans",
+        "quantity": 2,
+        "price": 1499.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_3",
+    "shop_name": "Paldi Daily Needs",
+    "status": "accepted",
+    "created_at": "2026-06-15T22:03:18.426793+00:00",
+    "items": [
+      {
+        "product_name": "Saffron Face Cream",
+        "quantity": 3,
+        "price": 499.0
+      },
+      {
+        "product_name": "Casual Sneakers",
+        "quantity": 3,
+        "price": 2499.0
+      },
+      {
+        "product_name": "Matte Lipstick",
+        "quantity": 2,
+        "price": 399.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "preparing",
+    "created_at": "2026-06-27T00:03:18.426846+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 1,
+        "price": 159.0
+      },
+      {
+        "product_name": "Casual Sneakers",
+        "quantity": 3,
+        "price": 2499.0
+      },
+      {
+        "product_name": "Saffron Face Cream",
+        "quantity": 3,
+        "price": 499.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "completed",
+    "created_at": "2026-06-20T07:03:18.426930+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 2,
+        "price": 79.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 3,
+        "price": 89.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "digibazaar",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "ready",
+    "created_at": "2026-07-08T10:03:18.426979+00:00",
+    "items": [
+      {
+        "product_name": "Dupatta",
+        "quantity": 1,
+        "price": 299.0
+      },
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 3,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Market Square",
+    "status": "completed",
+    "created_at": "2026-06-16T22:03:18.427026+00:00",
+    "items": [
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 3,
+        "price": 199.0
+      },
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 3,
+        "price": 799.0
+      },
+      {
+        "product_name": "Ball Pen Pack",
+        "quantity": 2,
+        "price": 49.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 3,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_5",
+    "shop_name": "Paldi Urban Basket",
+    "status": "accepted",
+    "created_at": "2026-07-07T17:03:18.427075+00:00",
+    "items": [
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 2,
+        "price": 299.0
+      },
+      {
+        "product_name": "Saffron Face Cream",
+        "quantity": 2,
+        "price": 499.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Family Store",
+    "status": "completed",
+    "created_at": "2026-07-01T17:03:18.427119+00:00",
+    "items": [
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 3,
+        "price": 249.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 3,
+        "price": 89.0
+      },
+      {
+        "product_name": "Running Shoes",
+        "quantity": 2,
+        "price": 2999.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Urban Basket",
+    "status": "completed",
+    "created_at": "2026-06-30T07:03:18.427168+00:00",
+    "items": [
+      {
+        "product_name": "Cotton Kurti",
+        "quantity": 2,
+        "price": 999.0
+      },
+      {
+        "product_name": "Dupatta",
+        "quantity": 1,
+        "price": 299.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Style Corner",
+    "status": "completed",
+    "created_at": "2026-06-27T17:03:18.427261+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 2,
+        "price": 89.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Family Store",
+    "status": "completed",
+    "created_at": "2026-07-02T05:03:18.427304+00:00",
+    "items": [
+      {
+        "product_name": "Sneaker Socks",
+        "quantity": 1,
+        "price": 199.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 1,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Grocery Point",
+    "status": "completed",
+    "created_at": "2026-06-09T19:03:18.427346+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 2,
+        "price": 189.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 1,
+        "price": 159.0
+      },
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 2,
+        "price": 299.0
+      }
+    ]
+  },
+  {
+    "username": "digibazaar",
+    "shop_name": "Paldi Value Store",
+    "status": "completed",
+    "created_at": "2026-06-13T08:03:18.427394+00:00",
+    "items": [
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 3,
+        "price": 199.0
+      },
+      {
+        "product_name": "Matte Lipstick",
+        "quantity": 1,
+        "price": 399.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      },
+      {
+        "product_name": "Notebook Set",
+        "quantity": 1,
+        "price": 129.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Style Corner",
+    "status": "completed",
+    "created_at": "2026-07-05T15:03:18.427490+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 1,
+        "price": 89.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_5",
+    "shop_name": "Paldi Family Store",
+    "status": "completed",
+    "created_at": "2026-06-24T21:03:18.427534+00:00",
+    "items": [
+      {
+        "product_name": "Casual Sneakers",
+        "quantity": 3,
+        "price": 2499.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Daily Needs",
+    "status": "completed",
+    "created_at": "2026-07-01T15:03:18.427609+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 1,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Market Square",
+    "status": "completed",
+    "created_at": "2026-06-30T12:03:18.427677+00:00",
+    "items": [
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 2,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_5",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "pending",
+    "created_at": "2026-07-07T03:03:18.427742+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 3,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Urban Basket",
+    "status": "completed",
+    "created_at": "2026-06-30T07:03:18.427835+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 2,
+        "price": 89.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Value Store",
+    "status": "completed",
+    "created_at": "2026-06-17T01:03:18.427880+00:00",
+    "items": [
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 3,
+        "price": 799.0
+      },
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 2,
+        "price": 299.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_8",
+    "shop_name": "Paldi Daily Needs",
+    "status": "completed",
+    "created_at": "2026-06-18T00:03:18.427955+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 3,
+        "price": 159.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 2,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_5",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "accepted",
+    "created_at": "2026-06-15T12:03:18.428031+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 3,
+        "price": 79.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Value Store",
+    "status": "completed",
+    "created_at": "2026-06-15T02:03:18.428121+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 1,
+        "price": 79.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "completed",
+    "created_at": "2026-07-01T07:03:18.428164+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Grocery Point",
+    "status": "rejected",
+    "created_at": "2026-06-30T09:03:18.428236+00:00",
+    "items": [
+      {
+        "product_name": "Organic Rice",
+        "quantity": 1,
+        "price": 189.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 3,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Market Square",
+    "status": "completed",
+    "created_at": "2026-06-30T16:03:18.428311+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 3,
+        "price": 79.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 1,
+        "price": 89.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_1",
+    "shop_name": "Paldi Style Corner",
+    "status": "completed",
+    "created_at": "2026-06-27T15:03:18.428402+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 1,
+        "price": 79.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 1,
+        "price": 89.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_4",
+    "shop_name": "Paldi Family Store",
+    "status": "completed",
+    "created_at": "2026-06-14T09:03:18.428447+00:00",
+    "items": [
+      {
+        "product_name": "Dupatta",
+        "quantity": 3,
+        "price": 299.0
+      },
+      {
+        "product_name": "Black Coffee",
+        "quantity": 3,
+        "price": 249.0
+      },
+      {
+        "product_name": "Running Shoes",
+        "quantity": 2,
+        "price": 2999.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_5",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "preparing",
+    "created_at": "2026-06-12T09:03:18.428494+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 2,
+        "price": 79.0
+      },
+      {
+        "product_name": "Denim Jeans",
+        "quantity": 1,
+        "price": 1499.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 2,
+        "price": 189.0
+      },
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 2,
+        "price": 159.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_3",
+    "shop_name": "Paldi Style Corner",
+    "status": "preparing",
+    "created_at": "2026-06-23T17:03:18.428587+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 3,
+        "price": 89.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 1,
+        "price": 79.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "completed",
+    "created_at": "2026-07-04T07:03:18.428632+00:00",
+    "items": [
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 1,
+        "price": 249.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      },
+      {
+        "product_name": "Organic Rice",
+        "quantity": 2,
+        "price": 189.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Fashion Hub",
+    "status": "completed",
+    "created_at": "2026-06-22T21:03:18.428675+00:00",
+    "items": [
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 1,
+        "price": 199.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "digibazaar",
+    "shop_name": "Paldi Urban Basket",
+    "status": "completed",
+    "created_at": "2026-06-09T04:03:18.428719+00:00",
+    "items": [
+      {
+        "product_name": "Sunflower Oil",
+        "quantity": 3,
+        "price": 159.0
+      },
+      {
+        "product_name": "Cotton Kurti",
+        "quantity": 2,
+        "price": 999.0
+      },
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 1,
+        "price": 299.0
+      },
+      {
+        "product_name": "Denim Jeans",
+        "quantity": 2,
+        "price": 1499.0
+      }
+    ]
+  },
+  {
+    "username": "digibazaar",
+    "shop_name": "Paldi Daily Needs",
+    "status": "completed",
+    "created_at": "2026-07-03T04:03:18.428763+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      },
+      {
+        "product_name": "Dupatta",
+        "quantity": 2,
+        "price": 299.0
+      },
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 2,
+        "price": 299.0
+      }
+    ]
+  },
+  {
+    "username": "digibazaar",
+    "shop_name": "Paldi Grocery Point",
+    "status": "preparing",
+    "created_at": "2026-06-21T00:03:18.428860+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 3,
+        "price": 89.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_7",
+    "shop_name": "Paldi Family Store",
+    "status": "completed",
+    "created_at": "2026-07-01T02:03:18.428901+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 3,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_4",
+    "shop_name": "Paldi Family Store",
+    "status": "ready",
+    "created_at": "2026-06-11T14:03:18.428944+00:00",
+    "items": [
+      {
+        "product_name": "Casual Sneakers",
+        "quantity": 3,
+        "price": 2499.0
+      },
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 3,
+        "price": 799.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "accepted",
+    "created_at": "2026-06-10T16:03:18.429031+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 3,
+        "price": 79.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 1,
+        "price": 179.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 2,
+        "price": 89.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_6",
+    "shop_name": "Paldi Market Square",
+    "status": "preparing",
+    "created_at": "2026-06-13T21:03:18.429074+00:00",
+    "items": [
+      {
+        "product_name": "Aloe Vera Shampoo",
+        "quantity": 3,
+        "price": 199.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_9",
+    "shop_name": "Paldi Grocery Point",
+    "status": "preparing",
+    "created_at": "2026-06-13T18:03:18.429116+00:00",
+    "items": [
+      {
+        "product_name": "Running Shoes",
+        "quantity": 3,
+        "price": 2999.0
+      },
+      {
+        "product_name": "Black Coffee",
+        "quantity": 2,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_5",
+    "shop_name": "Paldi Urban Basket",
+    "status": "completed",
+    "created_at": "2026-07-02T17:03:18.429258+00:00",
+    "items": [
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 3,
+        "price": 89.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 3,
+        "price": 79.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_5",
+    "shop_name": "Paldi Fresh Mart",
+    "status": "completed",
+    "created_at": "2026-06-27T09:03:18.429309+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      },
+      {
+        "product_name": "Running Shoes",
+        "quantity": 1,
+        "price": 2999.0
+      },
+      {
+        "product_name": "Black Coffee",
+        "quantity": 3,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_5",
+    "shop_name": "Paldi Daily Needs",
+    "status": "completed",
+    "created_at": "2026-06-13T14:03:18.429354+00:00",
+    "items": [
+      {
+        "product_name": "Breakfast Cereal",
+        "quantity": 3,
+        "price": 299.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 2,
+        "price": 79.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Market Square",
+    "status": "completed",
+    "created_at": "2026-07-03T17:03:18.429395+00:00",
+    "items": [
+      {
+        "product_name": "Ball Pen Pack",
+        "quantity": 3,
+        "price": 49.0
+      },
+      {
+        "product_name": "Slim Fit T-Shirt",
+        "quantity": 1,
+        "price": 799.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_3",
+    "shop_name": "Paldi Bazaar Hub",
+    "status": "completed",
+    "created_at": "2026-06-22T23:03:18.429437+00:00",
+    "items": [
+      {
+        "product_name": "Cotton Kurti",
+        "quantity": 2,
+        "price": 999.0
+      },
+      {
+        "product_name": "Dish Soap",
+        "quantity": 3,
+        "price": 79.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 3,
+        "price": 89.0
+      },
+      {
+        "product_name": "Herbal Body Wash",
+        "quantity": 3,
+        "price": 249.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_2",
+    "shop_name": "Paldi Urban Basket",
+    "status": "completed",
+    "created_at": "2026-06-20T13:03:18.429535+00:00",
+    "items": [
+      {
+        "product_name": "Dish Soap",
+        "quantity": 2,
+        "price": 79.0
+      },
+      {
+        "product_name": "Moisturizing Soap Bar",
+        "quantity": 2,
+        "price": 89.0
+      },
+      {
+        "product_name": "Face Wash",
+        "quantity": 2,
+        "price": 179.0
+      }
+    ]
+  },
+  {
+    "username": "paldi_owner_10",
+    "shop_name": "Paldi Grocery Point",
+    "status": "preparing",
+    "created_at": "2026-06-13T07:03:18.429582+00:00",
+    "items": [
+      {
+        "product_name": "Face Wash",
+        "quantity": 3,
+        "price": 179.0
+      },
+      {
+        "product_name": "Black Coffee",
+        "quantity": 2,
+        "price": 249.0
+      }
+    ]
+  }
+]

@@ -1,23 +1,19 @@
-import { fetchJson } from "./api";
+import { fetchJson } from './api'
 
 export function getOrders() {
-  return fetchJson("/shop/orders/");
+  return fetchJson('/orders/shop-orders/')
 }
 
 export function acceptOrder(orderId) {
-  return fetchJson("/accept-order/", {
-    method: "POST",
-    body: JSON.stringify({
-      order_id: orderId,
-    }),
-  });
+  return fetchJson('/orders/accept/', {
+    method: 'POST',
+    body: JSON.stringify({ order_id: orderId }),
+  })
 }
 
 export function rejectOrder(orderId) {
-  return fetchJson("/reject-order/", {
-    method: "POST",
-    body: JSON.stringify({
-      order_id: orderId,
-    }),
-  });
+  return fetchJson('/orders/reject/', {
+    method: 'POST',
+    body: JSON.stringify({ order_id: orderId }),
+  })
 }

@@ -7,13 +7,15 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Shop, Product, Order, OrderItem, ShopOwner
+from .models import Shop, Product, Order, OrderItem, ShopOwner, Wishlist
 from .serializers import (
     ShopSerializer,
     ProductSerializer,
     OrderSerializer,
     UserSerializer,
+    WishlistSerializer,
 )
+
 from .permissions import IsAdminOrReadOnly, IsShopOwnerOrReadOnly
 from ml_engine.ranking import get_ranked_shops
 
@@ -280,3 +282,150 @@ class RejectOrderView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         return Response(OrderSerializer(order).data)
+
+
+from django.db.models import Min, Sum, F
+from django.db.models.functions import TruncDate
+
+class ProductShopsView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, pk):
+        lat = request.query_params.get('lat')
+        long = request.query_params.get('long')
+        user_lat = float(lat) if lat is not None else None
+        user_long = float(long) if long is not None else None
+
+        # Filter shops that sell this product
+        shops = Shop.objects.filter(products__id=pk).annotate(min_price=Min('products__price'))
+        if not shops.exists():
+            return Response([])
+
+        prices = [float(shop.min_price) for shop in shops if shop.min_price is not None]
+        min_price = min(prices) if prices else 0.0
+        max_price = max(prices) if prices else 0.0
+
+        from ml_engine.ranking import distance_score, price_score, rating_score, tier_score
+
+        ranked = []
+        for shop in shops:
+            score = (
+                distance_score(shop, user_lat=user_lat, user_long=user_long) * 0.25
+                + price_score(shop, min_price, max_price) * 0.25
+                + rating_score(shop) * 0.25
+                + tier_score(shop) * 0.25
+            )
+            ranked.append((shop, score))
+
+        ranked.sort(key=lambda item: item[1], reverse=True)
+        ranked_shops = [shop for shop, _ in ranked]
+
+        serializer = ShopSerializer(ranked_shops, many=True)
+        return Response(serializer.data)
+
+
+class OrderDetailView(generics.RetrieveAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        owner = getattr(user, 'shop_owner_profile', None)
+        if owner:
+            return Order.objects.filter(Q(user=user) | Q(shop__owner=owner))
+        return Order.objects.filter(user=user)
+
+
+class WishlistViewSet(viewsets.ModelViewSet):
+    serializer_class = WishlistSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Wishlist.objects.filter(user=self.request.user).select_related('product', 'product__category')
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    @action(detail=False, methods=['post'], url_path='toggle')
+    def toggle_wishlist(self, request):
+        product_id = request.data.get('product_id')
+        if not product_id:
+            return Response({'detail': 'product_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        wishlist_item = Wishlist.objects.filter(user=request.user, product_id=product_id).first()
+        if wishlist_item:
+            wishlist_item.delete()
+            return Response({'status': 'removed', 'is_wishlisted': False}, status=status.HTTP_200_OK)
+        else:
+            product = Product.objects.filter(pk=product_id).first()
+            if not product:
+                return Response({'detail': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
+            Wishlist.objects.create(user=request.user, product=product)
+            return Response({'status': 'added', 'is_wishlisted': True}, status=status.HTTP_201_CREATED)
+
+
+class ShopAnalyticsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        owner = getattr(request.user, 'shop_owner_profile', None)
+        if not owner:
+            return Response({'detail': 'Not a shop owner'}, status=status.HTTP_403_FORBIDDEN)
+
+        shop_orders = Order.objects.filter(shop__owner=owner)
+        total_orders = shop_orders.count()
+
+        revenue_data = OrderItem.objects.filter(
+            order__shop__owner=owner,
+            order__status='completed'
+        ).aggregate(total=Sum(F('price_at_order') * F('quantity')))
+        total_revenue = float(revenue_data['total'] or 0.0)
+
+        status_counts = shop_orders.values('status').annotate(count=Count('id'))
+        status_dict = {item['status']: item['count'] for item in status_counts}
+
+        sales_over_time = OrderItem.objects.filter(
+            order__shop__owner=owner,
+            order__status='completed'
+        ).annotate(
+            date=TruncDate('order__created_at')
+        ).values('date').annotate(
+            revenue=Sum(F('price_at_order') * F('quantity'))
+        ).order_by('date')
+
+        sales_history = [
+            {
+                'date': item['date'].strftime('%Y-%m-%d') if item['date'] else '',
+                'revenue': float(item['revenue'] or 0.0)
+            }
+            for item in sales_over_time
+        ]
+
+        top_products = OrderItem.objects.filter(
+            order__shop__owner=owner,
+            order__status='completed'
+        ).values(
+            'product__name'
+        ).annotate(
+            sold_count=Sum('quantity'),
+            revenue=Sum(F('price_at_order') * F('quantity'))
+        ).order_by('-sold_count')[:5]
+
+        top_products_list = [
+            {
+                'product_name': item['product__name'],
+                'sold_count': item['sold_count'],
+                'revenue': float(item['revenue'] or 0.0)
+            }
+            for item in top_products
+        ]
+
+        return Response({
+            'total_revenue': total_revenue,
+            'total_orders': total_orders,
+            'status_counts': status_dict,
+            'sales_history': sales_history,
+            'top_products': top_products_list
+        })
+

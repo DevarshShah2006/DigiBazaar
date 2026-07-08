@@ -1,0 +1,92 @@
+.products-page {
+  min-height: 80vh;
+  background: #f8fdf8;
+}
+
+.products-header {
+  background: #1b5e20;
+  padding: 48px 0;
+}
+
+.products-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 24px;
+}
+
+.products-search {
+  display: flex;
+  gap: 12px;
+  max-width: 600px;
+}
+
+.products-search-input {
+  flex: 1;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 30px;
+  font-size: 15px;
+  outline: none;
+  background: #fff;
+}
+
+.products-search-btn {
+  padding: 14px 28px;
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 30px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.products-search-btn:hover {
+  background: #333;
+}
+
+
+.products-count {
+  color: #888;
+  font-size: 14px;
+  margin: 24px 0 12px;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 20px;
+  padding: 0 0 48px;
+}
+
+.products-empty {
+  text-align: center;
+  padding: 80px 20px;
+  color: #666;
+  font-size: 18px;
+}
+
+.products-empty button {
+  margin-top: 16px;
+  padding: 10px 24px;
+  background: #43a047;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.skeleton-card {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 16px;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
