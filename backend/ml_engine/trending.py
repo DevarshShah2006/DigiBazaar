@@ -1,40 +1,62 @@
-from django.utils import timezone
+import pandas as pd
 from datetime import timedelta
-from django.db.models import Sum
-from core.models import Category, Product
+from django.utils import timezone
+
+from core.models import OrderItem
 
 
-def trending_products(limit=10):
-    window_start = timezone.now() - timedelta(days=7)
-    trending = (
-        Product.objects.filter(created_at__gte=window_start)
-        .order_by('-created_at')
+def trending(hours=24, limit=10):
+    """
+    Return trending products and categories based on
+    order quantities within the last `hours`.
+    """
+
+    cutoff = timezone.now() - timedelta(hours=hours)
+
+    order_items = OrderItem.objects.filter(
+        order__created_at__gte=cutoff
+    ).values(
+        "product_id",
+        "product__name",
+        "product__category__name",
+        "quantity",
     )
 
-    if trending.count() >= limit:
-        return trending[:limit]
+    if not order_items:
+        return {
+            "products": [],
+            "categories": [],
+        }
 
-    return Product.objects.order_by('-created_at')[:limit
-    ]
+    df = pd.DataFrame(order_items)
 
+    product_trending = (
+        df.groupby(
+            ["product_id", "product__name"],
+            as_index=False
+        )["quantity"]
+        .sum()
+        .sort_values("quantity", ascending=False)
+        .head(limit)
+        .rename(columns={
+            "product__name": "product_name"
+        })
+    )
 
-def last_24h(limit=10):
-    cutoff = timezone.now() - timedelta(hours=24)
-    return Product.objects.filter(created_at__gte=cutoff).order_by('-created_at')[:limit]
+    category_trending = (
+        df.groupby(
+            "product__category__name",
+            as_index=False
+        )["quantity"]
+        .sum()
+        .sort_values("quantity", ascending=False)
+        .head(limit)
+        .rename(columns={
+            "product__category__name": "category"
+        })
+    )
 
-
-def last_7_days(limit=10):
-    cutoff = timezone.now() - timedelta(days=7)
-    return Product.objects.filter(created_at__gte=cutoff).order_by('-created_at')[:limit]
-
-
-def top_categories(limit=10):
-    return Category.objects.annotate(
-        sales=Sum('products__order_items__quantity')
-    ).order_by('-sales')[:limit]
-
-
-def top_products(limit=10):
-    return Product.objects.annotate(
-        sales=Sum('order_items__quantity')
-    ).order_by('-sales', '-rating')[:limit]
+    return {
+        "products": product_trending.to_dict(orient="records"),
+        "categories": category_trending.to_dict(orient="records"),
+    }

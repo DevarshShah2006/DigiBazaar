@@ -162,6 +162,27 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    ALLOWED_TRANSITIONS = {
+    "pending": ["accepted", "rejected"],
+    "accepted": ["preparing"],
+    "preparing": ["ready"],
+    "ready": ["completed"],
+    "completed": [],
+    "rejected": [],
+    }
+
+    def can_transition(self, new_status):
+        return new_status in self.ALLOWED_TRANSITIONS.get(self.status, [])
+
+    def update_status(self, new_status):
+        if not self.can_transition(new_status):
+            raise ValueError(
+                f"Invalid transition from '{self.status}' to '{new_status}'"
+            )
+
+        self.status = new_status
+        self.save()
+
     def __str__(self):
         return f"Order #{self.id} ({self.status})"
 
