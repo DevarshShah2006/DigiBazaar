@@ -16,7 +16,11 @@ function Cart() {
       return
     }
     try {
-      const payload = items.map(i => ({ product_id: i.id, quantity: i.quantity }))
+      const payload = items.map(i => ({
+        product_id: i.id,
+        quantity: i.quantity,
+        shop_id: i.shop_id || undefined,
+      }))
       const data = await fetchJson('/orders/checkout/', { method: 'POST', body: JSON.stringify({ items: payload }) })
       clearCart()
       setIsOpen(false)
@@ -57,6 +61,9 @@ function Cart() {
                   <div className="cart-item__info">
                     <p className="cart-item__name">{item.name}</p>
                     <p className="cart-item__price">₹{parseFloat(item.price).toFixed(2)}</p>
+                    {item.shop_name && (
+                      <p className="cart-item__shop">🏪 {item.shop_name}</p>
+                    )}
                   </div>
                   <div className="cart-item__controls">
                     <button onClick={() => updateQuantity(item.id, item.quantity - 1)}>−</button>

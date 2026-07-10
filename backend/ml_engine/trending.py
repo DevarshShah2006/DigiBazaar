@@ -22,11 +22,12 @@ def trending(hours=24, limit=10):
         "quantity",
     )
 
-    if not order_items:
+    if not order_items.exists():
         return {
             "products": [],
             "categories": [],
         }
+
 
     df = pd.DataFrame(order_items)
 

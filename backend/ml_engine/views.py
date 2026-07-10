@@ -7,10 +7,11 @@ from core.serializers import ProductSerializer
 
 
 class RecommendationView(APIView):
-    def get(self, request, user_id):
+    def get(self, request, user_id=None):
         recommendations = get_recommendations(user_id=user_id, limit=10)
         serializer = ProductSerializer(recommendations, many=True)
         return Response(serializer.data)
+
 
 
 class TrendingView(APIView):

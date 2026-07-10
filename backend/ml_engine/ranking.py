@@ -72,3 +72,26 @@ def get_ranked_shops(user_lat=None, user_long=None, limit=10):
 
     ranked.sort(key=lambda item: item[1], reverse=True)
     return [shop for shop, _ in ranked[:limit]]
+
+
+def rank_shops_for_product(product, user_lat=None, user_long=None):
+    shops = Shop.objects.filter(products=product).annotate(min_price=Min('products__price'))
+    if not shops.exists():
+        return []
+
+    prices = [float(shop.min_price) for shop in shops if shop.min_price is not None]
+    min_price = min(prices) if prices else 0.0
+    max_price = max(prices) if prices else 0.0
+
+    ranked = []
+    for shop in shops:
+        score = (
+            distance_score(shop, user_lat=user_lat, user_long=user_long) * 0.25
+            + price_score(shop, min_price, max_price) * 0.25
+            + rating_score(shop) * 0.25
+            + tier_score(shop) * 0.25
+        )
+        ranked.append((shop, score))
+
+    ranked.sort(key=lambda item: item[1], reverse=True)
+    return [shop for shop, _ in ranked]

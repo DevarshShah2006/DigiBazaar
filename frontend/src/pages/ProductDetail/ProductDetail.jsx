@@ -10,6 +10,7 @@ function ProductDetail() {
   const { addItem } = useCart()
   const [product, setProduct] = useState(null)
   const [shops, setShops] = useState([])
+  const [selectedShopId, setSelectedShopId] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -17,11 +18,23 @@ function ProductDetail() {
       fetchJson(`/products/detail/${id}/`),
       fetchJson(`/products/${id}/shops/`),
     ]).then(([prod, rankedShops]) => {
+      const list = rankedShops.results || rankedShops || []
       setProduct(prod)
-      setShops(rankedShops.results || rankedShops || [])
+      setShops(list)
+      setSelectedShopId(list.length > 0 ? list[0].id : null)
       setLoading(false)
     }).catch(() => setLoading(false))
   }, [id])
+
+  const selectedShop = shops.find(s => s.id === selectedShopId) || null
+
+  const handleAddToCart = () => {
+    addItem({
+      ...product,
+      shop_id: selectedShop ? selectedShop.id : null,
+      shop_name: selectedShop ? selectedShop.name : null,
+    })
+  }
 
 
   if (loading) return (
@@ -75,7 +88,14 @@ function ProductDetail() {
               {product.guarantee && <span className="pd-tag">✅ Guarantee: {product.guarantee}</span>}
             </div>
 
-            <button className="pd-add-btn" onClick={() => addItem(product)}>
+            {selectedShop && (
+              <p className="pd-selected-shop">
+                Sold by <strong>{selectedShop.name}</strong>
+                {shops.length > 1 && ' · tap a shop below to change'}
+              </p>
+            )}
+
+            <button className="pd-add-btn" onClick={handleAddToCart}>
               🛒 Add to Cart
             </button>
           </div>
@@ -85,10 +105,16 @@ function ProductDetail() {
         {shops.length > 0 && (
           <section className="pd-shops">
             <h2 className="pd-shops-title">🏪 Available at these Shops</h2>
-            <p className="pd-shops-sub">Ranked by distance, rating & price</p>
+            <p className="pd-shops-sub">Ranked by distance, rating & price — tap one to buy from it</p>
             <div className="pd-shops-grid">
               {shops.slice(0, 6).map((shop, i) => (
-                <div className="pd-shop-card" key={shop.id}>
+                <div
+                  className={`pd-shop-card ${shop.id === selectedShopId ? 'pd-shop-card--selected' : ''}`}
+                  key={shop.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setSelectedShopId(shop.id)}
+                >
                   <div className="pd-shop-rank">#{i + 1}</div>
                   <div className="pd-shop-info">
                     <h4>{shop.name}</h4>
@@ -98,6 +124,9 @@ function ProductDetail() {
                       {shop.tier === 'premium' && <span className="pd-shop-premium">👑 Premium</span>}
                     </div>
                   </div>
+                  {shop.id === selectedShopId && (
+                    <div className="pd-shop-selected-badge">✓ Selected</div>
+                  )}
                 </div>
               ))}
             </div>

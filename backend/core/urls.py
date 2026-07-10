@@ -17,6 +17,7 @@ from .views import (
     ShopOrdersView,
     AcceptOrderView,
     RejectOrderView,
+    AdvanceOrderView,
     ProductShopsView,
     OrderDetailView,
     WishlistViewSet,
@@ -44,6 +45,7 @@ urlpatterns = [
     path('orders/shop-orders/', ShopOrdersView.as_view(), name='shop_orders'),
     path('orders/accept/', AcceptOrderView.as_view(), name='accept_order'),
     path('orders/reject/', RejectOrderView.as_view(), name='reject_order'),
+    path('orders/advance/', AdvanceOrderView.as_view(), name='advance_order'),
     path('orders/<int:pk>/', OrderDetailView.as_view(), name='order_detail'),
     path('', include(router.urls)),
 ]

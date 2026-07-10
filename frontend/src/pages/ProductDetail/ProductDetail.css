@@ -167,11 +167,38 @@
   gap: 16px;
   align-items: flex-start;
   transition: all 0.2s;
+  cursor: pointer;
+  position: relative;
 }
 
 .pd-shop-card:hover {
   border-color: #43a047;
   box-shadow: 0 4px 16px rgba(76, 175, 80, 0.12);
+}
+
+.pd-shop-card--selected {
+  border-color: #2e7d32;
+  border-width: 2px;
+  background: #f4faf5;
+  box-shadow: 0 4px 16px rgba(76, 175, 80, 0.18);
+}
+
+.pd-shop-selected-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #2e7d32;
+  background: #e8f5e9;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.pd-selected-shop {
+  font-size: 13px;
+  color: #555;
+  margin: -8px 0 12px;
 }
 
 .pd-shop-rank {

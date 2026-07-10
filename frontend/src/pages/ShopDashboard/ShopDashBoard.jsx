@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getOrders, acceptOrder, rejectOrder } from '../../api/orders'
+import { getOrders, acceptOrder, rejectOrder, advanceOrder } from '../../api/orders'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { fetchJson } from '../../api/api'
@@ -39,6 +39,12 @@ const STATUS_CONFIG = {
   ready: { color: '#8b5cf6', bg: '#f5f3ff', label: '🔔 Ready' },
   completed: { color: '#22c55e', bg: '#f0fdf4', label: '🎉 Completed' },
   rejected: { color: '#ef4444', bg: '#fef2f2', label: '❌ Rejected' },
+}
+
+const ADVANCE_CONFIG = {
+  accepted: { label: '👨‍🍳 Start Preparing', next: 'preparing' },
+  preparing: { label: '🔔 Mark Ready', next: 'ready' },
+  ready: { label: '🎉 Mark Completed', next: 'completed' },
 }
 
 function ShopDashboard() {
@@ -96,6 +102,11 @@ function ShopDashboard() {
 
   const handleReject = async (id) => {
     await rejectOrder(id)
+    loadOrders()
+  }
+
+  const handleAdvance = async (id) => {
+    await advanceOrder(id)
     loadOrders()
   }
 
@@ -247,6 +258,14 @@ function ShopDashboard() {
                           </button>
                           <button className="order-btn order-btn--reject" onClick={() => handleReject(order.id)}>
                             ❌ Reject
+                          </button>
+                        </div>
+                      )}
+
+                      {ADVANCE_CONFIG[order.status] && (
+                        <div className="order-card__actions">
+                          <button className="order-btn order-btn--accept" onClick={() => handleAdvance(order.id)}>
+                            {ADVANCE_CONFIG[order.status].label}
                           </button>
                         </div>
                       )}

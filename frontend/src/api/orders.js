@@ -17,3 +17,10 @@ export function rejectOrder(orderId) {
     body: JSON.stringify({ order_id: orderId }),
   })
 }
+
+export function advanceOrder(orderId) {
+  return fetchJson('/orders/advance/', {
+    method: 'POST',
+    body: JSON.stringify({ order_id: orderId }),
+  })
+}

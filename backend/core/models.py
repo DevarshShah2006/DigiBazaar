@@ -171,6 +171,14 @@ class Order(models.Model):
     "rejected": [],
     }
 
+    # Linear next-step map for statuses that only have one legal forward
+    # transition.
+    NEXT_STATUS = {
+        "accepted": "preparing",
+        "preparing": "ready",
+        "ready": "completed",
+    }
+
     def can_transition(self, new_status):
         return new_status in self.ALLOWED_TRANSITIONS.get(self.status, [])
 

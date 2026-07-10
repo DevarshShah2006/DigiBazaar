@@ -17,7 +17,7 @@ from .serializers import (
 )
 
 from .permissions import IsAdminOrReadOnly, IsShopOwnerOrReadOnly
-from ml_engine.ranking import get_ranked_shops
+from ml_engine.ranking import get_ranked_shops, rank_shops_for_product
 
 User = get_user_model()
 
@@ -168,15 +168,28 @@ class CheckoutView(APIView):
         if not isinstance(items, list):
             return Response({'detail': 'Items must be a list'}, status=status.HTTP_400_BAD_REQUEST)
 
+        lat = request.data.get('lat')
+        long_ = request.data.get('long')
+        user_lat = float(lat) if lat is not None else None
+        user_long = float(long_) if long_ is not None else None
+
         orders_by_shop = {}
         for item in items:
             product_id = item.get('product_id')
             quantity = item.get('quantity', 1)
+            requested_shop_id = item.get('shop_id')
             product = Product.objects.prefetch_related('shops').filter(pk=product_id).first()
             if not product:
                 continue
 
-            shop = product.shops.first()
+            shop = None
+            if requested_shop_id:
+                shop = product.shops.filter(pk=requested_shop_id).first()
+
+            if shop is None:
+                ranked_shops = rank_shops_for_product(product, user_lat=user_lat, user_long=user_long)
+                shop = ranked_shops[0] if ranked_shops else None
+
             if not shop:
                 continue
 
@@ -284,6 +297,40 @@ class RejectOrderView(APIView):
         return Response(OrderSerializer(order).data)
 
 
+class AdvanceOrderView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        order_id = request.data.get('order_id')
+        order = Order.objects.filter(pk=order_id).first()
+        if not order:
+            return Response({'detail': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        owner = getattr(request.user, "shop_owner_profile", None)
+
+        if owner is None or order.shop.owner != owner:
+            return Response(
+                {"detail": "You are not allowed to manage this order."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        next_status = Order.NEXT_STATUS.get(order.status)
+        if not next_status:
+            return Response(
+                {"detail": f"Order in '{order.status}' has no further stage to advance to."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            order.update_status(next_status)
+        except ValueError as e:
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(OrderSerializer(order).data)
+
+
 from django.db.models import Min, Sum, F
 from django.db.models.functions import TruncDate
 
@@ -296,29 +343,11 @@ class ProductShopsView(APIView):
         user_lat = float(lat) if lat is not None else None
         user_long = float(long) if long is not None else None
 
-        # Filter shops that sell this product
-        shops = Shop.objects.filter(products__id=pk).annotate(min_price=Min('products__price'))
-        if not shops.exists():
+        product = Product.objects.filter(pk=pk).first()
+        if not product:
             return Response([])
 
-        prices = [float(shop.min_price) for shop in shops if shop.min_price is not None]
-        min_price = min(prices) if prices else 0.0
-        max_price = max(prices) if prices else 0.0
-
-        from ml_engine.ranking import distance_score, price_score, rating_score, tier_score
-
-        ranked = []
-        for shop in shops:
-            score = (
-                distance_score(shop, user_lat=user_lat, user_long=user_long) * 0.25
-                + price_score(shop, min_price, max_price) * 0.25
-                + rating_score(shop) * 0.25
-                + tier_score(shop) * 0.25
-            )
-            ranked.append((shop, score))
-
-        ranked.sort(key=lambda item: item[1], reverse=True)
-        ranked_shops = [shop for shop, _ in ranked]
+        ranked_shops = rank_shops_for_product(product, user_lat=user_lat, user_long=user_long)
 
         serializer = ShopSerializer(ranked_shops, many=True)
         return Response(serializer.data)
