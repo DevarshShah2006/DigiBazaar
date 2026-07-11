@@ -4,12 +4,15 @@ import { useCart } from '../../context/CartContext'
 import './MyOrders.css'
 
 const STATUS_CONFIG = {
-  pending: { color: '#f59e0b', bg: '#fffbeb', label: '⏳ Pending' },
-  accepted: { color: '#3b82f6', bg: '#eff6ff', label: '✅ Accepted' },
-  preparing: { color: '#f97316', bg: '#fff7ed', label: '👨‍🍳 Preparing' },
-  ready: { color: '#8b5cf6', bg: '#f5f3ff', label: '🔔 Ready' },
-  completed: { color: '#22c55e', bg: '#f0fdf4', label: '🎉 Completed' },
-  rejected: { color: '#ef4444', bg: '#fef2f2', label: '❌ Rejected' },
+  pending: { color: '#f59e0b', bg: '#fffbeb', label: 'Pending' },
+  accepted: { color: '#3b82f6', bg: '#eff6ff', label: 'Accepted' },
+  preparing: { color: '#f97316', bg: '#fff7ed', label: 'Preparing' },
+  ready: { color: '#8b5cf6', bg: '#f5f3ff', label: 'Ready' },
+  picked_up: { color: '#f97316', bg: '#fff7ed', label: 'Picked Up' },
+  out_for_delivery: { color: '#3b82f6', bg: '#eff6ff', label: 'Out for Delivery' },
+  delivered: { color: '#10b981', bg: '#ecfdf5', label: 'Delivered' },
+  completed: { color: '#22c55e', bg: '#f0fdf4', label: 'Completed' },
+  rejected: { color: '#ef4444', bg: '#fef2f2', label: 'Rejected' },
 }
 
 function MyOrders() {

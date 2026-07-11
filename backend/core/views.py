@@ -7,17 +7,19 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Shop, Product, Order, OrderItem, ShopOwner, Wishlist
+from .models import Shop, Product, Order, OrderItem, ShopOwner, Wishlist, Rider, DeliveryAssignment
 from .serializers import (
     ShopSerializer,
     ProductSerializer,
     OrderSerializer,
     UserSerializer,
     WishlistSerializer,
+    RiderSerializer,
+    DeliveryAssignmentSerializer,
 )
 
 from .permissions import IsAdminOrReadOnly, IsShopOwnerOrReadOnly
-from ml_engine.ranking import get_ranked_shops, rank_shops_for_product
+from ml_engine.ranking import get_ranked_shops, rank_shops_for_product, haversine_distance
 
 User = get_user_model()
 
@@ -68,9 +70,29 @@ class SignupView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
+        role = request.data.get('role', 'customer')
+        phone = request.data.get('phone', '')
+        
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+        
+        # Create profiles based on the role
+        from .models import ShopOwner, Rider, UserProfile
+        if role == 'shopowner':
+            ShopOwner.objects.get_or_create(user=user, defaults={'phone': phone})
+        elif role == 'rider':
+            Rider.objects.get_or_create(
+                user=user,
+                defaults={
+                    'phone': phone,
+                    'vehicle_type': 'Motorcycle',
+                    'vehicle_number': 'GJ-01-XX-9999'
+                }
+            )
+        else:
+            UserProfile.objects.get_or_create(user=user, defaults={'phone': phone})
+            
         refresh = RefreshToken.for_user(user)
         return Response(
             {
@@ -100,6 +122,46 @@ class LoginView(APIView):
                 'user': UserSerializer(user).data,
             }
         )
+
+# OTP Authentication Views
+import random
+from datetime import timedelta
+from django.utils import timezone
+from .models import PhoneOTP
+
+class SendOTPView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        phone = request.data.get('phone')
+        if not phone:
+            return Response({'detail': 'Phone number required'}, status=status.HTTP_400_BAD_REQUEST)
+        otp = f"{random.randint(100000, 999999)}"
+        expires_at = timezone.now() + timedelta(minutes=5)
+        # Create or update OTP entry
+        obj, created = PhoneOTP.objects.update_or_create(
+            phone=phone,
+            defaults={'otp': otp, 'expires_at': expires_at, 'created_at': timezone.now()}
+        )
+        # TODO: integrate with SMS provider (e.g., Twilio) to send OTP
+        return Response({'phone': phone, 'otp': otp, 'expires_at': expires_at}, status=status.HTTP_200_OK)
+
+class VerifyOTPView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        phone = request.data.get('phone')
+        otp = request.data.get('otp')
+        if not phone or not otp:
+            return Response({'detail': 'Phone and OTP required'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            otp_obj = PhoneOTP.objects.get(phone=phone)
+        except PhoneOTP.DoesNotExist:
+            return Response({'detail': 'OTP not found'}, status=status.HTTP_404_NOT_FOUND)
+        if not otp_obj.is_valid() or otp_obj.otp != otp:
+            return Response({'detail': 'Invalid or expired OTP'}, status=status.HTTP_400_BAD_REQUEST)
+        # OTP valid - you may create or retrieve a user here. For now, just acknowledge.
+        return Response({'detail': 'OTP verified successfully'}, status=status.HTTP_200_OK)
 
 
 class TokenRefreshView(APIView):
@@ -168,16 +230,20 @@ class CheckoutView(APIView):
         if not isinstance(items, list):
             return Response({'detail': 'Items must be a list'}, status=status.HTTP_400_BAD_REQUEST)
 
+        fulfillment_option = request.data.get('fulfillment_option', 'digibazaar_delivery')
+        delivery_address = request.data.get('delivery_address', '')
         lat = request.data.get('lat')
         long_ = request.data.get('long')
-        user_lat = float(lat) if lat is not None else None
-        user_long = float(long_) if long_ is not None else None
+        user_lat = float(lat) if lat is not None else 23.0125
+        user_long = float(long_) if long_ is not None else 72.5575
 
+        # Group items by shop using the ranking algorithm
         orders_by_shop = {}
         for item in items:
             product_id = item.get('product_id')
             quantity = item.get('quantity', 1)
             requested_shop_id = item.get('shop_id')
+            
             product = Product.objects.prefetch_related('shops').filter(pk=product_id).first()
             if not product:
                 continue
@@ -187,8 +253,12 @@ class CheckoutView(APIView):
                 shop = product.shops.filter(pk=requested_shop_id).first()
 
             if shop is None:
-                ranked_shops = rank_shops_for_product(product, user_lat=user_lat, user_long=user_long)
-                shop = ranked_shops[0] if ranked_shops else None
+                first_shop = Shop.objects.first()
+                if first_shop and first_shop.products.filter(pk=product.id).exists():
+                    shop = first_shop
+                else:
+                    ranked_shops = rank_shops_for_product(product, user_lat=user_lat, user_long=user_long)
+                    shop = ranked_shops[0] if ranked_shops else None
 
             if not shop:
                 continue
@@ -198,7 +268,35 @@ class CheckoutView(APIView):
 
         created_orders = []
         for group in orders_by_shop.values():
-            order = Order.objects.create(user=request.user, shop=group['shop'])
+            shop = group['shop']
+            
+            # Calculate delivery charge
+            distance_km = 1.0
+            if shop.lat and shop.long:
+                distance_km = haversine_distance(user_lat, user_long, float(shop.lat), float(shop.long))
+                
+            charge = 0.0
+            if fulfillment_option == 'shop_delivery':
+                charge = 25.0
+            elif fulfillment_option == 'digibazaar_delivery':
+                charge = max(20.0, 20.0 + (distance_km * 5.0))
+            
+            # Determine initial status
+            # If live inventory is True, auto-advance to accepted.
+            # Else start at pending (90-sec timer starts in frontend)
+            initial_status = 'accepted' if shop.live_inventory else 'pending'
+            
+            order = Order.objects.create(
+                user=request.user,
+                shop=shop,
+                status=initial_status,
+                fulfillment_option=fulfillment_option,
+                delivery_address=delivery_address,
+                lat=user_lat,
+                long=user_long,
+                delivery_charge=charge
+            )
+            
             for item in group['items']:
                 OrderItem.objects.create(
                     order=order,
@@ -206,6 +304,44 @@ class CheckoutView(APIView):
                     quantity=item['quantity'],
                     price_at_order=item['product'].price,
                 )
+            
+            # If digibazaar_delivery, assign a rider
+            if fulfillment_option == 'digibazaar_delivery':
+                # Find an online rider, or create a mockup online rider if none exists
+                rider = Rider.objects.filter(is_online=True).first()
+                if not rider:
+                    # Create mock rider
+                    mock_user, _ = User.objects.get_or_create(
+                        username='user_9876543210',
+                        defaults={'email': 'rider@digibazaar.in'}
+                    )
+                    mock_user.set_password('OTPVerified123!')
+                    mock_user.save()
+                    rider, _ = Rider.objects.get_or_create(
+                        user=mock_user,
+                        defaults={
+                            'phone': '9876543210',
+                            'is_online': True,
+                            'vehicle_type': 'Motorcycle',
+                            'vehicle_number': 'GJ-01-HA-9876',
+                            'lat': user_lat + 0.005,
+                            'long': user_long + 0.005
+                        }
+                    )
+                    rider.is_online = True
+                    rider.save()
+                
+                order.rider = rider
+                order.save()
+                
+                # Create DeliveryAssignment
+                DeliveryAssignment.objects.create(
+                    order=order,
+                    rider=rider,
+                    status='assigned',
+                    eta=int(5 + distance_km * 4)
+                )
+                
             created_orders.append(order)
 
         serializer = OrderSerializer(created_orders, many=True)
@@ -217,7 +353,7 @@ class MyOrdersView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Order.objects.filter(user=self.request.user)
+        return Order.objects.filter(user=self.request.user).order_by('-created_at')
 
 
 class ShopOrdersView(APIView):
@@ -242,7 +378,8 @@ class ShopOrdersView(APIView):
 
         serializer = OrderSerializer(orders, many=True)
         return Response(serializer.data)
-    
+
+
 class AcceptOrderView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -289,6 +426,44 @@ class RejectOrderView(APIView):
 
         try:
             order.update_status("rejected")
+            
+            # Re-routing logic to the next best shop
+            items = list(order.items.all())
+            if items:
+                first_product = items[0].product
+                ranked_shops = rank_shops_for_product(first_product, user_lat=order.lat, user_long=order.long)
+                next_shops = [s for s in ranked_shops if s.id != order.shop.id]
+                if next_shops:
+                    next_shop = next_shops[0]
+                    new_order = Order.objects.create(
+                        user=order.user,
+                        shop=next_shop,
+                        status='accepted' if next_shop.live_inventory else 'pending',
+                        fulfillment_option=order.fulfillment_option,
+                        delivery_address=order.delivery_address,
+                        lat=order.lat,
+                        long=order.long,
+                        delivery_charge=order.delivery_charge,
+                        rider=order.rider
+                    )
+                    for item in items:
+                        OrderItem.objects.create(
+                            order=new_order,
+                            product=item.product,
+                            quantity=item.quantity,
+                            price_at_order=item.price_at_order
+                        )
+                    # Point delivery assignment to new order
+                    if order.rider:
+                        assignment = DeliveryAssignment.objects.filter(order=order).first()
+                        if assignment:
+                            assignment.order = new_order
+                            assignment.save()
+                    return Response({
+                        "detail": f"Order rejected. Rerouted to {next_shop.name}",
+                        "rerouted": True,
+                        "new_order": OrderSerializer(new_order).data
+                    })
         except ValueError as e:
             return Response(
                 {"detail": str(e)},
@@ -348,7 +523,6 @@ class ProductShopsView(APIView):
             return Response([])
 
         ranked_shops = rank_shops_for_product(product, user_lat=user_lat, user_long=user_long)
-
         serializer = ShopSerializer(ranked_shops, many=True)
         return Response(serializer.data)
 
@@ -361,9 +535,15 @@ class OrderDetailView(generics.RetrieveAPIView):
     def get_queryset(self):
         user = self.request.user
         owner = getattr(user, 'shop_owner_profile', None)
-        if owner:
-            return Order.objects.filter(Q(user=user) | Q(shop__owner=owner))
-        return Order.objects.filter(user=user)
+        rider = getattr(user, 'rider_profile', None)
+        qs = Order.objects.all()
+        if owner and rider:
+            return qs.filter(Q(user=user) | Q(shop__owner=owner) | Q(rider=rider))
+        elif owner:
+            return qs.filter(Q(user=user) | Q(shop__owner=owner))
+        elif rider:
+            return qs.filter(Q(user=user) | Q(rider=rider))
+        return qs.filter(user=user)
 
 
 class WishlistViewSet(viewsets.ModelViewSet):
@@ -457,4 +637,161 @@ class ShopAnalyticsView(APIView):
             'sales_history': sales_history,
             'top_products': top_products_list
         })
+
+
+class ShopProductsListView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        owner = getattr(request.user, "shop_owner_profile", None)
+        if owner is None:
+            return Response({"detail": "Not a shop owner"}, status=status.HTTP_403_FORBIDDEN)
+        
+        shop = Shop.objects.filter(owner=owner).first()
+        if not shop:
+            return Response({"detail": "Shop not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        products = shop.products.all()
+        serializer = ProductSerializer(products, many=True)
+        return Response({
+            "shop_name": shop.name,
+            "live_inventory": shop.live_inventory,
+            "products": serializer.data
+        })
+
+    def post(self, request):
+        owner = getattr(request.user, "shop_owner_profile", None)
+        if owner is None:
+            return Response({"detail": "Not a shop owner"}, status=status.HTTP_403_FORBIDDEN)
+        
+        shop = Shop.objects.filter(owner=owner).first()
+        if not shop:
+            return Response({"detail": "Shop not found"}, status=status.HTTP_404_NOT_FOUND)
+            
+        product_id = request.data.get('product_id')
+        if not product_id:
+            return Response({"detail": "product_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        product = Product.objects.filter(pk=product_id).first()
+        if not product:
+            return Response({"detail": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
+            
+        shop.products.add(product)
+        return Response({"status": "added", "product_id": product.id}, status=status.HTTP_201_CREATED)
+
+    def delete(self, request):
+        owner = getattr(request.user, "shop_owner_profile", None)
+        if owner is None:
+            return Response({"detail": "Not a shop owner"}, status=status.HTTP_403_FORBIDDEN)
+        
+        shop = Shop.objects.filter(owner=owner).first()
+        if not shop:
+            return Response({"detail": "Shop not found"}, status=status.HTTP_404_NOT_FOUND)
+            
+        product_id = request.query_params.get('product_id')
+        if not product_id:
+            return Response({"detail": "product_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        product = Product.objects.filter(pk=product_id).first()
+        if not product:
+            return Response({"detail": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
+            
+        shop.products.remove(product)
+        return Response({"status": "removed", "product_id": product.id}, status=status.HTTP_200_OK)
+
+
+class ShopToggleLiveInventoryView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        owner = getattr(request.user, "shop_owner_profile", None)
+        if owner is None:
+            return Response({"detail": "Not a shop owner"}, status=status.HTTP_403_FORBIDDEN)
+        
+        shop = Shop.objects.filter(owner=owner).first()
+        if not shop:
+            return Response({"detail": "Shop not found"}, status=status.HTTP_404_NOT_FOUND)
+            
+        shop.live_inventory = not shop.live_inventory
+        shop.save()
+        return Response({"live_inventory": shop.live_inventory, "shop_name": shop.name})
+
+
+class RiderStatusToggleView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        rider_profile = getattr(request.user, "rider_profile", None)
+        if rider_profile is None:
+            # Auto-create rider profile for testing
+            rider_profile, _ = Rider.objects.get_or_create(
+                user=request.user,
+                defaults={'phone': '9999999999', 'vehicle_type': 'Bicycle', 'vehicle_number': 'BIKE-123'}
+            )
+        
+        rider_profile.is_online = not rider_profile.is_online
+        rider_profile.save()
+        return Response({"is_online": rider_profile.is_online})
+
+
+class RiderDashboardView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        rider_profile = getattr(request.user, "rider_profile", None)
+        if rider_profile is None:
+            return Response({"detail": "Not registered as a rider"}, status=status.HTTP_403_FORBIDDEN)
+        
+        assignments = DeliveryAssignment.objects.filter(
+            rider=rider_profile
+        ).exclude(status='delivered').exclude(status='cancelled').order_by('-assigned_at')
+        
+        completed_assignments = DeliveryAssignment.objects.filter(
+            rider=rider_profile,
+            status='delivered'
+        )
+        total_earnings = completed_assignments.count() * 45.0
+        
+        assignment_serializer = DeliveryAssignmentSerializer(assignments, many=True)
+        
+        return Response({
+            "is_online": rider_profile.is_online,
+            "rating": float(rider_profile.rating),
+            "completed_deliveries": completed_assignments.count(),
+            "total_earnings": total_earnings,
+            "vehicle_type": rider_profile.vehicle_type,
+            "vehicle_number": rider_profile.vehicle_number,
+            "active_assignments": assignment_serializer.data
+        })
+
+
+class UpdateDeliveryAssignmentView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        rider_profile = getattr(request.user, "rider_profile", None)
+        if rider_profile is None:
+            return Response({"detail": "Not a rider"}, status=status.HTTP_403_FORBIDDEN)
+            
+        assignment_id = request.data.get('assignment_id')
+        new_status = request.data.get('status')
+        
+        assignment = DeliveryAssignment.objects.filter(pk=assignment_id, rider=rider_profile).first()
+        if not assignment:
+            return Response({"detail": "Assignment not found"}, status=status.HTTP_404_NOT_FOUND)
+            
+        if new_status not in ['picked_up', 'delivered']:
+            return Response({"detail": "Invalid status update"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        assignment.status = new_status
+        assignment.save()
+        
+        order = assignment.order
+        if new_status == 'picked_up':
+            order.status = 'picked_up'
+        elif new_status == 'delivered':
+            order.status = 'delivered'
+        order.save()
+        
+        return Response(DeliveryAssignmentSerializer(assignment).data)
 

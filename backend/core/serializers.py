@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from .models import Category, Shop, Product, Order, OrderItem, Wishlist
+from .models import Category, Shop, Product, Order, OrderItem, Wishlist, Rider, DeliveryAssignment
 
 User = get_user_model()
 
@@ -13,10 +13,18 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    role = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'password')
+        fields = ('id', 'username', 'email', 'password', 'role')
+
+    def get_role(self, obj):
+        if hasattr(obj, 'shop_owner_profile'):
+            return 'shopowner'
+        elif hasattr(obj, 'rider_profile'):
+            return 'rider'
+        return 'customer'
 
     def create(self, validated_data):
         return User.objects.create_user(
@@ -88,6 +96,9 @@ class ShopSerializer(serializers.ModelSerializer):
             'products',
             'category_details',
             'product_details',
+            'live_inventory',
+            'reliability_score',
+            'cancellation_rate',
             'created_at',
         )
 
@@ -112,6 +123,24 @@ class ShopSerializer(serializers.ModelSerializer):
         return shop
 
 
+class RiderSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source="user.username", read_only=True)
+
+    class Meta:
+        model = Rider
+        fields = (
+            'id',
+            'username',
+            'phone',
+            'is_online',
+            'lat',
+            'long',
+            'rating',
+            'vehicle_type',
+            'vehicle_number',
+        )
+
+
 class OrderItemSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source="product.name", read_only=True)
     image_url = serializers.CharField(source="product.image_url", read_only=True)
@@ -126,6 +155,7 @@ class OrderSerializer(serializers.ModelSerializer):
     shop_name = serializers.CharField(source="shop.name", read_only=True)
     items = OrderItemSerializer(many=True, read_only=True)
     total_price = serializers.SerializerMethodField()
+    rider_details = RiderSerializer(source="rider", read_only=True)
 
     def get_total_price(self, obj):
         return sum(item.price_at_order * item.quantity for item in obj.items.all())
@@ -141,6 +171,13 @@ class OrderSerializer(serializers.ModelSerializer):
             "status",
             "items",
             "total_price",
+            "fulfillment_option",
+            "delivery_address",
+            "lat",
+            "long",
+            "delivery_charge",
+            "rider",
+            "rider_details",
             "created_at",
             "updated_at",
         )
@@ -157,4 +194,23 @@ class WishlistSerializer(serializers.ModelSerializer):
     class Meta:
         model = Wishlist
         fields = ("id", "product", "product_details", "created_at")
+
+
+class DeliveryAssignmentSerializer(serializers.ModelSerializer):
+    order_details = OrderSerializer(source="order", read_only=True)
+    rider_details = RiderSerializer(source="rider", read_only=True)
+
+    class Meta:
+        model = DeliveryAssignment
+        fields = (
+            "id",
+            "order",
+            "order_details",
+            "rider",
+            "rider_details",
+            "status",
+            "assigned_at",
+            "updated_at",
+            "eta",
+        )
 

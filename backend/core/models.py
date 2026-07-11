@@ -106,9 +106,27 @@ class ShopOwner(models.Model):
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     phone = models.CharField(max_length=20, blank=True)
-    email=models.EmailField(blank=True)
+    email = models.EmailField(blank=True)
     default_lat = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     default_long = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    default_address = models.CharField(max_length=500, blank=True)
+
+    def __str__(self):
+        return self.user.username
+
+
+# -----------------------------
+# Rider (for delivery partners)
+# -----------------------------
+class Rider(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="rider_profile")
+    phone = models.CharField(max_length=20, blank=True)
+    is_online = models.BooleanField(default=False)
+    lat = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    long = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    rating = models.DecimalField(max_digits=3, decimal_places=2, default=5.00)
+    vehicle_type = models.CharField(max_length=50, blank=True)
+    vehicle_number = models.CharField(max_length=50, blank=True)
 
     def __str__(self):
         return self.user.username
@@ -126,7 +144,7 @@ class Shop(models.Model):
     owner = models.ForeignKey(ShopOwner, on_delete=models.CASCADE, related_name="shops")
     name = models.CharField(max_length=255)
     tier = models.CharField(max_length=10, choices=TIER_CHOICES, default="free")
-    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0)  # e.g. 4.25
+    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0)
 
     # Precomputed at seed time — never geocode live per ranking request
     lat = models.DecimalField(max_digits=9, decimal_places=6)
@@ -136,6 +154,10 @@ class Shop(models.Model):
     # Category-level "inventory" — not SKU-level (per inventory design decision)
     categories = models.ManyToManyField(Category, related_name="shops", blank=True)
     products = models.ManyToManyField(Product, related_name='shops', through='ShopProduct', blank=True)
+
+    live_inventory = models.BooleanField(default=False)
+    reliability_score = models.DecimalField(max_digits=3, decimal_places=2, default=1.00)
+    cancellation_rate = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -153,22 +175,43 @@ class Order(models.Model):
         ("rejected", "Rejected"),
         ("preparing", "Preparing"),
         ("ready", "Ready"),
+        ("picked_up", "Picked Up"),
+        ("out_for_delivery", "Out for Delivery"),
+        ("delivered", "Delivered"),
         ("completed", "Completed"),
+        ("cancelled", "Cancelled"),
+    ]
+
+    FULFILLMENT_CHOICES = [
+        ("pickup", "Pickup"),
+        ("shop_delivery", "Shop Delivery"),
+        ("digibazaar_delivery", "DigiBazaar Delivery"),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders")
     shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name="orders")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    fulfillment_option = models.CharField(max_length=30, choices=FULFILLMENT_CHOICES, default="digibazaar_delivery")
+    delivery_address = models.CharField(max_length=500, blank=True)
+    lat = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    long = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    delivery_charge = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
+    rider = models.ForeignKey(Rider, on_delete=models.SET_NULL, null=True, blank=True, related_name="orders")
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     ALLOWED_TRANSITIONS = {
-    "pending": ["accepted", "rejected"],
-    "accepted": ["preparing"],
-    "preparing": ["ready"],
-    "ready": ["completed"],
-    "completed": [],
-    "rejected": [],
+        "pending": ["accepted", "rejected", "cancelled"],
+        "accepted": ["preparing", "cancelled"],
+        "preparing": ["ready", "cancelled"],
+        "ready": ["picked_up", "out_for_delivery", "completed", "cancelled"],
+        "picked_up": ["out_for_delivery", "cancelled"],
+        "out_for_delivery": ["delivered", "completed", "cancelled"],
+        "delivered": ["completed"],
+        "completed": [],
+        "rejected": [],
+        "cancelled": [],
     }
 
     # Linear next-step map for statuses that only have one legal forward
@@ -176,7 +219,10 @@ class Order(models.Model):
     NEXT_STATUS = {
         "accepted": "preparing",
         "preparing": "ready",
-        "ready": "completed",
+        "ready": "picked_up",
+        "picked_up": "out_for_delivery",
+        "out_for_delivery": "delivered",
+        "delivered": "completed",
     }
 
     def can_transition(self, new_status):
@@ -223,4 +269,38 @@ class Wishlist(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.product.name}"
+
+
+# -----------------------------
+# DeliveryAssignment
+# -----------------------------
+class PhoneOTP(models.Model):
+    phone = models.CharField(max_length=20, unique=True)
+    otp = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    def is_valid(self):
+        from django.utils import timezone
+        return timezone.now() < self.expires_at
+
+    def __str__(self):
+        return f"OTP for {self.phone}"
+
+class DeliveryAssignment(models.Model):
+    STATUS_CHOICES = [
+        ("assigned", "Assigned"),
+        ("picked_up", "Picked Up"),
+        ("delivered", "Delivered"),
+        ("cancelled", "Cancelled"),
+    ]
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="delivery_assignments")
+    rider = models.ForeignKey(Rider, on_delete=models.CASCADE, related_name="assignments")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="assigned")
+    assigned_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    eta = models.IntegerField(default=15)
+
+    def __str__(self):
+        return f"Assignment {self.id} - Order #{self.order.id} to {self.rider.user.username}"
 

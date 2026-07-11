@@ -1,14 +1,27 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
+import { UserPlus, ArrowRight } from 'lucide-react'
 import './Auth.css'
 
 const SignupForm = () => {
   const { signup } = useAuth()
   const navigate = useNavigate()
-  const [formData, setFormData] = useState({ username: '', email: '', password: '' })
+  const location = useLocation()
+  
+  // Retrieve passed state if any from login page redirect
+  const initialRole = location.state?.role || 'customer'
+  const initialPhone = location.state?.phone || ''
+
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: initialPhone,
+    role: initialRole
+  })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
 
   const handleChange = (e) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
@@ -17,86 +30,116 @@ const SignupForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (formData.phone.length !== 10) {
+      setError('Please provide a valid 10-digit mobile number.')
+      return
+    }
     setLoading(true)
-    const result = await signup(formData)
+    
+    // Map 'name' to the username payload in signup
+    const result = await signup({
+      phone: formData.phone,
+      email: formData.email,
+      role: formData.role,
+      name: formData.name
+    })
+    
     setLoading(false)
     if (result.success) {
-      navigate('/')
+      setSuccess(true)
+      setTimeout(() => {
+        if (formData.role === 'shopowner') {
+          navigate('/dashboard')
+        } else if (formData.role === 'rider') {
+          navigate('/rider')
+        } else {
+          navigate('/')
+        }
+      }, 1000)
     } else {
       setError(result.error || 'Signup failed. Please try again.')
     }
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-container">
-        <div className="auth-visual">
-          {/* Empty left side to show the background image purely */}
+    <div className={`auth-page portal-${formData.role}`}>
+      <div className="auth-card glass-card fade-in">
+        <div className="auth-header">
+          <span className="auth-logo">🛒 DigiBazaar</span>
+          <h2>Create Account</h2>
+          <p>Register using your phone number</p>
         </div>
 
-        <div className="auth-form-wrap">
-          <div className="auth-form-card">
-            <h1 className="auth-form-title">Join us</h1>
-            <p className="auth-form-sub">Create your account below.</p>
+        {error && <div className="auth-error-msg">{error}</div>}
 
-            {error && <div className="auth-error">{error}</div>}
-
-            <form onSubmit={handleSubmit} className="auth-form">
-              <div className="auth-field">
-                <label>Username</label>
-                <div className="auth-input-wrap">
-                  <input
-                    type="text"
-                    name="username"
-                    placeholder="Choose a username"
-                    value={formData.username}
-                    onChange={handleChange}
-                    required
-                    autoComplete="username"
-                  />
-                </div>
-              </div>
-
-              <div className="auth-field">
-                <label>Email</label>
-                <div className="auth-input-wrap">
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="Enter your email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    autoComplete="email"
-                  />
-                </div>
-              </div>
-
-              <div className="auth-field">
-                <label>Password</label>
-                <div className="auth-input-wrap">
-                  <input
-                    type="password"
-                    name="password"
-                    placeholder="Create a password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                    minLength={8}
-                    autoComplete="new-password"
-                  />
-                </div>
-              </div>
-
-              <button type="submit" className="auth-submit-btn" disabled={loading}>
-                {loading ? 'Registering...' : 'Register'}
-              </button>
-            </form>
-
-            <p className="auth-switch">
-              Already have an account? <Link to="/login">Log in here</Link>
-            </p>
+        {success ? (
+          <div className="auth-success-box text-center">
+            <div className="success-icon-check">✓</div>
+            <h3>Account Created!</h3>
+            <p>Welcome to DigiBazaar</p>
           </div>
-        </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="auth-step-box">
+            <div className="auth-field">
+              <label className="auth-field-label">Full Name</label>
+              <input
+                type="text"
+                name="name"
+                placeholder="e.g. John Doe"
+                value={formData.name}
+                onChange={handleChange}
+                required
+                autoFocus
+              />
+            </div>
+
+            <div className="auth-field">
+              <label className="auth-field-label">Mobile Number</label>
+              <div className="phone-input-group">
+                <span className="phone-country">+91</span>
+                <input
+                  type="tel"
+                  name="phone"
+                  maxLength={10}
+                  placeholder="98765 43210"
+                  value={formData.phone}
+                  onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value.replace(/\D/g, '') }))}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="auth-field">
+              <label className="auth-field-label">Email Address (Optional)</label>
+              <input
+                type="email"
+                name="email"
+                placeholder="john@example.com"
+                value={formData.email}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="auth-field">
+              <label className="auth-field-label">Register As</label>
+              <select name="role" value={formData.role} onChange={handleChange} className="auth-select">
+                <option value="customer">Customer</option>
+                <option value="shopowner">Shop Owner</option>
+                <option value="rider">Delivery Partner</option>
+              </select>
+            </div>
+
+            <button type="submit" className="auth-primary-btn" disabled={loading}>
+              {loading ? 'Creating Account...' : 'Sign Up'} <ArrowRight size={16} />
+            </button>
+          </form>
+        )}
+
+        {!success && (
+          <p className="auth-redirect">
+            Already have an account? <Link to="/login">Sign In</Link>
+          </p>
+        )}
       </div>
     </div>
   )

@@ -7,6 +7,8 @@ import Products from '../pages/Products/Products'
 import ProductDetail from '../pages/ProductDetail/ProductDetail'
 import MyOrders from '../pages/MyOrders/MyOrders'
 import OrderConfirmation from '../pages/OrderConfirmation/OrderConfirmation'
+import RiderPortal from '../pages/RiderPortal/RiderPortal'
+import Checkout from '../pages/Checkout/Checkout'
 
 function AppRoutes() {
   return (
@@ -17,6 +19,8 @@ function AppRoutes() {
       <Route path='/login' element={<Login />} />
       <Route path='/signup' element={<Signup />} />
       <Route path='/dashboard' element={<ShopDashboard />} />
+      <Route path='/rider' element={<RiderPortal />} />
+      <Route path='/checkout' element={<Checkout />} />
       <Route path='/my-orders' element={<MyOrders />} />
       <Route path='/order-confirmation/:orderId' element={<OrderConfirmation />} />
     </Routes>

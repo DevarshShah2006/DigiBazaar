@@ -29,10 +29,10 @@ function ProductCard({ product, showAddToCart = true }) {
             onError={e => { e.target.style.display = 'none' }}
           />
         ) : (
-          <span className="product-card__emoji">🛒</span>
+          <span className="product-card__emoji">Product</span>
         )}
         {product.rating >= 4.5 && (
-          <span className="product-card__badge">⭐ Top Rated</span>
+          <span className="product-card__badge">Top Rated</span>
         )}
       </div>
 

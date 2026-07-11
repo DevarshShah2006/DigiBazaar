@@ -27,71 +27,92 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     return radius * c
 
 
-def distance_score(shop, user_lat=None, user_long=None, max_distance_km=50):
-    if user_lat is None or user_long is None:
-        return 0.5
-
-    shop_lat = float(shop.lat)
-    shop_long = float(shop.long)
-    distance_km = haversine_distance(user_lat, user_long, shop_lat, shop_long)
-    return max(0.0, 1 - min(distance_km, max_distance_km) / max_distance_km)
-
-
-def price_score(shop, min_price, max_price):
-    shop_price = float(getattr(shop, 'min_price', max_price or 0) or 0)
-    if max_price <= min_price:
-        return 0.5
-
-    normalized = 1 - ((shop_price - min_price) / (max_price - min_price))
-    return max(0.0, min(1.0, normalized))
-
-
-def rating_score(shop):
-    return max(0.0, min(float(getattr(shop, 'rating', 0) or 0) / 5.0, 1.0))
-
-
-def tier_score(shop):
-    return 1.0 if shop.tier == 'premium' else 0.7
+def score_shop(shop, user_lat=None, user_long=None):
+    # Calculate distance
+    distance_km = 0.5
+    if user_lat is not None and user_long is not None:
+        shop_lat = float(shop.lat)
+        shop_long = float(shop.long)
+        distance_km = haversine_distance(user_lat, user_long, shop_lat, shop_long)
+    
+    # ETA Calculation
+    # transit time = distance / 15 km/h * 60 mins = distance * 4 mins
+    transit_time = distance_km * 4.0
+    prep_time = 5.0 if shop.live_inventory else 15.0
+    eta = prep_time + transit_time
+    
+    # Normalized scores
+    s_eta = max(0.0, 1 - eta / 60.0)
+    s_dist = max(0.0, 1 - distance_km / 15.0)
+    s_rating = float(shop.rating or 0.0) / 5.0
+    s_rating = max(0.0, min(1.0, s_rating))
+    
+    # Inventory reliability
+    s_inv = float(shop.reliability_score or 1.0) - float(shop.cancellation_rate or 0.0)
+    s_inv = max(0.0, min(1.0, s_inv))
+    
+    # Premium boost
+    s_premium = 1.0 if shop.tier == 'premium' else 0.0
+    
+    # Formula: 50% ETA, 20% distance, 15% rating, 10% inventory, 5% premium
+    final_score = (
+        0.50 * s_eta +
+        0.20 * s_dist +
+        0.15 * s_rating +
+        0.10 * s_inv +
+        0.05 * s_premium
+    )
+    
+    return final_score, eta
 
 
 def get_ranked_shops(user_lat=None, user_long=None, limit=10):
-    shops = Shop.objects.annotate(min_price=Min('products__price'))
-    prices = [float(shop.min_price) for shop in shops if shop.min_price is not None]
-    min_price = min(prices) if prices else 0.0
-    max_price = max(prices) if prices else 0.0
-    ranked = []
+    shops = list(Shop.objects.all())
+    if not shops:
+        return []
 
+    # 1. Compute ETA for all shops to find min ETA
+    shop_etas = []
     for shop in shops:
-        score = (
-            distance_score(shop, user_lat=user_lat, user_long=user_long) * 0.25
-            + price_score(shop, min_price, max_price) * 0.25
-            + rating_score(shop) * 0.25
-            + tier_score(shop) * 0.25
-        )
-        ranked.append((shop, score))
+        _, eta = score_shop(shop, user_lat=user_lat, user_long=user_long)
+        shop_etas.append((shop, eta))
+    
+    min_eta = min(eta for _, eta in shop_etas) if shop_etas else 0.0
 
-    ranked.sort(key=lambda item: item[1], reverse=True)
-    return [shop for shop, _ in ranked[:limit]]
+    # 2. Score and check Fairness Window
+    scored_shops = []
+    for shop, eta in shop_etas:
+        score, _ = score_shop(shop, user_lat=user_lat, user_long=user_long)
+        # If outside fairness window (more than 15 mins slower than min_eta), apply penalty
+        if eta > min_eta + 15.0:
+            score -= 10.0
+        scored_shops.append((shop, score))
+    
+    # Sort by score descending
+    scored_shops.sort(key=lambda item: item[1], reverse=True)
+    return [shop for shop, _ in scored_shops[:limit]]
 
 
 def rank_shops_for_product(product, user_lat=None, user_long=None):
-    shops = Shop.objects.filter(products=product).annotate(min_price=Min('products__price'))
-    if not shops.exists():
+    shops = list(Shop.objects.filter(products=product))
+    if not shops:
         return []
 
-    prices = [float(shop.min_price) for shop in shops if shop.min_price is not None]
-    min_price = min(prices) if prices else 0.0
-    max_price = max(prices) if prices else 0.0
-
-    ranked = []
+    # 1. Compute ETA to find min ETA
+    shop_etas = []
     for shop in shops:
-        score = (
-            distance_score(shop, user_lat=user_lat, user_long=user_long) * 0.25
-            + price_score(shop, min_price, max_price) * 0.25
-            + rating_score(shop) * 0.25
-            + tier_score(shop) * 0.25
-        )
-        ranked.append((shop, score))
+        _, eta = score_shop(shop, user_lat=user_lat, user_long=user_long)
+        shop_etas.append((shop, eta))
 
-    ranked.sort(key=lambda item: item[1], reverse=True)
-    return [shop for shop, _ in ranked]
+    min_eta = min(eta for _, eta in shop_etas) if shop_etas else 0.0
+
+    # 2. Score and check Fairness Window
+    scored_shops = []
+    for shop, eta in shop_etas:
+        score, _ = score_shop(shop, user_lat=user_lat, user_long=user_long)
+        if eta > min_eta + 15.0:
+            score -= 10.0
+        scored_shops.append((shop, score))
+
+    scored_shops.sort(key=lambda item: item[1], reverse=True)
+    return [shop for shop, _ in scored_shops]

@@ -9,28 +9,12 @@ function Cart() {
   const { isLoggedIn } = useAuth()
   const navigate = useNavigate()
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
+    setIsOpen(false)
     if (!isLoggedIn) {
       navigate('/login')
-      setIsOpen(false)
-      return
-    }
-    try {
-      const payload = items.map(i => ({
-        product_id: i.id,
-        quantity: i.quantity,
-        shop_id: i.shop_id || undefined,
-      }))
-      const data = await fetchJson('/orders/checkout/', { method: 'POST', body: JSON.stringify({ items: payload }) })
-      clearCart()
-      setIsOpen(false)
-      if (data && data.length > 0) {
-        navigate(`/order-confirmation/${data[0].id}`)
-      } else {
-        navigate('/my-orders')
-      }
-    } catch (err) {
-      alert('Checkout failed. Please try again.')
+    } else {
+      navigate('/checkout')
     }
   }
 
@@ -41,13 +25,12 @@ function Cart() {
 
       <aside className={`cart-panel ${isOpen ? 'cart-panel--open' : ''}`}>
         <div className="cart-header">
-          <h2 className="cart-title">🛒 Your Cart <span className="cart-count">{items.length}</span></h2>
+          <h2 className="cart-title">Your Cart <span className="cart-count">{items.length}</span></h2>
           <button className="cart-close" onClick={() => setIsOpen(false)}>✕</button>
         </div>
 
         {items.length === 0 ? (
           <div className="cart-empty">
-            <p>🛍️</p>
             <p>Your cart is empty</p>
             <button onClick={() => { setIsOpen(false); navigate('/products') }}>
               Start Shopping
@@ -62,14 +45,14 @@ function Cart() {
                     <p className="cart-item__name">{item.name}</p>
                     <p className="cart-item__price">₹{parseFloat(item.price).toFixed(2)}</p>
                     {item.shop_name && (
-                      <p className="cart-item__shop">🏪 {item.shop_name}</p>
+                      <p className="cart-item__shop">Shop: {item.shop_name}</p>
                     )}
                   </div>
                   <div className="cart-item__controls">
                     <button onClick={() => updateQuantity(item.id, item.quantity - 1)}>−</button>
                     <span>{item.quantity}</span>
                     <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
-                    <button className="cart-item__remove" onClick={() => removeItem(item.id)}>🗑</button>
+                    <button className="cart-item__remove" onClick={() => removeItem(item.id)}>Remove</button>
                   </div>
                 </div>
               ))}
@@ -81,7 +64,7 @@ function Cart() {
                 <strong>₹{total.toFixed(2)}</strong>
               </div>
               <button className="cart-checkout-btn" onClick={handleCheckout}>
-                {isLoggedIn ? 'Place Order →' : 'Login to Checkout →'}
+                {isLoggedIn ? 'Place Order' : 'Login to Checkout'}
               </button>
               <button className="cart-clear-btn" onClick={clearCart}>Clear Cart</button>
             </div>

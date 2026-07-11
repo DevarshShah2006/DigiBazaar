@@ -5,7 +5,7 @@ import requests
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 
-from core.models import Category, Product, Shop, ShopOwner
+from core.models import Category, Product, Shop, ShopOwner, UserProfile, Rider, Order, OrderItem, DeliveryAssignment
 
 
 User = get_user_model()
@@ -110,16 +110,17 @@ class Command(BaseCommand):
             fallback_long = PALDI_CENTER_LONG + rng.uniform(-0.012, 0.012)
             lat, long = geocode_address(address, fallback_lat, fallback_long, session)
 
-            owner_username = f"paldi_owner_{index + 1}"
+            phone = f"900000000{index + 1}" if index < 9 else f"90000000{index + 1}"
+            owner_username = f"user_{phone}"
             user, created = User.objects.get_or_create(
                 username=owner_username,
-                defaults={'email': f'{owner_username}@example.com'},
+                defaults={'email': f'paldi_owner_{index + 1}@example.com'},
             )
             if created:
-                user.set_password('PaldiShop123!')
+                user.set_password('OTPVerified123!')
                 user.save(update_fields=['password'])
 
-            owner_profile, _ = ShopOwner.objects.get_or_create(user=user, defaults={'phone': ''})
+            owner_profile, _ = ShopOwner.objects.get_or_create(user=user, defaults={'phone': phone})
 
             chosen_categories = rng.sample(categories, k=min(len(categories), rng.randint(2, 4)))
             target_count = products_per_featured_shop if index < featured_count else products_per_small_shop
@@ -140,8 +141,75 @@ class Command(BaseCommand):
             shop.products.set(selected_products)
             created_count += 1
 
+        # Seed default linked testing order
+        # 1. Create customer
+        cust_user, _ = User.objects.get_or_create(
+            username='user_9999999999',
+            defaults={'email': 'customer@example.com'}
+        )
+        cust_user.set_password('OTPVerified123!')
+        cust_user.save()
+        UserProfile.objects.get_or_create(user=cust_user, defaults={'phone': '9999999999'})
+
+        # 2. Create rider
+        rider_user, _ = User.objects.get_or_create(
+            username='user_9876543210',
+            defaults={'email': 'rider@digibazaar.in'}
+        )
+        rider_user.set_password('OTPVerified123!')
+        rider_user.save()
+        rider_profile, _ = Rider.objects.get_or_create(
+            user=rider_user,
+            defaults={
+                'phone': '9876543210',
+                'is_online': True,
+                'vehicle_type': 'Motorcycle',
+                'vehicle_number': 'GJ-01-HA-9876',
+                'lat': PALDI_CENTER_LAT + 0.005,
+                'long': PALDI_CENTER_LONG + 0.005
+            }
+        )
+        rider_profile.is_online = True
+        rider_profile.save()
+
+        # 3. Create order from customer to Shop 1 (Paldi Fresh Mart)
+        shop_fresh_mart = Shop.objects.first()
+        if shop_fresh_mart:
+            order, created = Order.objects.get_or_create(
+                user=cust_user,
+                shop=shop_fresh_mart,
+                status='pending',
+                defaults={
+                    'fulfillment_option': 'digibazaar_delivery',
+                    'delivery_address': '102, Patel Residency, Paldi, Ahmedabad, Gujarat - 380007',
+                    'lat': Decimal(str(PALDI_CENTER_LAT)),
+                    'long': Decimal(str(PALDI_CENTER_LONG)),
+                    'delivery_charge': Decimal('35.00'),
+                    'rider': rider_profile
+                }
+            )
+            if created:
+                # Add order item
+                prod = shop_fresh_mart.products.first()
+                if prod:
+                    OrderItem.objects.create(
+                        order=order,
+                        product=prod,
+                        quantity=2,
+                        price_at_order=prod.price
+                    )
+                # Create DeliveryAssignment
+                DeliveryAssignment.objects.get_or_create(
+                    order=order,
+                    rider=rider_profile,
+                    defaults={
+                        'status': 'assigned',
+                        'eta': 15
+                    }
+                )
+
         self.stdout.write(
             self.style.SUCCESS(
-                f'Seeded {created_count} Paldi shops with geocoded coordinates and product mixes.'
+                f'Seeded {created_count} Paldi shops with geocoded coordinates, product mixes, and 1 linked test order.'
             )
         )

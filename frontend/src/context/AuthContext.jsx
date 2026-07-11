@@ -14,7 +14,13 @@ export function AuthProvider({ children }) {
   })
 
   const login = useCallback(async (credentials) => {
-    const data = await loginUser(credentials)
+    // If phone number is provided, map it to a standard username
+    const payload = credentials.phone ? {
+      username: `user_${credentials.phone}`,
+      password: 'OTPVerified123!'
+    } : credentials;
+
+    const data = await loginUser(payload)
     if (data.access) {
       localStorage.setItem('access_token', data.access)
       localStorage.setItem('refresh_token', data.refresh)
@@ -26,7 +32,16 @@ export function AuthProvider({ children }) {
   }, [])
 
   const signup = useCallback(async (formData) => {
-    const data = await signupUser(formData)
+    // Convert phone to username & email
+    const payload = {
+      username: `user_${formData.phone}`,
+      email: formData.email || `${formData.phone}@digibazaar.in`,
+      password: 'OTPVerified123!',
+      phone: formData.phone,
+      role: formData.role || 'customer'
+    }
+
+    const data = await signupUser(payload)
     if (data.access) {
       localStorage.setItem('access_token', data.access)
       localStorage.setItem('refresh_token', data.refresh)
