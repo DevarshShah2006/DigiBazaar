@@ -248,33 +248,45 @@
 
 .nav-cart-btn-new {
   position: relative;
-  background: transparent;
-  border: none;
-  color: var(--text-main);
+  background: rgba(4, 120, 87, 0.05);
+  border: 1px solid rgba(4, 120, 87, 0.15);
+  color: var(--primary);
   cursor: pointer;
-  padding: 8px;
-  transition: transform 0.2s;
+  padding: 8px 20px;
+  border-radius: 30px;
+  font-weight: 700;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav-cart-btn-new:hover {
-  transform: scale(1.05);
-  color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(4, 120, 87, 0.15);
+  transform: translateY(-1px);
 }
 
 .nav-cart-badge-new {
-  position: absolute;
-  top: -2px;
-  right: -2px;
   background: #ef4444;
   color: white;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 800;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  display: flex;
+  padding: 2px 8px;
+  border-radius: 20px;
+  line-height: 1;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s;
+}
+
+.nav-cart-btn-new:hover .nav-cart-badge-new {
+  background: #ffffff;
+  color: #ef4444;
 }
 
 .nav-profile-trigger {
