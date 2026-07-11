@@ -82,24 +82,28 @@ function Home() {
       <section className="hero-carousel-section">
         <div className="container">
           <div className={`hero-carousel-slide ${slide.bgClass}`}>
-            <button className="carousel-control-btn prev" onClick={handlePrevSlide} aria-label="Previous slide">
-              Prev
-            </button>
-            <button className="carousel-control-btn next" onClick={handleNextSlide} aria-label="Next slide">
-              Next
-            </button>
+            <div className="carousel-edge-zone left">
+              <button className="carousel-control-btn prev" onClick={handlePrevSlide} aria-label="Previous slide">
+                ‹
+              </button>
+            </div>
+            <div className="carousel-edge-zone right">
+              <button className="carousel-control-btn next" onClick={handleNextSlide} aria-label="Next slide">
+                ›
+              </button>
+            </div>
 
             <div className="carousel-content-grid">
               <div className="slide-text-side">
                 <span className="slide-badge">{slide.badge}</span>
                 <h1 className="slide-title">{slide.title}</h1>
                 <p className="slide-desc">{slide.desc}</p>
-                
+
                 <form className="hero-search-form" onSubmit={handleSearch}>
                   <div className="search-input-wrap" style={{ paddingLeft: '0px' }}>
-                    <input 
-                      type="text" 
-                      placeholder="Search for fresh foods, bakery or dairy..." 
+                    <input
+                      type="text"
+                      placeholder="Search for fresh foods, bakery or dairy..."
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
                       style={{ paddingLeft: '16px' }}
@@ -116,16 +120,16 @@ function Home() {
                 </div>
               </div>
             </div>
+          </div>
 
-            <div className="carousel-indicators">
-              {CAROUSEL_SLIDES.map((_, idx) => (
-                <span 
-                  key={idx} 
-                  className={`indicator-dot ${idx === currentSlide ? 'active' : ''}`}
-                  onClick={() => setCurrentSlide(idx)}
-                />
-              ))}
-            </div>
+          <div className="carousel-indicators">
+            {CAROUSEL_SLIDES.map((_, idx) => (
+              <span
+                key={idx}
+                className={`indicator-dot ${idx === currentSlide ? 'active' : ''}`}
+                onClick={() => setCurrentSlide(idx)}
+              />
+            ))}
           </div>
         </div>
       </section>

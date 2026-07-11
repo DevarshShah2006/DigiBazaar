@@ -123,7 +123,7 @@ const LoginForm = () => {
                 <input
                   type="tel"
                   maxLength={10}
-                  placeholder="98765 43210"
+                  placeholder="98*** *****"
                   value={phone}
                   onChange={e => setPhone(e.target.value.replace(/\D/g, ''))}
                   required
