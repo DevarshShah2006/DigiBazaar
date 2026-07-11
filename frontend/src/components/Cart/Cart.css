@@ -85,7 +85,13 @@
   font-size: 16px;
 }
 
-.cart-empty p:first-child { font-size: 48px; }
+.cart-empty-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #666;
+  margin: 0;
+  text-align: center;
+}
 
 .cart-empty button {
   padding: 12px 28px;
