@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback } from 'react'
-import { loginUser, signupUser } from '../api/auth'
+import { loginUser, signupUser, verifyOTP } from '../api/auth'
 
 const AuthContext = createContext(null)
 
@@ -14,21 +14,25 @@ export function AuthProvider({ children }) {
   })
 
   const login = useCallback(async (credentials) => {
-    // If phone number is provided, map it to a standard username
-    const payload = credentials.phone ? {
-      username: `user_${credentials.phone}`,
-      password: 'OTPVerified123!'
-    } : credentials;
+    let data;
+    if (credentials.phone && credentials.otp) {
+      data = await verifyOTP({ phone: credentials.phone, otp: credentials.otp })
+    } else {
+      const payload = credentials.phone ? {
+        username: `user_${credentials.phone}`,
+        password: 'OTPVerified123!'
+      } : credentials;
+      data = await loginUser(payload)
+    }
 
-    const data = await loginUser(payload)
-    if (data.access) {
+    if (data && data.access) {
       localStorage.setItem('access_token', data.access)
       localStorage.setItem('refresh_token', data.refresh)
       localStorage.setItem('user', JSON.stringify(data.user))
       setUser(data.user)
       return { success: true, user: data.user }
     }
-    return { success: false, error: data.detail || 'Login failed' }
+    return { success: false, error: data?.detail || 'Login failed' }
   }, [])
 
   const signup = useCallback(async (formData) => {

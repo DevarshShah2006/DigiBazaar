@@ -48,8 +48,9 @@ const LoginForm = () => {
   const handleVerify = async (e) => {
     e.preventDefault()
     setLoading(true)
-    // Map phone to mock credentials
-    const result = await login({ phone })
+    const enteredOtp = otp.join('')
+    // Pass both phone and OTP to verify
+    const result = await login({ phone, otp: enteredOtp })
     setLoading(false)
     if (result.success) {
       setStep('success')
@@ -63,8 +64,7 @@ const LoginForm = () => {
         }
       }, 1000)
     } else {
-      setError('Your phone number is not registered. Please sign up first.')
-      // Suggest routing to signup
+      setError(result.error || 'Your phone number is not registered. Please sign up first.')
     }
   }
 

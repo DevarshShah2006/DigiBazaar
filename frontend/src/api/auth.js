@@ -13,3 +13,10 @@ export function signupUser(data) {
     body: JSON.stringify(data),
   })
 }
+
+export function verifyOTP(data) {
+  return fetchJson('/auth/verify-otp/', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
