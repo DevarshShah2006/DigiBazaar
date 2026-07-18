@@ -31,7 +31,7 @@ function Cart() {
 
         {items.length === 0 ? (
           <div className="cart-empty">
-            <p>Your cart is empty</p>
+            <p className="cart-empty-title">Your cart is empty</p>
             <button onClick={() => { setIsOpen(false); navigate('/products') }}>
               Start Shopping
             </button>
