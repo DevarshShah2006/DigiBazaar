@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { fetchJson } from '../../api/api'
 import { useCart } from '../../context/CartContext'
 import './MyOrders.css'
@@ -19,6 +20,7 @@ function MyOrders() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const { addItem } = useCart()
+  const navigate = useNavigate()
 
   useEffect(() => {
     fetchJson('/orders/my-orders/')
@@ -56,8 +58,8 @@ function MyOrders() {
       <h1 className="my-orders__title">My Orders</h1>
       {orders.length === 0 ? (
         <div className="my-orders__empty">
-          <p>📦 No orders yet!</p>
-          <a href="/products">Start shopping →</a>
+          <p>No orders yet!</p>
+          <a href="/products">Start shopping</a>
         </div>
       ) : (
         <div className="orders-list">
@@ -67,7 +69,7 @@ function MyOrders() {
               <div className="order-row" key={order.id}>
                 <div className="order-row__left">
                   <h3 className="order-row__id">Order #{order.id}</h3>
-                  <p className="order-row__shop">🏪 {order.shop_name}</p>
+                  <p className="order-row__shop">Shop: {order.shop_name}</p>
                   <p className="order-row__date">{new Date(order.created_at).toLocaleString()}</p>
                   
                   {order.items && order.items.length > 0 && (
@@ -79,6 +81,12 @@ function MyOrders() {
                       ))}
                     </div>
                   )}
+                  
+                  {order.recommended_delivery_mode && (
+                    <div style={{ marginTop: '8px', fontSize: '13px', color: '#6366f1', background: '#e0e7ff', padding: '4px 8px', borderRadius: '4px', display: 'inline-block' }}>
+                      🤖 ML Recommendation: <strong>{order.recommended_delivery_mode.replace('_', ' ')}</strong> ({order.delivery_mode_confidence}%)
+                    </div>
+                  )}
                 </div>
                 <div className="order-row__right">
                   <span
@@ -88,12 +96,20 @@ function MyOrders() {
                     {cfg.label}
                   </span>
                   
-                  <button 
-                    className="order-row__reorder-btn"
-                    onClick={() => handleReorder(order)}
-                  >
-                    🔄 Reorder Items
-                  </button>
+                  <div className="order-row__actions">
+                    <button 
+                      className="order-row__track-btn"
+                      onClick={() => navigate(`/order-confirmation/${order.id}`)}
+                    >
+                      Track Order
+                    </button>
+                    <button 
+                      className="order-row__reorder-btn"
+                      onClick={() => handleReorder(order)}
+                    >
+                      Reorder Items
+                    </button>
+                  </div>
                 </div>
               </div>
             )

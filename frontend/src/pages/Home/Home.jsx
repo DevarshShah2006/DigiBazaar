@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import RecommendationSection from '../../components/RecommendationSection/RecommendationSection'
 import TrendingSection from '../../components/TrendingSection/TrendingSection'
+import ProductCard from '../../components/ProductCard/ProductCard'
 import { fetchJson } from '../../api/api'
 import './Home.css'
 
@@ -36,6 +37,7 @@ function Home() {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
   const [categories, setCategories] = useState([])
+  const [newArrivals, setNewArrivals] = useState([])
   const [currentSlide, setCurrentSlide] = useState(0)
 
   useEffect(() => {
@@ -46,16 +48,18 @@ function Home() {
   }, [])
 
   useEffect(() => {
-    fetchJson('/products/')
+    fetchJson('/categories/')
+      .then(data => {
+        setCategories(data.slice(0, 11) || [])
+      })
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    fetchJson('/products/new_arrivals/?limit=8')
       .then(data => {
         const prods = data.results || data || []
-        const catMap = {}
-        prods.forEach(p => {
-          if (p.category_name && !catMap[p.category_name]) {
-            catMap[p.category_name] = { name: p.category_name, slug: p.category_slug }
-          }
-        })
-        setCategories(Object.values(catMap).slice(0, 10))
+        setNewArrivals(prods.slice(0, 8))
       })
       .catch(() => {})
   }, [])
@@ -160,7 +164,7 @@ function Home() {
                 onClick={() => navigate(`/products?category=${cat.slug}`)}
               >
                 <h4 className="category-chip__name">{cat.name}</h4>
-                <span className="category-chip__count">Explore</span>
+                <span className="category-chip__count">{cat.product_count} items</span>
               </button>
             ))}
           </div>
@@ -189,6 +193,24 @@ function Home() {
       <div className="container">
         <TrendingSection />
       </div>
+
+      {newArrivals.length > 0 && (
+        <div className="container" style={{ marginTop: '40px', marginBottom: '20px' }}>
+          <section className="new-arrivals-section">
+            <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <div>
+                <h2 className="section-title" style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#fff' }}>🆕 New Arrivals</h2>
+                <p className="section-subtitle" style={{ color: '#aaa', fontSize: '0.9rem', marginTop: '4px' }}>Just added to our shelves</p>
+              </div>
+            </div>
+            <div className="products-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' }}>
+              {newArrivals.map(product => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
 
       <div className="container">
         <RecommendationSection />

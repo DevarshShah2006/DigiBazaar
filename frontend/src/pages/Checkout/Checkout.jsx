@@ -25,6 +25,7 @@ export default function Checkout() {
   const [couponSuccess, setCouponSuccess] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('upi')
   const [loading, setLoading] = useState(false)
+  const [mlRecommendation, setMlRecommendation] = useState(null)
 
   // Redirect if not logged in
   useEffect(() => {
@@ -60,6 +61,44 @@ export default function Checkout() {
       setDiscount(0)
     }
   }
+
+  // Fetch ML Delivery Recommendation
+  useEffect(() => {
+    if (items.length > 0) {
+      const fetchRecommendation = async () => {
+        try {
+          const shopId = items[0]?.shop_id || (items[0]?.shops && items[0]?.shops[0]?.id)
+          const productId = items[0]?.id
+          if (!shopId && !productId) return
+
+          const payload = {
+            shop_id: shopId,
+            product_id: productId,
+            order_value: total,
+            lat: 23.0125,
+            long: 72.5575
+          }
+
+          const res = await fetchJson('/orders/recommend-delivery/', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          })
+
+          if (res && res.recommended_delivery_mode) {
+            setMlRecommendation({
+              mode: res.recommended_delivery_mode,
+              confidence: res.delivery_mode_confidence
+            })
+            // Auto-select the recommended mode
+            setFulfillment(res.recommended_delivery_mode)
+          }
+        } catch (error) {
+          console.error("Failed to fetch ML recommendation", error)
+        }
+      }
+      fetchRecommendation()
+    }
+  }, [items, total])
 
   // Delivery charge calculations
   const getDeliveryCharge = () => {
@@ -178,8 +217,13 @@ export default function Checkout() {
 
           {/* Fulfillment Model Options */}
           <div className="checkout-card">
-            <div className="card-header-icon">
+            <div className="card-header-icon" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3>Fulfillment Options</h3>
+              {mlRecommendation && (
+                <div style={{ fontSize: '13px', color: '#6366f1', background: '#e0e7ff', padding: '4px 10px', borderRadius: '15px', fontWeight: 600 }}>
+                  🤖 ML Recommended: {mlRecommendation.mode.replace('_', ' ')} ({mlRecommendation.confidence}%)
+                </div>
+              )}
             </div>
             <div className="fulfillment-grid">
               <label className={`fulfillment-option-card ${fulfillment === 'pickup' ? 'active' : ''}`}>

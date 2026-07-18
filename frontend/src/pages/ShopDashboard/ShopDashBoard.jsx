@@ -112,6 +112,20 @@ function ShopDashboard() {
   // Analytics states
   const [analytics, setAnalytics] = useState(null)
   const [analyticsLoading, setAnalyticsLoading] = useState(false)
+  const [forecastData, setForecastData] = useState(null)
+  const [forecastLoading, setForecastLoading] = useState(false)
+  
+  // Dynamic Dashboard States
+  const [revenueToday, setRevenueToday] = useState(null)
+  const [revenueMonth, setRevenueMonth] = useState(null)
+  const [topProductsList, setTopProductsList] = useState([])
+  const [searchTrends, setSearchTrends] = useState([])
+  const [lowStockList, setLowStockList] = useState([])
+  const [outOfStockList, setOutOfStockList] = useState([])
+  const [expiringProducts, setExpiringProducts] = useState([])
+  const [slowMovingProducts, setSlowMovingProducts] = useState([])
+  const [weatherData, setWeatherData] = useState(null)
+  const [overviewLoading, setOverviewLoading] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -141,12 +155,46 @@ function ShopDashboard() {
       loadOrders()
       loadInventory()
       loadAnalytics()
+      loadDemandForecast()
+      loadDashboardOverviewData()
     } else if (activeTab === 'orders') {
       loadOrders()
     } else if (activeTab === 'inventory') {
       loadInventory()
+      loadDemandForecast()
     } else if (activeTab === 'analytics') {
       loadAnalytics()
+      loadDemandForecast()
+    }
+  }
+
+  const loadDashboardOverviewData = async () => {
+    setOverviewLoading(true)
+    try {
+      const [revToday, revMonth, topProds, trends, lowS, outS, expP, slowM, weather] = await Promise.all([
+        fetchJson('/shop/dashboard/revenue-today/'),
+        fetchJson('/shop/dashboard/revenue-month/'),
+        fetchJson('/shop/dashboard/top-products/'),
+        fetchJson('/shop/dashboard/search-trends/'),
+        fetchJson('/shop/dashboard/low-stock/'),
+        fetchJson('/shop/dashboard/out-of-stock/'),
+        fetchJson('/shop/dashboard/expiring-products/'),
+        fetchJson('/shop/dashboard/slow-moving/'),
+        fetchJson('/shop/dashboard/weather/'),
+      ])
+      setRevenueToday(revToday)
+      setRevenueMonth(revMonth)
+      setTopProductsList(topProds)
+      setSearchTrends(trends)
+      setLowStockList(lowS)
+      setOutOfStockList(outS)
+      setExpiringProducts(expP)
+      setSlowMovingProducts(slowM)
+      setWeatherData(weather)
+    } catch (err) {
+      console.error("Failed to load dashboard overview stats", err)
+    } finally {
+      setOverviewLoading(false)
     }
   }
 
@@ -195,6 +243,19 @@ function ShopDashboard() {
       setError('Failed to load analytics.')
     } finally {
       setAnalyticsLoading(false)
+    }
+  }
+
+  const loadDemandForecast = async () => {
+    setForecastLoading(true)
+    setError('')
+    try {
+      const data = await fetchJson('/shops/demand-forecast/')
+      setForecastData(data)
+    } catch {
+      setError('Failed to load demand forecast.')
+    } finally {
+      setForecastLoading(false)
     }
   }
 
@@ -312,6 +373,14 @@ function ShopDashboard() {
             <span className="shop-tag">PARTNER SHOP</span>
             <h2>🏪 {shopInfo?.shop_name || 'Your Local Store'}</h2>
             <p>Commission Tier: <strong className="commission-badge">{shopInfo?.live_inventory ? '5% (Live)' : '10% (Non-Live)'}</strong></p>
+            {weatherData && (
+              <div className="weather-widget" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255, 255, 255, 0.08)', padding: '4px 10px', borderRadius: 12, fontSize: '0.85rem', marginTop: 6, color: '#fff' }}>
+                <span>📍 {weatherData.city}:</span>
+                <strong style={{ color: '#38bdf8' }}>{weatherData.temp}°C</strong>
+                <span>• {weatherData.condition}</span>
+                {weatherData.is_raining && <span style={{ color: '#ff6b6b' }}>🌧️ Raining</span>}
+              </div>
+            )}
           </div>
           <div className="live-toggle-wrapper">
             <div className="toggle-text">
@@ -339,187 +408,290 @@ function ShopDashboard() {
 
         {activeTab === 'dashboard' && (
           <div className="shop-dashboard-overview-tab">
-            {/* First Row: Stats Cards */}
-            <div className="overview-stats-grid">
-              <div className="overview-stat-card border-cyan">
-                <div>
-                  <h4>Today's Orders</h4>
-                  <h3>{orders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString()).length || 4}</h3>
-                </div>
+            {overviewLoading ? (
+              <div className="loading-spinner-wrap" style={{ minHeight: '300px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                <p>Loading dashboard operational data...</p>
               </div>
-              <div className="overview-stat-card border-green">
-                <div>
-                  <h4>Revenue Today</h4>
-                  <h3>₹14,500.00</h3>
-                </div>
-              </div>
-              <div className="overview-stat-card border-indigo">
-                <div>
-                  <h4>Revenue This Month</h4>
-                  <h3>₹1,24,500.00</h3>
-                </div>
-              </div>
-              <div className="overview-stat-card border-amber">
-                <div>
-                  <h4>Pending Orders</h4>
-                  <h3>{orders.filter(o => o.status === 'pending').length}</h3>
-                </div>
-              </div>
-              <div className="overview-stat-card border-purple">
-                <div>
-                  <h4>Live Deliveries</h4>
-                  <h3>{orders.filter(o => ['picked_up', 'out_for_delivery'].includes(o.status)).length}</h3>
-                </div>
-              </div>
-            </div>
-
-            {/* Second Row: Charts & Order Status Summary */}
-            <div className="overview-charts-grid">
-              <div className="chart-card-box span-2">
-                <h4>Today's Sales Trend & Revenue Chart</h4>
-                <div className="chart-container-box" style={{ height: 220 }}>
-                  {salesHistory.length > 0 ? (
-                    <Line data={salesData} options={{ responsive: true, maintainAspectRatio: false }} />
-                  ) : (
-                    <p className="no-data-msg">No sales transactions available to plot.</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="chart-card-box">
-                <h4>Order Status Summary</h4>
-                <div className="status-summary-list">
-                  {['pending', 'accepted', 'preparing', 'ready', 'picked_up', 'out_for_delivery', 'delivered', 'completed'].map(st => (
-                    <div className="status-summary-row" key={st}>
-                      <span className="status-indicator-dot" style={{ background: STATUS_CONFIG[st].color }}></span>
-                      <span className="status-row-label">{STATUS_CONFIG[st].label}</span>
-                      <span className="status-row-count">{counts[st] || 0}</span>
+            ) : (
+              <>
+                {/* First Row: Stats Cards */}
+                <div className="overview-stats-grid">
+                  <div className="overview-stat-card border-cyan">
+                    <div>
+                      <h4>Today's Orders</h4>
+                      <h3>{orders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString()).length}</h3>
                     </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Third Row: Products & Insights */}
-            <div className="overview-insights-grid">
-              <div className="insights-card">
-                <h4>Top Selling Products</h4>
-                <div className="insights-list">
-                  <div className="insights-item">
-                    <span>1. Amul Milk (Gold)</span>
-                    <strong className="text-cyan">42 sold</strong>
                   </div>
-                  <div className="insights-item">
-                    <span>2. Fresh Potatoes</span>
-                    <strong className="text-cyan">28 sold</strong>
-                  </div>
-                  <div className="insights-item">
-                    <span>3. Organic Bananas</span>
-                    <strong className="text-cyan">19 sold</strong>
-                  </div>
-                </div>
-              </div>
-
-              <div className="insights-card">
-                <h4>Most Searched Products</h4>
-                <div className="insights-list">
-                  <div className="insights-item">
-                    <span>1. Amul Butter</span>
-                    <span className="search-freq-badge">High</span>
-                  </div>
-                  <div className="insights-item">
-                    <span>2. Fresh Vegetables</span>
-                    <span className="search-freq-badge">High</span>
-                  </div>
-                  <div className="insights-item">
-                    <span>3. Eggs</span>
-                    <span className="search-freq-badge">Medium</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="insights-card insights-ai-box">
-                <h4>AI Demand Insights</h4>
-                <div className="ai-insight-content">
-                  <p className="ai-highlight">Restock Alert: Demand for Milk is up 12% today compared to last Saturday.</p>
-                  <p>Recommend preparing 5 additional units of fresh bread for peak hours (5 PM - 7 PM).</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Fourth Row: Inventory Alerts */}
-            <div className="overview-alerts-grid">
-              <div className="alert-card low-stock">
-                <h4>Low Stock Alert</h4>
-                <div className="alert-item">Eggs - 4 units left</div>
-                <div className="alert-item">Aloe Vera Shampoo - 3 units left</div>
-              </div>
-              <div className="alert-card out-of-stock">
-                <h4>Out of Stock</h4>
-                <div className="alert-item">Fresh Bread - 0 units left</div>
-              </div>
-              <div className="alert-card expiring">
-                <h4>Shelf Life / Expiring Soon</h4>
-                <div className="alert-item">Milk Packet - 12 hours remaining</div>
-              </div>
-            </div>
-
-            {/* Fifth Row: Recent Orders & Last 5 Deliveries tracking */}
-            <div className="overview-recent-deliveries-grid">
-              <div className="recent-orders-table-box">
-                <h4>Recent Orders</h4>
-                <table className="recent-orders-table">
-                  <thead>
-                    <tr>
-                      <th>Order ID</th>
-                      <th>Customer</th>
-                      <th>Items Count</th>
-                      <th>Total</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orders.slice(0, 5).map(o => (
-                      <tr key={o.id}>
-                        <td>#{o.id}</td>
-                        <td>{o.user_name}</td>
-                        <td>{o.items?.length || 1}</td>
-                        <td>₹{parseFloat(o.total_price).toFixed(2)}</td>
-                        <td>
-                          <span className="table-status-pill" style={{ color: STATUS_CONFIG[o.status].color, background: STATUS_CONFIG[o.status].bg }}>
-                            {STATUS_CONFIG[o.status].label}
+                  <div className="overview-stat-card border-green">
+                    <div>
+                      <h4>Revenue Today</h4>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                        <h3>₹{(revenueToday?.revenue_today || 0.00).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h3>
+                        {revenueToday && (
+                          <span className={revenueToday.status === 'up' ? "text-green" : "text-red"} style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>
+                            {revenueToday.status === 'up' ? '▲' : '▼'} {revenueToday.percentage_change}%
                           </span>
-                        </td>
-                      </tr>
-                    ))}
-                    {orders.length === 0 && (
-                      <tr>
-                        <td colSpan="5" className="text-center text-muted">No orders found.</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="live-tracking-panel-box">
-                <h4>Live Delivery Route Tracker</h4>
-                {orders.filter(o => ['picked_up', 'out_for_delivery'].includes(o.status)).slice(0, 1).map(o => (
-                  <div key={o.id} className="live-delivery-tracking-wrapper">
-                    <p className="tracking-order-txt">Tracking Order <strong>#{o.id}</strong> (Rider: {o.rider_details?.username || 'Auto assigned'})</p>
-                    <div className="mini-tracking-map">
-                      {/* Simple animated map line */}
-                      <div className="mini-map-line"></div>
-                      <div className="mini-map-rider">Rider</div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                ))}
-                {orders.filter(o => ['picked_up', 'out_for_delivery'].includes(o.status)).length === 0 && (
-                  <div className="no-live-deliveries-wrapper">
-                    <p className="text-muted">No active live rider deliveries in transit.</p>
+                  <div className="overview-stat-card border-indigo">
+                    <div>
+                      <h4>Revenue This Month</h4>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                        <h3>₹{(revenueMonth?.revenue_month || 0.00).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h3>
+                        {revenueMonth && (
+                          <span className={revenueMonth.status === 'up' ? "text-green" : "text-red"} style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>
+                            {revenueMonth.status === 'up' ? '▲' : '▼'} {revenueMonth.percentage_change}%
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="overview-stat-card border-amber">
+                    <div>
+                      <h4>Pending Orders</h4>
+                      <h3>{orders.filter(o => o.status === 'pending').length}</h3>
+                    </div>
+                  </div>
+                  <div className="overview-stat-card border-purple">
+                    <div>
+                      <h4>Live Deliveries</h4>
+                      <h3>{orders.filter(o => ['picked_up', 'out_for_delivery'].includes(o.status)).length}</h3>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Second Row: Charts & Order Status Summary */}
+                <div className="overview-charts-grid">
+                  <div className="chart-card-box span-2">
+                    <h4>Today's Sales Trend & Revenue Chart</h4>
+                    <div className="chart-container-box" style={{ height: 220 }}>
+                      {salesHistory.length > 0 ? (
+                        <Line data={salesData} options={{ responsive: true, maintainAspectRatio: false }} />
+                      ) : (
+                        <p className="no-data-msg">No sales transactions available to plot.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="chart-card-box">
+                    <h4>Order Status Summary</h4>
+                    <div className="status-summary-list">
+                      {['pending', 'accepted', 'preparing', 'ready', 'picked_up', 'out_for_delivery', 'delivered', 'completed'].map(st => (
+                        <div className="status-summary-row" key={st}>
+                          <span className="status-indicator-dot" style={{ background: STATUS_CONFIG[st].color }}></span>
+                          <span className="status-row-label">{STATUS_CONFIG[st].label}</span>
+                          <span className="status-row-count">{counts[st] || 0}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Third Row: Products & Insights */}
+                <div className="overview-insights-grid">
+                  <div className="insights-card">
+                    <h4>Top Selling Products</h4>
+                    <div className="insights-list">
+                      {topProductsList.length > 0 ? (
+                        topProductsList.map((item, idx) => (
+                          <div className="insights-item" key={idx}>
+                            <span>{idx + 1}. {item.product_name}</span>
+                            <strong className="text-cyan">{item.sold_count} sold</strong>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-muted" style={{ padding: '10px 0' }}>No products sold yet.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="insights-card">
+                    <h4>Market Search Trends (Google Trends)</h4>
+                    <div className="insights-list">
+                      {searchTrends.length > 0 ? (
+                        searchTrends.map((item, idx) => (
+                          <div className="insights-item" key={idx}>
+                            <span>{idx + 1}. {item.keyword}</span>
+                            <span className="search-freq-badge" style={{
+                              background: item.trend_score >= 80 ? 'rgba(16, 185, 129, 0.2)' : 'rgba(59, 130, 246, 0.2)',
+                              color: item.trend_score >= 80 ? '#10b981' : '#3b82f6'
+                            }}>
+                              Score: {item.trend_score}
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-muted" style={{ padding: '10px 0' }}>No search trends loaded.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="insights-card insights-ai-box">
+                    <h4>ML Demand Forecast (Tomorrow)</h4>
+                    <div className="forecast-summary-list" style={{ marginTop: 10 }}>
+                      {forecastLoading ? (
+                        <p className="text-muted">Calculating forecast...</p>
+                      ) : forecastData?.forecast_today ? (
+                        forecastData.forecast_today.slice(0, 4).map(fc => (
+                          <div className="insights-item" key={fc.product_id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                            <div>
+                              <span style={{ fontWeight: '500' }}>{fc.product_name}</span>
+                              <div style={{ fontSize: '0.8rem', color: '#888' }}>
+                                {Math.round(fc.predicted_tomorrow)} Expected tomorrow
+                              </div>
+                            </div>
+                            <span className={fc.percentage_change >= 0 ? "text-green" : "text-red"} style={{ fontWeight: '600', fontSize: '0.9rem' }}>
+                              {fc.percentage_change >= 0 ? '▲' : '▼'} {Math.abs(fc.percentage_change)}%
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-muted">No forecast data generated.</p>
+                      )}
+                      {forecastData?.forecast_today?.length === 0 && !forecastLoading && (
+                        <p className="text-muted">No forecast data available.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Fourth Row: Inventory Alerts */}
+                {forecastData?.forecast_today?.some(fc => fc.status === 'restock_required') && (
+                  <div className="alert-card out-of-stock" style={{ flex: '1 1 100%', marginBottom: 15, border: '1px solid #ef4444' }}>
+                    <h4 style={{ color: '#ef4444' }}>⚠️ ML Stock Deficit Alerts (Tomorrow)</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
+                      {forecastData.forecast_today
+                        .filter(fc => fc.status === 'restock_required')
+                        .slice(0, 3)
+                        .map(fc => (
+                          <div className="alert-item" key={fc.product_id} style={{ color: '#ff6b6b', fontSize: '0.85rem' }}>
+                            Product <strong>{fc.product_name}</strong>: demand tomorrow is predicted at <strong>{Math.round(fc.predicted_tomorrow)} units</strong>, but current stock is only <strong>{fc.current_stock}</strong>. Recommended restock: <span style={{ textDecoration: 'underline', fontWeight: 'bold' }}>{fc.reorder_recommended}</span> units.
+                          </div>
+                        ))}
+                    </div>
                   </div>
                 )}
-              </div>
-            </div>
+
+                <div className="overview-alerts-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 15 }}>
+                  <div className="alert-card low-stock">
+                    <h4>Low Stock Alert</h4>
+                    {lowStockList.length > 0 ? (
+                      lowStockList.map((item, idx) => (
+                        <div className="alert-item" key={idx} style={{ color: '#ffaa00' }}>
+                          ⚠️ {item.product_name} - {item.remaining} left
+                        </div>
+                      ))
+                    ) : (
+                      <div className="alert-item" style={{ color: '#10b981' }}>✓ All stock levels normal</div>
+                    )}
+                  </div>
+                  
+                  <div className="alert-card out-of-stock">
+                    <h4>Out of Stock</h4>
+                    {outOfStockList.length > 0 ? (
+                      outOfStockList.map((item, idx) => (
+                        <div className="alert-item" key={idx} style={{ color: '#ef4444' }}>
+                          ❌ {item.product_name} - Out of stock
+                        </div>
+                      ))
+                    ) : (
+                      <div className="alert-item" style={{ color: '#10b981' }}>✓ All items in stock</div>
+                    )}
+                  </div>
+                  
+                  <div className="alert-card expiring">
+                    <h4>Shelf Life / Expiring Soon</h4>
+                    {expiringProducts.length > 0 ? (
+                      expiringProducts.map((item, idx) => (
+                        <div className="alert-item" key={idx} style={{ color: '#f59e0b' }}>
+                          ⏳ {item.product_name} - {item.remaining}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="alert-item" style={{ color: '#10b981' }}>✓ No items expiring soon</div>
+                    )}
+                  </div>
+
+                  <div className="alert-card border-purple" style={{ background: 'rgba(139, 92, 246, 0.05)', border: '1px solid rgba(139, 92, 246, 0.1)', padding: 15, borderRadius: 8 }}>
+                    <h4 style={{ color: '#a78bfa', margin: '0 0 10px 0', fontSize: '1.05rem' }}>📉 Slow Moving Products</h4>
+                    {slowMovingProducts.length > 0 ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {slowMovingProducts.map((item, idx) => (
+                          <div key={idx} style={{ fontSize: '0.8rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: 6 }}>
+                            <div style={{ fontWeight: '500' }}>{item.product_name}</div>
+                            <div style={{ color: '#aaa', fontSize: '0.75rem' }}>Sold: {item.sold_count} units (30d) | Stock: {item.current_stock}</div>
+                            <div style={{ color: '#a78bfa', fontWeight: '500', marginTop: 3 }}>
+                              💡 Suggestion: <span style={{ textDecoration: 'underline', cursor: 'pointer' }} onClick={() => alert(`Marketing Campaign Created: ${item.recommendation} for ${item.product_name}`)}>{item.recommendation}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="alert-item" style={{ color: '#10b981', fontSize: '0.85rem' }}>✓ No slow moving products detected</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Fifth Row: Recent Orders & Last 5 Deliveries tracking */}
+                <div className="overview-recent-deliveries-grid">
+                  <div className="recent-orders-table-box">
+                    <h4>Recent Orders</h4>
+                    <table className="recent-orders-table">
+                      <thead>
+                        <tr>
+                          <th>Order ID</th>
+                          <th>Customer</th>
+                          <th>Items Count</th>
+                          <th>Total</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {orders.slice(0, 5).map(o => (
+                          <tr key={o.id}>
+                            <td>#{o.id}</td>
+                            <td>{o.user_name}</td>
+                            <td>{o.items?.length || 1}</td>
+                            <td>₹{parseFloat(o.total_price).toFixed(2)}</td>
+                            <td>
+                              <span className="table-status-pill" style={{ color: STATUS_CONFIG[o.status].color, background: STATUS_CONFIG[o.status].bg }}>
+                                {STATUS_CONFIG[o.status].label}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                        {orders.length === 0 && (
+                          <tr>
+                            <td colSpan="5" className="text-center text-muted">No orders found.</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="live-tracking-panel-box">
+                    <h4>Live Delivery Route Tracker</h4>
+                    {orders.filter(o => ['picked_up', 'out_for_delivery'].includes(o.status)).slice(0, 1).map(o => (
+                      <div key={o.id} className="live-delivery-tracking-wrapper">
+                        <p className="tracking-order-txt">Tracking Order <strong>#{o.id}</strong> (Rider: {o.rider_details?.username || 'Auto assigned'})</p>
+                        <div className="mini-tracking-map">
+                          {/* Simple animated map line */}
+                          <div className="mini-map-line"></div>
+                          <div className="mini-map-rider">Rider</div>
+                        </div>
+                      </div>
+                    ))}
+                    {orders.filter(o => ['picked_up', 'out_for_delivery'].includes(o.status)).length === 0 && (
+                      <div className="no-live-deliveries-wrapper">
+                        <p className="text-muted">No active live rider deliveries in transit.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -665,6 +837,33 @@ function ShopDashboard() {
                       <div className="price-row">
                         <span className="price-tag">₹{parseFloat(item.price).toFixed(2)}</span>
                       </div>
+
+                      {/* ML Demand Details */}
+                      {(() => {
+                        const fc = forecastData?.forecast_today?.find(f => f.product_id === item.id);
+                        if (!fc) return null;
+                        return (
+                          <div className="ml-inventory-info" style={{ marginTop: 8, padding: 6, background: 'rgba(255,255,255,0.03)', borderRadius: 4, fontSize: '0.8rem', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', margin: '2px 0' }}>
+                              <span style={{ color: '#aaa' }}>Current Stock:</span>
+                              <strong>{fc.current_stock}</strong>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', margin: '2px 0' }}>
+                              <span style={{ color: '#aaa' }}>Demand Forecast:</span>
+                              <strong>{Math.round(fc.predicted_tomorrow)}</strong>
+                            </div>
+                            {fc.reorder_recommended > 0 ? (
+                              <div style={{ color: '#ffaa00', fontWeight: 'bold', marginTop: 4 }}>
+                                ⚠️ Reorder Recommended: {fc.reorder_recommended}
+                              </div>
+                            ) : (
+                              <div style={{ color: '#10b981', fontSize: '0.75rem', marginTop: 4 }}>
+                                ✓ Stock is sufficient
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </div>
                     <button className="remove-item-btn" onClick={() => handleRemoveProduct(item.id)}>
                       Remove
@@ -733,6 +932,84 @@ function ShopDashboard() {
                     </div>
                   </div>
                 </div>
+
+                {/* Demand Forecast Section */}
+                {(() => {
+                  const forecastHistory = forecastData?.forecast_history || [];
+                  const forecastMetrics = forecastData?.metrics || { mae: 0.0, mse: 0.0, r2_score: 0.0 };
+                  const forecastChartData = {
+                    labels: forecastHistory.map(item => item.date),
+                    datasets: [
+                      {
+                        label: 'Predicted Sales (Units)',
+                        data: forecastHistory.map(item => item.predicted),
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                      },
+                      {
+                        label: 'Actual Sales (Units)',
+                        data: forecastHistory.map(item => item.actual),
+                        borderColor: '#10b981',
+                        backgroundColor: 'transparent',
+                        tension: 0.3,
+                        borderDash: [5, 5]
+                      }
+                    ]
+                  };
+
+                  return (
+                    <div className="demand-forecast-analytics-box" style={{ marginTop: 40, borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 25 }}>
+                      <h3 style={{ marginBottom: 8, fontSize: '1.4rem' }}>ML Product Demand Forecasting</h3>
+                      <p className="text-muted" style={{ marginBottom: 20, fontSize: '0.85rem' }}>
+                        Evaluates Multiple Linear Regression model predictions against actual sales data.
+                      </p>
+                      
+                      <div className="charts-grid-layout" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20 }}>
+                        <div className="chart-card-box">
+                          <h4>Predicted vs Actual Store Sales (Last 7 Days)</h4>
+                          <div className="chart-container-box" style={{ height: 260 }}>
+                            {forecastHistory.length > 0 ? (
+                              <Line data={forecastChartData} options={{ responsive: true, maintainAspectRatio: false }} />
+                            ) : (
+                              <p className="no-data-msg">No historical forecast data available.</p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="chart-card-box">
+                          <h4>Regression Performance Metrics</h4>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 15, marginTop: 10 }}>
+                            <div className="analytics-sum-card" style={{ padding: 12, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                              <span style={{ fontSize: '0.8rem', color: '#aaa' }}>MAE (Mean Absolute Error)</span>
+                              <h3 style={{ margin: '4px 0 0 0', fontSize: '1.5rem', color: '#f59e0b' }}>
+                                {forecastMetrics.mae.toFixed(2)}
+                              </h3>
+                              <p style={{ margin: 0, fontSize: '0.7rem', color: '#777' }}>Average forecasting discrepancy per product</p>
+                            </div>
+                            
+                            <div className="analytics-sum-card" style={{ padding: 12, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                              <span style={{ fontSize: '0.8rem', color: '#aaa' }}>MSE (Mean Squared Error)</span>
+                              <h3 style={{ margin: '4px 0 0 0', fontSize: '1.5rem', color: '#ef4444' }}>
+                                {forecastMetrics.mse.toFixed(2)}
+                              </h3>
+                              <p style={{ margin: 0, fontSize: '0.7rem', color: '#777' }}>Squared error variance metric</p>
+                            </div>
+                            
+                            <div className="analytics-sum-card" style={{ padding: 12, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                              <span style={{ fontSize: '0.8rem', color: '#aaa' }}>R² Score (Model Fit)</span>
+                              <h3 style={{ margin: '4px 0 0 0', fontSize: '1.5rem', color: '#10b981' }}>
+                                {forecastMetrics.r2_score.toFixed(2)}
+                              </h3>
+                              <p style={{ margin: 0, fontSize: '0.7rem', color: '#777' }}>Closer to 1.0 indicates a better model fit</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             )}
           </div>

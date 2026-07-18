@@ -94,6 +94,28 @@
   gap: 12px;
 }
 
+.order-row__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.order-row__track-btn {
+  background: #0284c7;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.order-row__track-btn:hover {
+  background: #0369a1;
+  transform: translateY(-1px);
+}
+
 .order-row__reorder-btn {
   background: #1b5e20;
   color: #fff;

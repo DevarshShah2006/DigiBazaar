@@ -37,12 +37,16 @@ class UserSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     category_name = serializers.SerializerMethodField()
     category_slug = serializers.SerializerMethodField()
+    subcategory_name = serializers.SerializerMethodField()
 
     def get_category_name(self, obj):
         return obj.category.name if obj.category else None
 
     def get_category_slug(self, obj):
         return obj.category.slug if obj.category else None
+
+    def get_subcategory_name(self, obj):
+        return obj.subcategory.name if obj.subcategory else None
 
     class Meta:
         model = Product
@@ -52,11 +56,18 @@ class ProductSerializer(serializers.ModelSerializer):
             'category',
             'category_name',
             'category_slug',
+            'subcategory_name',
             'brand',
             'description',
             'price',
+            'mrp',
+            'selling_price',
+            'discount_percent',
+            'quantity_label',
             'rating',
+            'review_count',
             'image_url',
+            'food_type',
             'guarantee',
             'warranty',
             'shelf_life',
@@ -178,11 +189,15 @@ class OrderSerializer(serializers.ModelSerializer):
             "delivery_charge",
             "rider",
             "rider_details",
+            "recommended_delivery_mode",
+            "delivery_mode_confidence",
             "created_at",
             "updated_at",
         )
         read_only_fields = (
             "status",
+            "recommended_delivery_mode",
+            "delivery_mode_confidence",
             "created_at",
             "updated_at",
         )

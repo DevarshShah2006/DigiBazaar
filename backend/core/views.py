@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Shop, Product, Order, OrderItem, ShopOwner, Wishlist, Rider, DeliveryAssignment
+from .models import Shop, Product, Order, OrderItem, ShopOwner, Wishlist, Rider, DeliveryAssignment, Category, Subcategory
 from .serializers import (
     ShopSerializer,
     ProductSerializer,
@@ -20,22 +20,38 @@ from .serializers import (
 
 from .permissions import IsAdminOrReadOnly, IsShopOwnerOrReadOnly
 from ml_engine.ranking import get_ranked_shops, rank_shops_for_product, haversine_distance
+from rest_framework.pagination import PageNumberPagination
 
 User = get_user_model()
 
 
+class ProductPagination(PageNumberPagination):
+    page_size = 24
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
 class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.select_related('category').all()
+    queryset = Product.objects.select_related('category', 'subcategory').all()
     serializer_class = ProductSerializer
     permission_classes = [IsAdminOrReadOnly]
+    pagination_class = ProductPagination
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        query = self.request.query_params.get('q')
+        query = self.request.query_params.get('search') or self.request.query_params.get('q')
         category = self.request.query_params.get('category')
+        subcategory = self.request.query_params.get('subcategory')
+        min_price = self.request.query_params.get('min_price')
+        max_price = self.request.query_params.get('max_price')
+        min_rating = self.request.query_params.get('min_rating')
 
         if query:
-            queryset = queryset.filter(name__icontains=query)
+            queryset = queryset.filter(
+                Q(name__icontains=query) |
+                Q(brand__icontains=query) |
+                Q(search_keywords__icontains=query)
+            )
 
         if category:
             queryset = queryset.filter(
@@ -43,11 +59,91 @@ class ProductViewSet(viewsets.ModelViewSet):
                 | Q(category__slug__iexact=category)
             )
 
-        return queryset.distinct().order_by('name')
+        if subcategory:
+            queryset = queryset.filter(
+                Q(subcategory__name__iexact=subcategory)
+                | Q(subcategory__slug__iexact=subcategory)
+            )
+
+        if min_price:
+            queryset = queryset.filter(price__gte=min_price)
+        if max_price:
+            queryset = queryset.filter(price__lte=max_price)
+
+        if min_rating:
+            queryset = queryset.filter(rating__gte=min_rating)
+
+        ordering = self.request.query_params.get('ordering', 'name')
+        valid_orderings = ['name', '-name', 'price', '-price',
+                           'rating', '-rating', '-created_at',
+                           '-review_count', '-discount_percent']
+        if ordering in valid_orderings:
+            queryset = queryset.order_by(ordering)
+        else:
+            queryset = queryset.order_by('name')
+
+        return queryset.distinct()
 
     @action(detail=False, methods=['get'])
     def search(self, request):
         return self.list(request)
+
+    @action(detail=False, methods=['get'])
+    def featured(self, request):
+        candidates = list(Product.objects.select_related('category', 'subcategory').order_by('-review_count', '-rating')[:100])
+        if not candidates:
+            return Response([])
+        
+        max_reviews = max([p.review_count for p in candidates]) or 1
+        scored = []
+        for p in candidates:
+            r = float(p.rating) if p.rating is not None else 4.2
+            rev_score = (p.review_count / max_reviews) * 10
+            disc = float(p.discount_percent)
+            score = (0.5 * r) + (0.3 * rev_score) + (0.2 * disc)
+            scored.append((score, p))
+            
+        scored.sort(key=lambda x: x[0], reverse=True)
+        top_candidates = [item[1] for item in scored[:12]]
+        
+        # Paginate manually if pagination class is set on view
+        page = self.paginate_queryset(top_candidates)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(top_candidates, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def new_arrivals(self, request):
+        newest = Product.objects.select_related('category', 'subcategory').order_by('-created_at', '-id')[:24]
+        
+        # Paginate manually if pagination class is set
+        page = self.paginate_queryset(newest)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(newest, many=True)
+        return Response(serializer.data)
+
+
+class CategoryListView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        cats = Category.objects.annotate(product_count=Count('products')).filter(is_active=True).order_by('name')
+        data = []
+        for c in cats:
+            data.append({
+                'id': c.id,
+                'name': c.name,
+                'slug': c.slug,
+                'product_count': c.product_count,
+                'image_url': c.image_url
+            })
+        return Response(data)
 
 
 class ShopViewSet(viewsets.ModelViewSet):
@@ -819,4 +915,194 @@ class UpdateDeliveryAssignmentView(APIView):
         order.save()
         
         return Response(DeliveryAssignmentSerializer(assignment).data)
+
+
+from ml_engine.delivery_predictor import delivery_predictor
+
+class DeliveryRecommendationView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        shop_id = request.data.get('shop_id')
+        product_id = request.data.get('product_id')
+        order_value = request.data.get('order_value', 0)
+        lat = request.data.get('lat')
+        long_ = request.data.get('long')
+
+        shop = None
+        if shop_id:
+            shop = Shop.objects.filter(pk=shop_id).first()
+        elif product_id:
+            product = Product.objects.filter(pk=product_id).first()
+            if product:
+                shop = product.shops.first()
+
+        if not shop:
+            return Response({'detail': 'Shop not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        user_lat = float(lat) if lat is not None else 23.0125
+        user_long = float(long_) if long_ is not None else 72.5575
+
+        distance_km = 0.0
+        if shop.lat and shop.long:
+            distance_km = haversine_distance(user_lat, user_long, float(shop.lat), float(shop.long))
+
+        available_riders = Rider.objects.filter(is_online=True).count()
+        if available_riders < 2:
+            rider_availability = "Low"
+        elif available_riders < 10:
+            rider_availability = "Medium"
+        else:
+            rider_availability = "High"
+
+        pending_orders = Order.objects.filter(
+            shop=shop, 
+            status__in=['pending', 'accepted', 'preparing', 'ready_for_pickup']
+        ).count()
+
+        features = {
+            "distance_km": float(distance_km),
+            "order_value": float(order_value),
+            "rider_availability": rider_availability,
+            "shop_delivery_enabled": 1 if shop.self_delivery_enabled else 0,
+            "pickup_enabled": 1 if shop.pickup_enabled else 0,
+            "digibazaar_delivery_enabled": 1 if shop.digibazaar_delivery_enabled else 0,
+            "shop_rating": float(shop.rating or 4.0),
+            "avg_prep_time_mins": int(shop.avg_preparation_time_mins or 15),
+            "current_pending_orders": pending_orders,
+            "shop_delivery_radius_km": float(shop.delivery_radius_km or 5.0)
+        }
+
+        predicted_mode, confidence = delivery_predictor.predict(features)
+
+        return Response({
+            "recommended_delivery_mode": predicted_mode,
+            "delivery_mode_confidence": confidence
+        })
+
+
+class ShopDemandForecastView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from django.utils import timezone
+        from datetime import timedelta
+        from django.db.models import Sum, Avg
+        import numpy as np
+
+        owner = getattr(request.user, 'shop_owner_profile', None)
+        if not owner:
+            return Response({'detail': 'Not a shop owner'}, status=status.HTTP_403_FORBIDDEN)
+
+        shop = Shop.objects.filter(owner=owner).first()
+        if not shop:
+            return Response({'detail': 'Shop not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Get tomorrow's date
+        today_dt = timezone.now().date()
+        tomorrow_dt = today_dt + timedelta(days=1)
+
+        # 1. Forecast Today (Tomorrow's forecast for each product)
+        forecasts = DemandForecast.objects.filter(shop=shop, date=tomorrow_dt).select_related('product')
+        forecast_today_list = []
+        for fc in forecasts:
+            product = fc.product
+            # Get current stock
+            inv = Inventory.objects.filter(shop=shop, product=product).first()
+            current_stock = inv.current_stock if inv else 0
+            
+            # Get yesterday's sales to calculate percentage change
+            yesterday_dt = today_dt - timedelta(days=1)
+            yesterday_sales = OrderItem.objects.filter(
+                order__shop=shop,
+                product=product,
+                order__created_at__date=yesterday_dt
+            ).exclude(
+                order__status__in=["cancelled", "rejected"]
+            ).aggregate(total=Sum("quantity"))["total"] or 0
+            
+            yesterday_sales = float(yesterday_sales)
+            pred = fc.predicted_quantity
+            
+            pct_change = 0.0
+            if yesterday_sales > 0:
+                pct_change = round(((pred - yesterday_sales) / yesterday_sales) * 100, 1)
+            else:
+                pct_change = 100.0 if pred > 0 else 0.0
+                
+            reorder_rec = max(0, int(np.ceil(pred)) - current_stock)
+            
+            forecast_today_list.append({
+                "product_id": product.id,
+                "product_name": product.name,
+                "predicted_tomorrow": pred,
+                "current_stock": current_stock,
+                "reorder_recommended": reorder_rec,
+                "percentage_change": pct_change,
+                "status": "restock_required" if current_stock < pred else "ok"
+            })
+
+        # If there are no forecasts generated, fallback to listing products with 0 predictions
+        if not forecast_today_list:
+            for product in shop.products.all():
+                inv = Inventory.objects.filter(shop=shop, product=product).first()
+                current_stock = inv.current_stock if inv else 0
+                forecast_today_list.append({
+                    "product_id": product.id,
+                    "product_name": product.name,
+                    "predicted_tomorrow": 0.0,
+                    "current_stock": current_stock,
+                    "reorder_recommended": 0,
+                    "percentage_change": 0.0,
+                    "status": "ok"
+                })
+
+        # 2. Forecast History (Last 7 days of predicted vs actual sales)
+        history_start = today_dt - timedelta(days=7)
+        history_forecasts = DemandForecast.objects.filter(
+            shop=shop, 
+            date__range=(history_start, today_dt)
+        ).order_by('date')
+        
+        date_history = {}
+        curr_dt = history_start
+        while curr_dt <= today_dt:
+            date_history[curr_dt] = {"predicted": 0.0, "actual": 0.0}
+            curr_dt += timedelta(days=1)
+            
+        for hfc in history_forecasts:
+            d = hfc.date
+            if d in date_history:
+                date_history[d]["predicted"] += hfc.predicted_quantity
+                date_history[d]["actual"] += hfc.actual_quantity if hfc.actual_quantity is not None else 0.0
+                
+        forecast_history_list = [
+            {
+                "date": d.strftime("%Y-%m-%d"),
+                "predicted": round(vals["predicted"], 1),
+                "actual": round(vals["actual"], 1)
+            }
+            for d, vals in sorted(date_history.items())
+        ]
+
+        # 3. Model performance metrics
+        metrics_agg = history_forecasts.aggregate(
+            avg_mae=Avg('mae'),
+            avg_mse=Avg('mse'),
+            avg_r2=Avg('r2_score')
+        )
+        
+        mae = round(metrics_agg['avg_mae'] or 0.0, 2)
+        mse = round(metrics_agg['avg_mse'] or 0.0, 2)
+        r2 = round(metrics_agg['avg_r2'] or 0.0, 2)
+        
+        return Response({
+            "forecast_today": forecast_today_list,
+            "forecast_history": forecast_history_list,
+            "metrics": {
+                "mae": mae,
+                "mse": mse,
+                "r2_score": r2
+            }
+        })
 

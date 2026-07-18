@@ -9,23 +9,14 @@ function TrendingSection() {
   const scrollRef = useRef(null)
 
   useEffect(() => {
-    fetchJson('/trending/?hours=168&limit=12')
+    fetchJson('/products/featured/?limit=12')
       .then(data => {
-        const trendingProducts = data.products || []
-        if (trendingProducts.length > 0) {
-          // Fetch full product details for each trending product
-          const productIds = trendingProducts.map(p => p.product_id)
-          return Promise.all(productIds.map(id => fetchJson(`/products/detail/${id}/`)))
-        }
-        // Fallback: fetch popular products
-        return fetchJson('/products/?limit=12').then(d => d.results || d || [])
-      })
-      .then(prods => {
-        setProducts(prods.filter(Boolean).slice(0, 12))
+        const prods = data.results || data || []
+        setProducts(prods.slice(0, 12))
         setLoading(false)
       })
       .catch(() => {
-        fetchJson('/products/').then(d => {
+        fetchJson('/products/?limit=12').then(d => {
           setProducts((d.results || d || []).slice(0, 12))
           setLoading(false)
         })
@@ -41,7 +32,7 @@ function TrendingSection() {
   if (loading) return (
     <section className="trending-section">
       <div className="section-header">
-        <h2 className="section-title">🔥 Trending Now</h2>
+        <h2 className="section-title">✨ Featured Products</h2>
       </div>
       <div className="trending-skeleton">
         {Array(4).fill(0).map((_, i) => (
@@ -57,8 +48,8 @@ function TrendingSection() {
     <section className="trending-section">
       <div className="section-header">
         <div className="section-title-group">
-          <h2 className="section-title">🔥 Trending Now</h2>
-          <p className="section-subtitle">Most ordered in the last 7 days</p>
+          <h2 className="section-title">✨ Featured Products</h2>
+          <p className="section-subtitle">Our curated selection of top-rated items</p>
         </div>
         <div className="scroll-btns">
           <button className="scroll-btn" onClick={() => scroll(-1)}>‹</button>
