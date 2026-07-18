@@ -86,16 +86,12 @@ function Home() {
       <section className="hero-carousel-section">
         <div className="container">
           <div className={`hero-carousel-slide ${slide.bgClass}`}>
-            <div className="carousel-edge-zone left">
-              <button className="carousel-control-btn prev" onClick={handlePrevSlide} aria-label="Previous slide">
-                ‹
-              </button>
-            </div>
-            <div className="carousel-edge-zone right">
-              <button className="carousel-control-btn next" onClick={handleNextSlide} aria-label="Next slide">
-                ›
-              </button>
-            </div>
+            <button className="carousel-control-btn prev" onClick={handlePrevSlide} aria-label="Previous slide">
+              Prev
+            </button>
+            <button className="carousel-control-btn next" onClick={handleNextSlide} aria-label="Next slide">
+              Next
+            </button>
 
             <div className="carousel-content-grid">
               <div className="slide-text-side">

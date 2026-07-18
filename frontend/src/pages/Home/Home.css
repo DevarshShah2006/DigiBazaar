@@ -38,75 +38,43 @@
 }
 
 /* Carousel Control Arrows */
-.carousel-edge-zone {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 68px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 8;
-}
-
-.carousel-edge-zone.left {
-  left: 0;
-}
-
-.carousel-edge-zone.right {
-  right: 0;
-}
-
 .carousel-control-btn {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  min-width: 48px;
-  height: 48px;
-  padding: 0 8px;
-  border: none;
-  background: transparent;
-  color: rgba(255,255,255,0.95);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 10;
-  transition: opacity 0.2s ease, transform 0.2s ease, color 0.2s ease;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  font-size: 46px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.carousel-edge-zone:hover .carousel-control-btn,
-.carousel-control-btn:focus {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
+  transition: all 0.2s;
 }
 
 .carousel-control-btn:hover {
+  background: rgba(255,255,255,0.3);
   transform: translateY(-50%) scale(1.05);
 }
 
 .carousel-control-btn.prev {
-  left: 16px;
+  left: 20px;
 }
 
 .carousel-control-btn.next {
-  right: 16px;
+  right: 20px;
 }
 
 .carousel-content-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1.2fr 0.8fr;
   width: 100%;
   gap: 32px;
   align-items: center;
-  max-width: 940px;
 }
 
 .slide-text-side {
@@ -114,11 +82,6 @@
   flex-direction: column;
   gap: 16px;
   z-index: 5;
-  background: rgba(15, 23, 42, 0.22);
-  backdrop-filter: blur(12px);
-  padding: 32px;
-  border-radius: 30px;
-  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.28);
 }
 
 .slide-badge {
