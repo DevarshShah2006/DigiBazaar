@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { getOrders, acceptOrder, rejectOrder, advanceOrder } from '../../api/orders'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
@@ -108,6 +109,7 @@ function ShopDashboard() {
   const [allProductsCatalog, setAllProductsCatalog] = useState([])
   const [inventoryLoading, setInventoryLoading] = useState(false)
   const [selectedProductIdToAdd, setSelectedProductIdToAdd] = useState('')
+  const [editingItem, setEditingItem] = useState(null)
 
   // Analytics states
   const [analytics, setAnalytics] = useState(null)
@@ -127,6 +129,27 @@ function ShopDashboard() {
   const [weatherData, setWeatherData] = useState(null)
   const [overviewLoading, setOverviewLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // New Tab States: Reports, CRM, Promotions, Growth, Settings
+  const [reportsData, setReportsData] = useState(null)
+  const [reportsLoading, setReportsLoading] = useState(false)
+  const [reportPeriod, setReportPeriod] = useState('30d')
+
+  const [crmData, setCrmData] = useState(null)
+  const [crmLoading, setCrmLoading] = useState(false)
+
+  const [promotionsData, setPromotionsData] = useState(null)
+  const [promotionsLoading, setPromotionsLoading] = useState(false)
+  const [newPromoCode, setNewPromoCode] = useState('')
+  const [newPromoDiscount, setNewPromoDiscount] = useState(10)
+  const [newPromoMinOrder, setNewPromoMinOrder] = useState(0)
+
+  const [growthData, setGrowthData] = useState(null)
+  const [growthLoading, setGrowthLoading] = useState(false)
+
+  const [settingsData, setSettingsData] = useState(null)
+  const [settingsLoading, setSettingsLoading] = useState(false)
+  const [settingsSaving, setSettingsSaving] = useState(false)
 
   useEffect(() => {
     document.body.classList.add('portal-shop')
@@ -165,7 +188,188 @@ function ShopDashboard() {
     } else if (activeTab === 'analytics') {
       loadAnalytics()
       loadDemandForecast()
+    } else if (activeTab === 'reports') {
+      loadSalesReport()
+    } else if (activeTab === 'customers') {
+      loadCustomerCRM()
+    } else if (activeTab === 'promotions') {
+      loadPromotions()
+    } else if (activeTab === 'growth') {
+      loadGrowthData()
+    } else if (activeTab === 'settings') {
+      loadSettingsData()
     }
+  }
+
+  const loadSalesReport = async (period = reportPeriod) => {
+    setReportsLoading(true)
+    setError('')
+    try {
+      const data = await fetchJson(`/shop/dashboard/reports/?period=${period}`)
+      setReportsData(data)
+    } catch {
+      setError('Failed to load sales report.')
+    } finally {
+      setReportsLoading(false)
+    }
+  }
+
+  const loadCustomerCRM = async () => {
+    setCrmLoading(true)
+    setError('')
+    try {
+      const data = await fetchJson('/shop/dashboard/customers/')
+      setCrmData(data)
+    } catch {
+      setError('Failed to load customer CRM data.')
+    } finally {
+      setCrmLoading(false)
+    }
+  }
+
+  const loadPromotions = async () => {
+    setPromotionsLoading(true)
+    setError('')
+    try {
+      const data = await fetchJson('/shop/dashboard/promotions/')
+      setPromotionsData(data)
+    } catch {
+      setError('Failed to load promotions.')
+    } finally {
+      setPromotionsLoading(false)
+    }
+  }
+
+  const loadGrowthData = async () => {
+    setGrowthLoading(true)
+    setError('')
+    try {
+      const data = await fetchJson('/shop/dashboard/growth/')
+      setGrowthData(data)
+    } catch {
+      setError('Failed to load growth hub data.')
+    } finally {
+      setGrowthLoading(false)
+    }
+  }
+
+  const loadSettingsData = async () => {
+    setSettingsLoading(true)
+    setError('')
+    try {
+      const data = await fetchJson('/shop/dashboard/settings/')
+      setSettingsData(data)
+    } catch {
+      setError('Failed to load store settings.')
+    } finally {
+      setSettingsLoading(false)
+    }
+  }
+
+  const handleSendCustomerOffer = (customerId, discountPct = 15) => {
+    fetchJson('/shop/dashboard/customers/send-offer/', {
+      method: 'POST',
+      body: JSON.stringify({ customer_id: customerId, discount_pct: discountPct })
+    })
+      .then(res => {
+        alert(res.message || 'Targeted 15% coupon dispatched to customer!')
+        setCrmData(prev => {
+          if (!prev || !prev.customers) return prev
+          return {
+            ...prev,
+            customers: prev.customers.map(c => {
+              if (c.id === customerId) {
+                return {
+                  ...c,
+                  dispatched_coupon: {
+                    code: res.coupon_code || `WINBACK_${customerId}`,
+                    discount_value: discountPct,
+                    valid_until: res.valid_until || ''
+                  },
+                  tags: Array.from(new Set(['15% Offer Active', ...(c.tags || [])]))
+                }
+              }
+              return c
+            })
+          }
+        })
+        loadCustomerCRM()
+      })
+      .catch(err => alert("Failed to dispatch offer: " + (err.message || err)))
+  }
+
+  const handleCreatePromo = (e) => {
+    e.preventDefault()
+    if (!newPromoCode.trim()) return
+    fetchJson('/shop/dashboard/promotions/', {
+      method: 'POST',
+      body: JSON.stringify({
+        code: newPromoCode.trim(),
+        discount_value: newPromoDiscount,
+        min_order_value: newPromoMinOrder,
+        discount_type: 'percentage'
+      })
+    })
+      .then(res => {
+        alert(res.message)
+        setNewPromoCode('')
+        loadPromotions()
+      })
+      .catch(err => alert("Failed to create promotion: " + (err.message || err)))
+  }
+
+  const handleToggleCoupon = (couponId) => {
+    fetchJson(`/shop/dashboard/promotions/?coupon_id=${couponId}`, {
+      method: 'DELETE'
+    })
+      .then(res => {
+        alert(res.message)
+        loadPromotions()
+      })
+      .catch(err => alert("Failed to toggle coupon: " + (err.message || err)))
+  }
+
+  const handleUpgradeTier = () => {
+    fetchJson('/shop/dashboard/growth/upgrade/', {
+      method: 'POST',
+      body: JSON.stringify({ tier: 'premium' })
+    })
+      .then(res => {
+        alert(res.message)
+        loadGrowthData()
+        loadOrders()
+      })
+      .catch(err => alert("Upgrade failed: " + (err.message || err)))
+  }
+
+  const handleSaveSettings = (e) => {
+    e.preventDefault()
+    if (!settingsData) return
+    setSettingsSaving(true)
+    fetchJson('/shop/dashboard/settings/', {
+      method: 'PUT',
+      body: JSON.stringify(settingsData)
+    })
+      .then(res => {
+        alert(res.message)
+        loadSettingsData()
+      })
+      .catch(err => alert("Failed to save settings: " + (err.message || err)))
+      .finally(() => setSettingsSaving(false))
+  }
+
+  const handleDownloadCSVReport = () => {
+    if (!reportsData || !reportsData.daily_series) return
+    const headers = ['Date', 'Sales (INR)']
+    const rows = reportsData.daily_series.map(row => [row.date, row.sales])
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n')
+    const encodedUri = encodeURI(csvContent)
+    const link = document.createElement('a')
+    link.setAttribute('href', encodedUri)
+    link.setAttribute('download', `DigiBazaar_Sales_Report_${reportsData.period}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 
   const loadDashboardOverviewData = async () => {
@@ -263,6 +467,7 @@ function ShopDashboard() {
     fetchJson('/shops/toggle-live/', { method: 'POST' })
       .then(res => {
         setShopInfo(prev => prev ? { ...prev, live_inventory: res.live_inventory } : null)
+        window.dispatchEvent(new Event('liveInventoryToggled'))
       })
       .catch(() => setError('Failed to toggle live inventory.'))
   }
@@ -286,6 +491,34 @@ function ShopDashboard() {
     })
       .then(() => loadInventory())
       .catch(() => setError('Failed to remove product.'))
+  }
+
+  const handleSaveEdit = (e) => {
+    e.preventDefault()
+    if (!editingItem) return
+
+    fetchJson('/shops/my-products/', {
+      method: 'PUT',
+      body: JSON.stringify({
+        product_id: editingItem.id,
+        name: editingItem.name,
+        brand: editingItem.brand,
+        quantity_label: editingItem.quantity_label,
+        price: editingItem.price,
+        stock: editingItem.stock,
+        min_stock: editingItem.min_stock,
+        max_stock: editingItem.max_stock,
+        expiry_date: editingItem.expiry_date
+      })
+    })
+      .then(() => {
+        loadInventory()
+        fetchJson('/shops/demand-forecast/').then(setForecastData).catch(() => {})
+        setEditingItem(null)
+      })
+      .catch((err) => {
+        alert("Failed to update inventory fields: " + (err.message || err))
+      })
   }
 
   const handleAccept = async (id) => {
@@ -394,15 +627,33 @@ function ShopDashboard() {
         </div>
 
         {/* Tab selector */}
-        <div className="shop-tabs">
-          <button className={`shop-tab-btn ${activeTab === 'orders' ? 'active' : ''}`} onClick={() => setActiveTab('orders')}>
+        <div className="shop-tabs" style={{ flexWrap: 'wrap', gap: 8 }}>
+          <button className={`shop-tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => handleTabClick('dashboard')}>
+            Overview
+          </button>
+          <button className={`shop-tab-btn ${activeTab === 'orders' ? 'active' : ''}`} onClick={() => handleTabClick('orders')}>
             Orders ({orders.length})
           </button>
-          <button className={`shop-tab-btn ${activeTab === 'inventory' ? 'active' : ''}`} onClick={() => setActiveTab('inventory')}>
-            Manage Inventory
+          <button className={`shop-tab-btn ${activeTab === 'inventory' ? 'active' : ''}`} onClick={() => handleTabClick('inventory')}>
+            Inventory
           </button>
-          <button className={`shop-tab-btn ${activeTab === 'analytics' ? 'active' : ''}`} onClick={() => setActiveTab('analytics')}>
-            Sales Analytics
+          <button className={`shop-tab-btn ${activeTab === 'analytics' ? 'active' : ''}`} onClick={() => handleTabClick('analytics')}>
+            Analytics
+          </button>
+          <button className={`shop-tab-btn ${activeTab === 'reports' ? 'active' : ''}`} onClick={() => handleTabClick('reports')}>
+            Sales Reports
+          </button>
+          <button className={`shop-tab-btn ${activeTab === 'customers' ? 'active' : ''}`} onClick={() => handleTabClick('customers')}>
+            Customer CRM
+          </button>
+          <button className={`shop-tab-btn ${activeTab === 'promotions' ? 'active' : ''}`} onClick={() => handleTabClick('promotions')}>
+            Promotions
+          </button>
+          <button className={`shop-tab-btn ${activeTab === 'growth' ? 'active' : ''}`} onClick={() => handleTabClick('growth')}>
+            Growth Hub
+          </button>
+          <button className={`shop-tab-btn ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => handleTabClick('settings')}>
+            Settings
           </button>
         </div>
 
@@ -833,9 +1084,30 @@ function ShopDashboard() {
                     <img src={item.image_url || 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=200'} alt={item.name} />
                     <div className="item-details">
                       <span className="item-brand">{item.brand || 'Local brand'}</span>
-                      <h4>{item.name}</h4>
-                      <div className="price-row">
+                      <h4 style={{ minHeight: '38px', margin: '4px 0' }}>{item.name}</h4>
+                      <div className="price-row" style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                         <span className="price-tag">₹{parseFloat(item.price).toFixed(2)}</span>
+                        {item.quantity_label && (
+                          <span style={{ fontSize: '0.75rem', color: '#64748b' }}>({item.quantity_label})</span>
+                        )}
+                      </div>
+
+                      {/* Inventory Details Grid */}
+                      <div style={{ marginTop: 8, fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: 4, borderTop: '1px solid #f1f5f9', paddingTop: 8 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <span style={{ color: '#64748b' }}>Stock Level:</span>
+                          <strong style={{ color: item.stock <= item.min_stock ? '#ef4444' : '#0f172a' }}>{item.stock} units</strong>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#64748b' }}>
+                          <span>Min / Max Threshold:</span>
+                          <span>{item.min_stock} / {item.max_stock}</span>
+                        </div>
+                        {item.expiry_date && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#64748b' }}>
+                            <span>Expiry Date:</span>
+                            <span>{item.expiry_date}</span>
+                          </div>
+                        )}
                       </div>
 
                       {/* ML Demand Details */}
@@ -865,9 +1137,14 @@ function ShopDashboard() {
                         );
                       })()}
                     </div>
-                    <button className="remove-item-btn" onClick={() => handleRemoveProduct(item.id)}>
-                      Remove
-                    </button>
+                    <div className="inventory-card-actions">
+                      <button className="edit-item-btn" onClick={() => setEditingItem({ ...item })}>
+                        Edit
+                      </button>
+                      <button className="remove-item-btn-half" onClick={() => handleRemoveProduct(item.id)}>
+                        Remove
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1014,7 +1291,772 @@ function ShopDashboard() {
             )}
           </div>
         )}
+
+        {activeTab === 'reports' && (
+          <div className="shop-reports-section">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.4rem' }}>📊 Sales & Tax Financial Ledger</h3>
+                <p className="text-muted" style={{ margin: '4px 0 0 0', fontSize: '0.85rem' }}>Comprehensive revenue reporting, GST tax breakdown, and ML anomaly detection.</p>
+              </div>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                <select
+                  value={reportPeriod}
+                  onChange={e => { setReportPeriod(e.target.value); loadSalesReport(e.target.value); }}
+                  className="product-catalog-select"
+                  style={{ width: 'auto', padding: '8px 12px' }}
+                >
+                  <option value="7d">Last 7 Days</option>
+                  <option value="30d">Last 30 Days</option>
+                  <option value="90d">Last 90 Days</option>
+                  <option value="365d">Year-to-Date (365 Days)</option>
+                </select>
+                <button className="add-to-inv-btn" onClick={handleDownloadCSVReport} style={{ padding: '8px 16px' }}>
+                  📥 Export Report (CSV)
+                </button>
+              </div>
+            </div>
+
+            {reportsLoading ? (
+              <div className="loading-spinner-wrap"><p>Calculating financial ledger...</p></div>
+            ) : !reportsData ? (
+              <p>No report data available.</p>
+            ) : (
+              <>
+                <div className="overview-stats-grid" style={{ marginBottom: 25 }}>
+                  <div className="overview-stat-card border-cyan">
+                    <div>
+                      <h4>Gross Store Sales</h4>
+                      <h3>₹{reportsData.summary.gross_sales.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</h3>
+                      <span style={{ fontSize: '0.75rem', color: '#888' }}>{reportsData.summary.completed_orders_count} Orders</span>
+                    </div>
+                  </div>
+                  <div className="overview-stat-card border-green">
+                    <div>
+                      <h4>Net Merchant Payout</h4>
+                      <h3 style={{ color: '#10b981' }}>₹{reportsData.summary.net_revenue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</h3>
+                      <span style={{ fontSize: '0.75rem', color: '#888' }}>After {reportsData.summary.commission_rate_pct}% Platform Fee</span>
+                    </div>
+                  </div>
+                  <div className="overview-stat-card border-indigo">
+                    <div>
+                      <h4>Platform Commission Fee</h4>
+                      <h3 style={{ color: '#ef4444' }}>₹{reportsData.summary.platform_fee.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</h3>
+                      <span style={{ fontSize: '0.75rem', color: '#888' }}>Deducted @ {reportsData.summary.commission_rate_pct}%</span>
+                    </div>
+                  </div>
+                  <div className="overview-stat-card border-amber">
+                    <div>
+                      <h4>GST Tax Liability (18%)</h4>
+                      <h3 style={{ color: '#f59e0b' }}>₹{reportsData.tax_ledger.gst_total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</h3>
+                      <span style={{ fontSize: '0.75rem', color: '#888' }}>CGST: ₹{reportsData.tax_ledger.cgst} | SGST: ₹{reportsData.tax_ledger.sgst}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="charts-grid-layout" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20, marginBottom: 25 }}>
+                  <div className="chart-card-box">
+                    <h4>Daily Sales Ledger Breakdown</h4>
+                    <div className="chart-container-box" style={{ height: 260 }}>
+                      <Line
+                        data={{
+                          labels: reportsData.daily_series.map(d => d.date),
+                          datasets: [{
+                            label: 'Daily Sales (₹)',
+                            data: reportsData.daily_series.map(d => d.sales),
+                            borderColor: '#0891b2',
+                            backgroundColor: 'rgba(8, 145, 178, 0.1)',
+                            fill: true,
+                            tension: 0.2
+                          }]
+                        }}
+                        options={{ responsive: true, maintainAspectRatio: false }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="chart-card-box">
+                    <h4>🤖 ML Sales Anomaly & Tax Forecast</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 10 }}>
+                      <div style={{ background: 'rgba(255,255,255,0.03)', padding: 12, borderRadius: 6, border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <span style={{ fontSize: '0.8rem', color: '#aaa' }}>Predicted Next Week Sales:</span>
+                        <h4 style={{ margin: '4px 0 0 0', color: '#38bdf8' }}>₹{reportsData.ml_insights.predicted_next_week_revenue.toLocaleString()}</h4>
+                      </div>
+                      <div style={{ background: 'rgba(255,255,255,0.03)', padding: 12, borderRadius: 6, border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <span style={{ fontSize: '0.8rem', color: '#aaa' }}>Est. Next Week Tax Liability:</span>
+                        <h4 style={{ margin: '4px 0 0 0', color: '#f59e0b' }}>₹{reportsData.ml_insights.predicted_next_week_tax.toLocaleString()}</h4>
+                      </div>
+
+                      {reportsData.ml_insights.anomalies.length > 0 ? (
+                        <div>
+                          <strong style={{ fontSize: '0.8rem', color: '#ff6b6b' }}>Detected Sales Anomalies:</strong>
+                          {reportsData.ml_insights.anomalies.map((anom, idx) => (
+                            <div key={idx} style={{ fontSize: '0.75rem', color: anom.type === 'high_surge' ? '#10b981' : '#ef4444', marginTop: 4 }}>
+                              • {anom.date}: {anom.note}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <span style={{ fontSize: '0.75rem', color: '#10b981' }}>✓ Sales variance is within normal expected distribution.</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'customers' && (
+          <div className="shop-customers-section">
+            <div style={{ marginBottom: 20 }}>
+              <h3 style={{ margin: 0, fontSize: '1.4rem' }}>👥 Customer Intelligence & CRM</h3>
+              <p className="text-muted" style={{ margin: '4px 0 0 0', fontSize: '0.85rem' }}>Track buyer loyalty, RFM segmentation, customer lifetime value, and ML churn risks.</p>
+            </div>
+
+            {crmLoading ? (
+              <div className="loading-spinner-wrap"><p>Loading customer CRM records...</p></div>
+            ) : !crmData ? (
+              <p>No customer records found.</p>
+            ) : (
+              <>
+                <div className="overview-stats-grid" style={{ marginBottom: 25 }}>
+                  <div className="overview-stat-card border-cyan">
+                    <div>
+                      <h4>Total Unique Buyers</h4>
+                      <h3>{crmData.crm_summary.total_unique_customers}</h3>
+                    </div>
+                  </div>
+                  <div className="overview-stat-card border-green">
+                    <div>
+                      <h4>Repeat Customer Rate</h4>
+                      <h3 style={{ color: '#10b981' }}>{crmData.crm_summary.repeat_rate_pct}%</h3>
+                      <span style={{ fontSize: '0.75rem', color: '#888' }}>{crmData.crm_summary.repeat_customers_count} Repeat Buyers</span>
+                    </div>
+                  </div>
+                  <div className="overview-stat-card border-indigo">
+                    <div>
+                      <h4>Avg Customer LTV</h4>
+                      <h3>₹{crmData.crm_summary.avg_customer_ltv.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</h3>
+                    </div>
+                  </div>
+                  <div className="overview-stat-card border-amber">
+                    <div>
+                      <h4>At-Risk Churn Buyers</h4>
+                      <h3 style={{ color: crmData.crm_summary.at_risk_count > 0 ? '#ef4444' : '#10b981' }}>{crmData.crm_summary.at_risk_count}</h3>
+                      <span style={{ fontSize: '0.75rem', color: '#888' }}>Need Re-engagement Coupon</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="recent-orders-table-box">
+                  <h4>Customer Loyalty Directory & ML Churn Scores</h4>
+                  <table className="recent-orders-table" style={{ marginTop: 12 }}>
+                    <thead>
+                      <tr>
+                        <th>Customer Identifier</th>
+                        <th>Preferred Category</th>
+                        <th>Completed Orders</th>
+                        <th>Total Spend (LTV)</th>
+                        <th>Avg Order Value</th>
+                        <th>Last Order Date</th>
+                        <th>Loyalty Tier</th>
+                        <th>ML Churn Risk</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {crmData.customers.map(c => (
+                        <tr key={c.id}>
+                          <td>
+                            <strong style={{ color: '#38bdf8' }}>{c.first_name}</strong> <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>({c.customer_code})</span>
+                            <div style={{ marginTop: 4, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                              {c.tags.map((t, idx) => (
+                                <span key={idx} style={{ background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', fontSize: '0.65rem', padding: '2px 6px', borderRadius: 4, border: '1px solid rgba(56, 189, 248, 0.2)' }}>
+                                  {t}
+                                </span>
+                              ))}
+                            </div>
+                          </td>
+                          <td><span className="shop-tag">{c.preferred_category}</span></td>
+                          <td><strong>{c.orders_count}</strong> orders</td>
+                          <td style={{ color: '#22c55e', fontWeight: 'bold' }}>₹{c.total_spent.toFixed(2)}</td>
+                          <td>₹{c.avg_spent.toFixed(2)}</td>
+                          <td style={{ color: '#aaa', fontSize: '0.8rem' }}>{c.last_order_date} <br/><span style={{ fontSize: '0.7rem', color: '#777' }}>({c.days_since_last}d ago)</span></td>
+                          <td>
+                            <span className="table-status-pill" style={{ background: `${c.tier_color}22`, color: c.tier_color, border: `1px solid ${c.tier_color}` }}>
+                              {c.loyalty_tier}
+                            </span>
+                          </td>
+                          <td>
+                            <strong style={{ color: c.churn_risk_pct >= 50 ? '#ef4444' : '#10b981' }}>{c.churn_risk_pct}% Risk</strong>
+                          </td>
+                          <td>
+                            {c.dispatched_coupon ? (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                <span className="table-status-pill" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid #10b981', fontSize: '0.75rem', textAlign: 'center' }}>
+                                  ✓ 15% OFF Dispatched
+                                </span>
+                                <span style={{ fontSize: '0.68rem', color: '#94a3b8', textAlign: 'center' }}>
+                                  Code: <strong style={{ color: '#38bdf8' }}>{c.dispatched_coupon.code}</strong>
+                                </span>
+                              </div>
+                            ) : (
+                              <button
+                                className="edit-item-btn"
+                                onClick={() => handleSendCustomerOffer(c.id, 15)}
+                                style={{ padding: '6px 10px', fontSize: '0.75rem' }}
+                              >
+                                🎁 Dispatch 15% Platform Coupon
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                      {crmData.customers.length === 0 && (
+                        <tr><td colSpan="9" className="text-center text-muted" style={{ padding: 24 }}>No customer order records available yet. When buyers complete orders, business metrics and loyalty tiers will appear here.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'promotions' && (
+          <div className="shop-promotions-section">
+            <div style={{ marginBottom: 20 }}>
+              <h3 style={{ margin: 0, fontSize: '1.4rem' }}>🏷️ Smart Promotions & Discount Campaign Manager</h3>
+              <p className="text-muted" style={{ margin: '4px 0 0 0', fontSize: '0.85rem' }}>Create store promo codes and launch ML-driven dynamic price discounts for targeted inventory.</p>
+            </div>
+
+            {promotionsLoading ? (
+              <div className="loading-spinner-wrap"><p>Loading store promotions...</p></div>
+            ) : !promotionsData ? (
+              <p>No promotion records found.</p>
+            ) : (
+              <>
+                {/* Campaign ROI Summary Grid */}
+                {promotionsData.campaign_summary && (
+                  <div className="overview-stats-grid" style={{ marginBottom: 25 }}>
+                    <div className="overview-stat-card border-cyan">
+                      <div>
+                        <h4>Active Store Coupons</h4>
+                        <h3>{promotionsData.campaign_summary.total_active_coupons}</h3>
+                      </div>
+                    </div>
+                    <div className="overview-stat-card border-green">
+                      <div>
+                        <h4>Total Redemptions</h4>
+                        <h3 style={{ color: '#10b981' }}>{promotionsData.campaign_summary.total_redemptions} Uses</h3>
+                      </div>
+                    </div>
+                    <div className="overview-stat-card border-indigo">
+                      <div>
+                        <h4>Discount Savings Offered</h4>
+                        <h3>₹{promotionsData.campaign_summary.total_discount_dispatched.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</h3>
+                      </div>
+                    </div>
+                    <div className="overview-stat-card border-amber">
+                      <div>
+                        <h4>Campaign ROI Impact</h4>
+                        <h3 style={{ color: '#f59e0b' }}>{promotionsData.campaign_summary.estimated_roi_multiplier}</h3>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {/* ML Smart Recommendations */}
+                {promotionsData.ml_recommendations?.length > 0 && (
+                  <div className="chart-card-box" style={{ marginBottom: 25, borderLeft: '4px solid #8b5cf6' }}>
+                    <h4 style={{ color: '#a78bfa' }}>🤖 ML Dynamic Promotion Recommendations</h4>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 12, marginTop: 12 }}>
+                      {promotionsData.ml_recommendations.map((rec, idx) => (
+                        <div key={idx} style={{ background: 'rgba(255,255,255,0.03)', padding: 12, borderRadius: 6, border: '1px solid rgba(255,255,255,0.08)' }}>
+                          <strong style={{ color: '#fff', fontSize: '0.9rem' }}>{rec.product_name}</strong>
+                          <p style={{ margin: '4px 0 8px 0', fontSize: '0.75rem', color: '#ffaa00' }}>⚠️ {rec.reason}</p>
+                          <button
+                            className="advance-order-action-btn"
+                            style={{ width: '100%', fontSize: '0.8rem', padding: '6px' }}
+                            onClick={() => {
+                              setNewPromoCode(rec.suggested_code)
+                              setNewPromoDiscount(rec.suggested_discount_pct)
+                            }}
+                          >
+                            🚀 {rec.action_label}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Create Promo Code Form */}
+                <div className="add-product-form-box" style={{ marginBottom: 25 }}>
+                  <h4>Create New Store Coupon Code</h4>
+                  <form onSubmit={handleCreatePromo} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginTop: 10 }}>
+                    <div>
+                      <label className="form-label">Coupon Code</label>
+                      <input
+                        type="text"
+                        className="form-input-text"
+                        placeholder="e.g. FESTIVE20"
+                        value={newPromoCode}
+                        onChange={e => setNewPromoCode(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="form-label">Discount Value (%)</label>
+                      <input
+                        type="number"
+                        className="form-input-text"
+                        value={newPromoDiscount}
+                        onChange={e => setNewPromoDiscount(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="form-label">Min Order Amount (₹)</label>
+                      <input
+                        type="number"
+                        className="form-input-text"
+                        value={newPromoMinOrder}
+                        onChange={e => setNewPromoMinOrder(e.target.value)}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                      <button type="submit" className="add-to-inv-btn" style={{ width: '100%', padding: '10px' }}>
+                        ➕ Create Coupon
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* Active Coupons List */}
+                <div className="recent-orders-table-box">
+                  <h4>Active & Historic Store Coupons</h4>
+                  <table className="recent-orders-table" style={{ marginTop: 12 }}>
+                    <thead>
+                      <tr>
+                        <th>Code</th>
+                        <th>Discount</th>
+                        <th>Min Order</th>
+                        <th>Used Count</th>
+                        <th>Valid Until</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {promotionsData.coupons.map(c => (
+                        <tr key={c.id}>
+                          <td><strong style={{ color: '#38bdf8' }}>{c.code}</strong></td>
+                          <td style={{ fontWeight: 'bold', color: '#10b981' }}>{c.discount_value}% OFF</td>
+                          <td>₹{c.min_order_value}</td>
+                          <td>{c.used_count} times</td>
+                          <td style={{ color: '#aaa', fontSize: '0.8rem' }}>{c.valid_until}</td>
+                          <td>
+                            <span className="table-status-pill" style={{ background: c.is_active ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)', color: c.is_active ? '#10b981' : '#ef4444' }}>
+                              {c.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                          </td>
+                          <td>
+                            <button
+                              className={c.is_active ? "reject-order-action-btn" : "accept-order-action-btn"}
+                              onClick={() => handleToggleCoupon(c.id)}
+                              style={{ padding: '4px 10px', fontSize: '0.75rem' }}
+                            >
+                              {c.is_active ? 'Deactivate' : 'Activate'}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {promotionsData.coupons.length === 0 && (
+                        <tr><td colSpan="7" className="text-center text-muted">No promo codes created yet.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'growth' && (
+          <div className="shop-growth-section">
+            <div style={{ marginBottom: 20 }}>
+              <h3 style={{ margin: 0, fontSize: '1.4rem' }}>🚀 Merchant Growth & Tier Hub</h3>
+              <p className="text-muted" style={{ margin: '4px 0 0 0', fontSize: '0.85rem' }}>Lower commission rates, unlock featured marketplace banners, and simulate revenue expansion.</p>
+            </div>
+
+            {growthLoading ? (
+              <div className="loading-spinner-wrap"><p>Calculating growth simulation...</p></div>
+            ) : !growthData ? (
+              <p>No growth metrics loaded.</p>
+            ) : (
+              <>
+                {/* ML Growth Simulator Box */}
+                <div className="chart-card-box" style={{ marginBottom: 25, background: 'linear-gradient(135deg, rgba(8,145,178,0.15) 0%, rgba(139,92,246,0.15) 100%)', border: '1px solid rgba(8,145,178,0.3)' }}>
+                  <h4 style={{ color: '#38bdf8' }}>🤖 ML Store Growth & Revenue Uplift Simulator</h4>
+                  <p style={{ fontSize: '0.85rem', color: '#cbd5e1', margin: '4px 0 16px 0' }}>
+                    Based on your 30-day store revenue of <strong>₹{growthData.monthly_volume.toLocaleString()}</strong>, upgrading to Gold Super-Seller Tier produces:
+                  </p>
+
+                  <div className="overview-stats-grid" style={{ marginBottom: 15 }}>
+                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: 12, borderRadius: 8 }}>
+                      <span style={{ fontSize: '0.75rem', color: '#aaa' }}>Est. Monthly Commission Savings</span>
+                      <h3 style={{ margin: '4px 0 0 0', color: '#10b981' }}>+₹{growthData.ml_growth_simulator.estimated_monthly_savings.toLocaleString()}</h3>
+                    </div>
+                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: 12, borderRadius: 8 }}>
+                      <span style={{ fontSize: '0.75rem', color: '#aaa' }}>Predicted Sales Uplift</span>
+                      <h3 style={{ margin: '4px 0 0 0', color: '#38bdf8' }}>+{growthData.ml_growth_simulator.predicted_revenue_uplift_pct}% Volume</h3>
+                    </div>
+                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: 12, borderRadius: 8 }}>
+                      <span style={{ fontSize: '0.75rem', color: '#aaa' }}>Projected Net Profit Gain</span>
+                      <h3 style={{ margin: '4px 0 0 0', color: '#f59e0b' }}>+₹{growthData.ml_growth_simulator.predicted_net_profit_gain.toLocaleString()} / mo</h3>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Plan Comparison Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 20 }}>
+                  {growthData.tiers.map(t => (
+                    <div key={t.id} style={{ background: '#0f172a', border: t.is_current ? '2px solid #0891b2' : '1px solid #1e293b', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <h3 style={{ margin: 0, color: t.id === 'premium' ? '#f59e0b' : '#fff' }}>{t.name}</h3>
+                          {t.is_current && <span className="shop-tag">ACTIVE PLAN</span>}
+                        </div>
+                        <h2 style={{ fontSize: '2rem', margin: '16px 0 8px 0', color: '#0891b2' }}>{t.commission_rate}</h2>
+                        <ul style={{ paddingLeft: 20, margin: '16px 0', color: '#cbd5e1', fontSize: '0.85rem', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          {t.features.map((f, idx) => (
+                            <li key={idx}>✓ {f}</li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {!t.is_current && t.id === 'premium' && (
+                        <button className="add-to-inv-btn" onClick={handleUpgradeTier} style={{ width: '100%', marginTop: 20, padding: 12, fontWeight: 'bold' }}>
+                          🚀 Upgrade Store to Gold Tier (5% Flat)
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'settings' && (
+          <div className="shop-settings-section">
+            <div style={{ marginBottom: 20 }}>
+              <h3 style={{ margin: 0, fontSize: '1.4rem' }}>⚙️ Shop Operating Profile & Settings</h3>
+              <p className="text-muted" style={{ margin: '4px 0 0 0', fontSize: '0.85rem' }}>Manage store address, operating hours, delivery parameters, and payout bank accounts.</p>
+            </div>
+
+            {settingsLoading ? (
+              <div className="loading-spinner-wrap"><p>Loading store settings...</p></div>
+            ) : !settingsData ? (
+              <p>No settings data loaded.</p>
+            ) : (
+              <form onSubmit={handleSaveSettings} className="add-product-form-box" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                {/* AI Operating Hours Widget */}
+                {settingsData.ml_recommended_hours && (
+                  <div style={{ background: 'rgba(8, 145, 178, 0.1)', padding: 12, borderRadius: 8, borderLeft: '4px solid #0891b2' }}>
+                    <strong style={{ color: '#38bdf8', fontSize: '0.85rem' }}>🤖 ML Locality Hours Optimizer:</strong>
+                    <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#cbd5e1' }}>
+                      {settingsData.ml_recommended_hours.reason}. Suggested operating hours: <strong>{settingsData.ml_recommended_hours.recommended_open} - {settingsData.ml_recommended_hours.recommended_close}</strong>.
+                    </p>
+                  </div>
+                )}
+
+                <div className="modal-grid-form">
+                  <div className="modal-span-2">
+                    <label className="form-label">Store Name</label>
+                    <input
+                      type="text"
+                      className="form-input-text"
+                      value={settingsData.name || ''}
+                      onChange={e => setSettingsData({ ...settingsData, name: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="form-label">Shop Category / Type</label>
+                    <input
+                      type="text"
+                      className="form-input-text"
+                      value={settingsData.shop_type || ''}
+                      onChange={e => setSettingsData({ ...settingsData, shop_type: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="form-label">Area Locality</label>
+                    <input
+                      type="text"
+                      className="form-input-text"
+                      value={settingsData.area || ''}
+                      onChange={e => setSettingsData({ ...settingsData, area: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="modal-span-2">
+                    <label className="form-label">Full Street Address</label>
+                    <input
+                      type="text"
+                      className="form-input-text"
+                      value={settingsData.address || ''}
+                      onChange={e => setSettingsData({ ...settingsData, address: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="form-label">Opening Time</label>
+                    <input
+                      type="text"
+                      className="form-input-text"
+                      value={settingsData.opening_time || ''}
+                      onChange={e => setSettingsData({ ...settingsData, opening_time: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="form-label">Closing Time</label>
+                    <input
+                      type="text"
+                      className="form-input-text"
+                      value={settingsData.closing_time || ''}
+                      onChange={e => setSettingsData({ ...settingsData, closing_time: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="form-label">Delivery Radius (km)</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      className="form-input-text"
+                      value={settingsData.delivery_radius_km || 5.0}
+                      onChange={e => setSettingsData({ ...settingsData, delivery_radius_km: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="modal-span-2" style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 16, marginTop: 8 }}>
+                    <h4 style={{ margin: '0 0 12px 0', color: '#a78bfa' }}>📜 Legal & Business Compliance</h4>
+                  </div>
+
+                  <div>
+                    <label className="form-label">GST Identification Number (GSTIN)</label>
+                    <input
+                      type="text"
+                      className="form-input-text"
+                      placeholder="e.g. 24AAACG1234F1Z5"
+                      value={settingsData.gst_number || ''}
+                      onChange={e => setSettingsData({ ...settingsData, gst_number: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="form-label">FSSAI Food License Number</label>
+                    <input
+                      type="text"
+                      className="form-input-text"
+                      placeholder="e.g. 10020021000123"
+                      value={settingsData.fssai_license || ''}
+                      onChange={e => setSettingsData({ ...settingsData, fssai_license: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="form-label">Trade / Municipal License</label>
+                    <input
+                      type="text"
+                      className="form-input-text"
+                      value={settingsData.trade_license || ''}
+                      onChange={e => setSettingsData({ ...settingsData, trade_license: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="form-label">Free Delivery Threshold (₹)</label>
+                    <input
+                      type="number"
+                      className="form-input-text"
+                      value={settingsData.free_delivery_above || 500}
+                      onChange={e => setSettingsData({ ...settingsData, free_delivery_above: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="modal-span-2" style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 16, marginTop: 8 }}>
+                    <h4 style={{ margin: '0 0 12px 0', color: '#38bdf8' }}>Payout & Bank Account Configuration</h4>
+                  </div>
+
+                  <div>
+                    <label className="form-label">Account Holder Name</label>
+                    <input
+                      type="text"
+                      className="form-input-text"
+                      value={settingsData.bank_account_name || ''}
+                      onChange={e => setSettingsData({ ...settingsData, bank_account_name: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="form-label">Bank Account Number</label>
+                    <input
+                      type="text"
+                      className="form-input-text"
+                      value={settingsData.bank_account_number || ''}
+                      onChange={e => setSettingsData({ ...settingsData, bank_account_number: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="form-label">Bank IFSC Code</label>
+                    <input
+                      type="text"
+                      className="form-input-text"
+                      value={settingsData.bank_ifsc || ''}
+                      onChange={e => setSettingsData({ ...settingsData, bank_ifsc: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="form-label">Settlement UPI ID</label>
+                    <input
+                      type="text"
+                      className="form-input-text"
+                      value={settingsData.upi_id || ''}
+                      onChange={e => setSettingsData({ ...settingsData, upi_id: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <button type="submit" className="add-to-inv-btn" disabled={settingsSaving} style={{ padding: '12px 24px', alignSelf: 'flex-start', marginTop: 10 }}>
+                  {settingsSaving ? 'Saving Changes...' : '💾 Save Store Profile Settings'}
+                </button>
+              </form>
+            )}
+          </div>
+        )}
       </div>
+      
+      {/* Edit Inventory Modal */}
+      {editingItem && createPortal(
+        <div className="modal-backdrop" onClick={() => setEditingItem(null)}>
+          <div className="modal-container" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Edit Inventory Item</h3>
+              <button className="modal-close-btn" onClick={() => setEditingItem(null)}>✕</button>
+            </div>
+            <form onSubmit={handleSaveEdit}>
+              <div className="modal-body">
+                <div className="modal-grid-form">
+                  <div className="modal-span-2">
+                    <label className="form-label">Product Name</label>
+                    <input
+                      type="text"
+                      className="form-input-text"
+                      value={editingItem.name || ''}
+                      onChange={e => setEditingItem({ ...editingItem, name: e.target.value })}
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="form-label">Brand</label>
+                    <input
+                      type="text"
+                      className="form-input-text"
+                      value={editingItem.brand || ''}
+                      onChange={e => setEditingItem({ ...editingItem, brand: e.target.value })}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="form-label">Display Unit (Qty Label)</label>
+                    <input
+                      type="text"
+                      className="form-input-text"
+                      value={editingItem.quantity_label || ''}
+                      onChange={e => setEditingItem({ ...editingItem, quantity_label: e.target.value })}
+                      placeholder="e.g. 500 ml, 1 kg, pack of 3"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="form-label">Selling Price (₹)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      className="form-input-text"
+                      value={editingItem.price || 0}
+                      onChange={e => setEditingItem({ ...editingItem, price: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="form-label">Current Stock</label>
+                    <input
+                      type="number"
+                      className="form-input-text"
+                      value={editingItem.stock || 0}
+                      onChange={e => setEditingItem({ ...editingItem, stock: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="form-label">Min Stock (Reorder Alert)</label>
+                    <input
+                      type="number"
+                      className="form-input-text"
+                      value={editingItem.min_stock || 0}
+                      onChange={e => setEditingItem({ ...editingItem, min_stock: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="form-label">Max Stock Limit</label>
+                    <input
+                      type="number"
+                      className="form-input-text"
+                      value={editingItem.max_stock || 0}
+                      onChange={e => setEditingItem({ ...editingItem, max_stock: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div className="modal-span-2">
+                    <label className="form-label">Expiry Date</label>
+                    <input
+                      type="date"
+                      className="form-input-text"
+                      value={editingItem.expiry_date || ''}
+                      onChange={e => setEditingItem({ ...editingItem, expiry_date: e.target.value })}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="modal-cancel-btn" onClick={() => setEditingItem(null)}>
+                  Cancel
+                </button>
+                <button type="submit" className="modal-save-btn">
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   )
 }

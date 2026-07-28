@@ -27,8 +27,8 @@ from .views import (
     ShopAnalyticsView,
     ShopProductsListView,
     ShopToggleLiveInventoryView,
+    ShopToggleOpenView,
     RiderStatusToggleView,
-    RiderDashboardView,
     RiderDashboardView,
     UpdateDeliveryAssignmentView,
     DeliveryRecommendationView,
@@ -44,6 +44,14 @@ from .dashboard_views import (
     ShopExpiringProductsView,
     ShopSlowMovingProductsView,
     ShopWeatherView,
+    ShopSalesReportView,
+    ShopCustomerCRMView,
+    ShopSendCustomerOfferView,
+    ShopPromotionsView,
+    ShopGrowthHubView,
+    ShopUpgradeTierView,
+    ShopSettingsView,
+    ShopGlobalSearchView,
 )
 
 router = DefaultRouter()
@@ -76,8 +84,18 @@ urlpatterns = [
     path('shop/dashboard/slow-moving/', ShopSlowMovingProductsView.as_view(), name='dashboard_slow_moving'),
     path('shop/dashboard/weather/', ShopWeatherView.as_view(), name='dashboard_weather'),
 
+    path('shop/dashboard/reports/', ShopSalesReportView.as_view(), name='dashboard_reports'),
+    path('shop/dashboard/customers/', ShopCustomerCRMView.as_view(), name='dashboard_customers'),
+    path('shop/dashboard/customers/send-offer/', ShopSendCustomerOfferView.as_view(), name='dashboard_send_offer'),
+    path('shop/dashboard/promotions/', ShopPromotionsView.as_view(), name='dashboard_promotions'),
+    path('shop/dashboard/growth/', ShopGrowthHubView.as_view(), name='dashboard_growth'),
+    path('shop/dashboard/growth/upgrade/', ShopUpgradeTierView.as_view(), name='dashboard_upgrade_tier'),
+    path('shop/dashboard/settings/', ShopSettingsView.as_view(), name='dashboard_settings'),
+    path('shop/dashboard/search/', ShopGlobalSearchView.as_view(), name='dashboard_global_search'),
+
     path('shops/my-products/', ShopProductsListView.as_view(), name='shop_my_products'),
     path('shops/toggle-live/', ShopToggleLiveInventoryView.as_view(), name='shop_toggle_live'),
+    path('shops/toggle-open/', ShopToggleOpenView.as_view(), name='shop_toggle_open'),
     path('riders/toggle-online/', RiderStatusToggleView.as_view(), name='rider_toggle_online'),
     path('riders/dashboard/', RiderDashboardView.as_view(), name='rider_dashboard'),
     path('riders/assignments/update/', UpdateDeliveryAssignmentView.as_view(), name='rider_assignment_update'),

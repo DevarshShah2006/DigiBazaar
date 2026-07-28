@@ -5,11 +5,240 @@ import pandas as pd
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils.text import slugify
-from django.db.models import Count
+from django.db.models import Count, Q
 from core.models import Shop, Product, ShopProduct, Inventory, Category, Subcategory
 
+# Custom High-Quality Clothing Catalog
+CUSTOM_CLOTHING_PRODUCTS = [
+    {
+        "name": "Men's Slim Fit Cotton T-Shirt",
+        "brand": "Nike",
+        "price": 599.00,
+        "mrp": 899.00,
+        "quantity_label": "1 pc",
+        "image_url": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=500&auto=format&fit=crop",
+        "subcategory": "Men's Wear",
+        "rating": 4.7,
+        "review_count": 120
+    },
+    {
+        "name": "Women's High Rise Denim Jeans",
+        "brand": "Levi's",
+        "price": 1899.00,
+        "mrp": 2499.00,
+        "quantity_label": "1 pc",
+        "image_url": "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=500&auto=format&fit=crop",
+        "subcategory": "Women's Wear",
+        "rating": 4.6,
+        "review_count": 210
+    },
+    {
+        "name": "Unisex Fleece Pullover Hoodie",
+        "brand": "H&M",
+        "price": 1299.00,
+        "mrp": 1799.00,
+        "quantity_label": "1 pc",
+        "image_url": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=500&auto=format&fit=crop",
+        "subcategory": "Unisex Wear",
+        "rating": 4.8,
+        "review_count": 95
+    },
+    {
+        "name": "Ankle Length Cotton Socks (Pack of 3)",
+        "brand": "Puma",
+        "price": 349.00,
+        "mrp": 499.00,
+        "quantity_label": "3 Pairs",
+        "image_url": "https://images.unsplash.com/photo-1582966772680-860e372bb558?q=80&w=500&auto=format&fit=crop",
+        "subcategory": "Accessories",
+        "rating": 4.5,
+        "review_count": 140
+    },
+    {
+        "name": "Women's Floral Summer Dress",
+        "brand": "Zara",
+        "price": 1599.00,
+        "mrp": 2199.00,
+        "quantity_label": "1 pc",
+        "image_url": "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=500&auto=format&fit=crop",
+        "subcategory": "Women's Wear",
+        "rating": 4.7,
+        "review_count": 88
+    },
+    {
+        "name": "Men's Casual Linen Shirt",
+        "brand": "Tommy Hilfiger",
+        "price": 1999.00,
+        "mrp": 2799.00,
+        "quantity_label": "1 pc",
+        "image_url": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?q=80&w=500&auto=format&fit=crop",
+        "subcategory": "Men's Wear",
+        "rating": 4.4,
+        "review_count": 156
+    },
+    {
+        "name": "Classic Leather Belt for Men",
+        "brand": "Woodland",
+        "price": 699.00,
+        "mrp": 999.00,
+        "quantity_label": "1 pc",
+        "image_url": "https://images.unsplash.com/photo-1624222247344-550fb8ec8bd3?q=80&w=500&auto=format&fit=crop",
+        "subcategory": "Accessories",
+        "rating": 4.5,
+        "review_count": 65
+    },
+    {
+        "name": "Sport Running Athletic Shorts",
+        "brand": "Adidas",
+        "price": 799.00,
+        "mrp": 1099.00,
+        "quantity_label": "1 pc",
+        "image_url": "https://images.unsplash.com/photo-1539185441755-769473a23570?q=80&w=500&auto=format&fit=crop",
+        "subcategory": "Sportswear",
+        "rating": 4.6,
+        "review_count": 112
+    },
+    {
+        "name": "Unisex Knit Beanie Cap",
+        "brand": "H&M",
+        "price": 399.00,
+        "mrp": 599.00,
+        "quantity_label": "1 pc",
+        "image_url": "https://images.unsplash.com/photo-1576871337622-98d48d4353d0?q=80&w=500&auto=format&fit=crop",
+        "subcategory": "Accessories",
+        "rating": 4.3,
+        "review_count": 78
+    },
+    {
+        "name": "High-Waist Athletic Gym Leggings",
+        "brand": "Puma",
+        "price": 1199.00,
+        "mrp": 1499.00,
+        "quantity_label": "1 pc",
+        "image_url": "https://images.unsplash.com/photo-1506152983158-b4a74a01c721?q=80&w=500&auto=format&fit=crop",
+        "subcategory": "Sportswear",
+        "rating": 4.7,
+        "review_count": 134
+    }
+]
+
+# Custom High-Quality Pet Care Catalog
+CUSTOM_PET_PRODUCTS = [
+    {
+        "name": "Pedigree Adult Dry Dog Food (Chicken & Veg)",
+        "brand": "Pedigree",
+        "price": 429.00,
+        "mrp": 520.00,
+        "quantity_label": "1.2 kg",
+        "image_url": "https://images.unsplash.com/photo-1589722244358-f0ec9f8c8540?q=80&w=500&auto=format&fit=crop",
+        "subcategory": "Dog Food",
+        "rating": 4.8,
+        "review_count": 310
+    },
+    {
+        "name": "Whiskas Wet Cat Food (Salmon in Gravy)",
+        "brand": "Whiskas",
+        "price": 42.00,
+        "mrp": 48.00,
+        "quantity_label": "85 g",
+        "image_url": "https://images.unsplash.com/photo-1569591159212-b02ea8a9f239?q=80&w=500&auto=format&fit=crop",
+        "subcategory": "Cat Food",
+        "rating": 4.7,
+        "review_count": 480
+    },
+    {
+        "name": "Orthopedic Memory Foam Pet Bed",
+        "brand": "Chewers",
+        "price": 2199.00,
+        "mrp": 2799.00,
+        "quantity_label": "1 pc",
+        "image_url": "https://images.unsplash.com/photo-1576201836106-db1758fd1c97?q=80&w=500&auto=format&fit=crop",
+        "subcategory": "Bedding",
+        "rating": 4.9,
+        "review_count": 75
+    },
+    {
+        "name": "Squeaky Rubber Ball Dog Toy",
+        "brand": "Kong",
+        "price": 249.00,
+        "mrp": 299.00,
+        "quantity_label": "1 pc",
+        "image_url": "https://images.unsplash.com/photo-1581888227599-779811939961?q=80&w=500&auto=format&fit=crop",
+        "subcategory": "Dog Toys",
+        "rating": 4.6,
+        "review_count": 185
+    },
+    {
+        "name": "Adjustable Reflective Collar & Leash Set",
+        "brand": "Heads Up For Tails",
+        "price": 499.00,
+        "mrp": 599.00,
+        "quantity_label": "1 set",
+        "image_url": "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?q=80&w=500&auto=format&fit=crop",
+        "subcategory": "Pet Accessories",
+        "rating": 4.5,
+        "review_count": 92
+    },
+    {
+        "name": "Royal Canin Kitten Dry Food",
+        "brand": "Royal Canin",
+        "price": 849.00,
+        "mrp": 949.00,
+        "quantity_label": "400 g",
+        "image_url": "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=500&auto=format&fit=crop",
+        "subcategory": "Cat Food",
+        "rating": 4.8,
+        "review_count": 150
+    },
+    {
+        "name": "Tick & Flea Prevention Pet Shampoo",
+        "brand": "Himalaya",
+        "price": 220.00,
+        "mrp": 250.00,
+        "quantity_label": "200 ml",
+        "image_url": "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?q=80&w=500&auto=format&fit=crop",
+        "subcategory": "Grooming",
+        "rating": 4.4,
+        "review_count": 68
+    },
+    {
+        "name": "Interactive Feather Wand Cat Toy",
+        "brand": "Chewers",
+        "price": 149.00,
+        "mrp": 199.00,
+        "quantity_label": "1 pc",
+        "image_url": "https://images.unsplash.com/photo-1573865526739-10659fec78a5?q=80&w=500&auto=format&fit=crop",
+        "subcategory": "Cat Toys",
+        "rating": 4.7,
+        "review_count": 115
+    },
+    {
+        "name": "Cat Scratching Post with Hanging Ball",
+        "brand": "Pet Barn",
+        "price": 1199.00,
+        "mrp": 1499.00,
+        "quantity_label": "1 pc",
+        "image_url": "https://images.unsplash.com/photo-1545249390-6bdfa286032f?q=80&w=500&auto=format&fit=crop",
+        "subcategory": "Furniture",
+        "rating": 4.6,
+        "review_count": 89
+    },
+    {
+        "name": "Double Stainless Steel Pet Feeding Bowls",
+        "brand": "Pet Barn",
+        "price": 449.00,
+        "mrp": 549.00,
+        "quantity_label": "1 pc",
+        "image_url": "https://images.unsplash.com/photo-1535268647977-a403b69fc756?q=80&w=500&auto=format&fit=crop",
+        "subcategory": "Pet Accessories",
+        "rating": 4.5,
+        "review_count": 74
+    }
+]
+
+
 class Command(BaseCommand):
-    help = "Imports curated products from Zepto dataset.xlsx, maps them to master records, and links them dynamically to shops with custom inventory and prices."
+    help = "Imports curated products from Zepto dataset.xlsx, handles custom clothing & pet products, maps them uniquely to specialized shops, and clears old demo seeds."
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -58,7 +287,6 @@ class Command(BaseCommand):
         df = df[df.apply(keep_meat_eggs_row, axis=1)]
 
         # Exclude non-veg sub-categories from Frozen Food & Ice Creams
-        # (Exclude Non Veg Snacks, Raw Meats, Sausages, Salami & Ham)
         frozen_exclude_subs = ['Non Veg Snacks', 'Raw Meats', 'Sausages, Salami & Ham']
         df = df[~((df['Category'] == 'Frozen Food & Ice Creams') & (df['Sub-Category'].isin(frozen_exclude_subs)))]
 
@@ -73,7 +301,6 @@ class Command(BaseCommand):
         # Clean/Parse numeric columns
         df['Price'] = pd.to_numeric(df['Price'], errors='coerce').fillna(0.0)
         df['Original Price'] = pd.to_numeric(df['Original Price'], errors='coerce')
-        # If original price is missing or lower than selling price, fallback to price
         df['Original Price'] = df.apply(
             lambda r: r['Original Price'] if pd.notnull(r['Original Price']) and r['Original Price'] >= r['Price'] else r['Price'],
             axis=1
@@ -81,23 +308,18 @@ class Command(BaseCommand):
         df['Ratings'] = pd.to_numeric(df['Ratings'], errors='coerce')
         df['Review'] = pd.to_numeric(df['Review'], errors='coerce').fillna(0.0)
 
-        # Deduplicate master records by Name and Quantity (to keep master records unique)
-        # We'll keep the one with the highest Ratings / Reviews
+        # Deduplicate master records by Name and Quantity
         df = df.sort_values(by=['Ratings', 'Review'], ascending=[False, False])
         df_unique = df.drop_duplicates(subset=['Name', 'Quantity'], keep='first').copy()
-        self.stdout.write(f"Unique master products: {len(df_unique)}")
 
         # 2. Ranking and Sampling
-        # Score = Rating * 0.6 + normalized_Reviews * 0.4
-        # Handle null ratings for ranking by filling with neutral 4.2
         ranking_ratings = df_unique['Ratings'].fillna(4.2)
         reviews = df_unique['Review']
         max_reviews = reviews.max() if reviews.max() > 0 else 1.0
         normalized_reviews = reviews / max_reviews
         df_unique['Score'] = (ranking_ratings * 0.6) + (normalized_reviews * 0.4)
 
-        # Proportional sampling to get target_count (e.g. ~4500)
-        # Select top products within each category based on score
+        # Proportional sampling
         total_unique = len(df_unique)
         if total_unique <= target_count:
             selected_df = df_unique
@@ -106,14 +328,11 @@ class Command(BaseCommand):
             selected_rows = []
             for cat, count in category_counts.items():
                 cat_df = df_unique[df_unique['Category'] == cat].sort_values(by='Score', ascending=False)
-                # Proportional target allocation
                 cat_target = int(np.round((count / total_unique) * target_count))
-                # Ensure at least 5 products per category if possible
                 cat_target = max(min(cat_target, count), min(5, count))
                 selected_rows.append(cat_df.head(cat_target))
             selected_df = pd.concat(selected_rows).drop_duplicates(subset=['Name', 'Quantity'])
             
-            # If slightly short or over, adjust to target_count
             if len(selected_df) < target_count:
                 remaining = df_unique[~df_unique.index.isin(selected_df.index)].sort_values(by='Score', ascending=False)
                 needed = target_count - len(selected_df)
@@ -121,24 +340,25 @@ class Command(BaseCommand):
             elif len(selected_df) > target_count:
                 selected_df = selected_df.head(target_count)
 
-        self.stdout.write(self.style.SUCCESS(f"Selected {len(selected_df)} products for import."))
-
         if dry_run:
             self.stdout.write("Dry run complete. No database changes were made.")
-            # Print sample counts by category
-            print("\nSample Counts by Category:")
-            print(selected_df['Category'].value_counts())
             return
 
         # 3. Database operations
         with transaction.atomic():
-            if clear_db:
-                self.stdout.write(self.style.WARNING("Clearing previously imported Zepto categories, subcategories, products and inventory..."))
-                # Only delete products that have quantity_label set, to avoid deleting original 20 products
-                Product.objects.exclude(quantity_label="").delete()
-                # Remove categories created by import that are now empty
-                Category.objects.annotate(prod_count=Count('products')).filter(prod_count=0).delete()
-                Subcategory.objects.annotate(prod_count=Count('products')).filter(prod_count=0).delete()
+            # CLEAR PREVIOUS SEEDS (Requirement: Remove bad image seeds and clear shop products completely)
+            self.stdout.write(self.style.WARNING("Clearing previous inventory, shop products, and bad demo products..."))
+            
+            # Delete ALL shop products & inventories
+            ShopProduct.objects.all().delete()
+            Inventory.objects.all().delete()
+
+            # Delete products that contain "example.com" or have empty/null quantity_label
+            Product.objects.filter(
+                Q(image_url__icontains="example.com") |
+                Q(quantity_label="") |
+                Q(quantity_label__isnull=True)
+            ).delete()
 
             # Mapping categories from dataset to DB Categories
             CATEGORY_MAPPING = {
@@ -160,7 +380,7 @@ class Command(BaseCommand):
                 'Hygiene & Grooming': 'Grooming',
                 'Makeup & Beauty': 'Beauty & Makeup',
                 'Masala & Dry Fruits': 'Spices & Dry Fruits',
-                'Meats, Fish & Eggs': 'Dairy & Bakery',  # Only eggs will map here
+                'Meats, Fish & Eggs': 'Dairy & Bakery',
                 'Munchies': 'Snacks & Biscuits',
                 'Sweet Cravings': 'Sweets & Chocolates',
                 'Tea, Coffee & More': 'Tea & Coffee'
@@ -168,7 +388,7 @@ class Command(BaseCommand):
 
             # Create Categories in DB if missing
             db_categories = {}
-            for name in set(CATEGORY_MAPPING.values()):
+            for name in set(list(CATEGORY_MAPPING.values()) + ['Clothing', 'Pet Care']):
                 slug = slugify(name)
                 cat, _ = Category.objects.get_or_create(
                     slug=slug,
@@ -176,7 +396,7 @@ class Command(BaseCommand):
                 )
                 db_categories[name] = cat
 
-            # Brand whitelist for brand extraction
+            # Brand Whitelist
             BRAND_WHITELIST = [
                 'Amul', 'Tata', 'Parle', 'Britannia', 'Haldiram', 'MTR', 'Dabur', 'Patanjali', 'Nestle', 'Cadbury',
                 'Maggi', 'Lays', 'Kurkure', 'Bisleri', 'Paper Boat', 'Raw Pressery', 'Epigamia', 'Mother Dairy',
@@ -189,13 +409,7 @@ class Command(BaseCommand):
                 'Good Day', 'Jim Jam', 'Sunfeast', 'Two Brothers', '24 Mantra', 'Organic Tattva', 'True Elements',
                 'Yoga Bar', 'Open Secret', 'The Whole Truth', 'Sleepy Owl', 'Rage Coffee', 'Country Delight',
                 'Fresho', 'SafeHarvest', 'Garnier', 'Loreal', 'Pepsodent', 'Sensodyne', 'Close Up', 'Lizol',
-                'Harpic', 'Comfort', 'Ariel', 'Tide', 'Rin', 'Pril', 'Exo', 'Hit', 'Goodknight', 'All Out',
-                'Pedigree', 'Whiskas', 'Real', 'Tropicana', 'Bisk Farm', 'McVities', 'Unibic', 'Kwality Walls',
-                'Amulya', 'Taaza', 'Gold', 'Cow Milk', 'Go Cheese', 'Britannia Cheese', 'Nutrella', 'Saffola Oats',
-                'Kelloggs', 'Bagrrys', 'Quaker', 'Chocos', 'Honey', 'Lion Dates', 'Kissan', 'Hershey', 'Nutella',
-                'Veeba', 'Funfoods', 'Del Monte', 'Nando', 'Samyang', 'Ching', 'Smith & Jones', 'Knorr', 'Yippee',
-                'Top Ramen', 'Pillsbury', 'Suhana', 'Everest', 'Badshah', 'MDH', 'Catch', 'Keya', 'Urban Platter',
-                'Happilo', 'Nutraj', 'Solimo', 'Vedaka', 'Borges', 'Figaro', 'Disano'
+                'Harpic', 'Comfort', 'Ariel', 'Tide', 'Rin', 'Pril', 'Exo', 'Hit', 'Goodknight', 'All Out'
             ]
 
             def extract_brand(product_name):
@@ -233,17 +447,15 @@ class Command(BaseCommand):
                 'Bath & Body':          (20, 70),
                 'Grooming':             (15, 60),
                 'Homegrown':            (20, 80),
+                'Clothing':             (20, 60),
+                'Pet Care':             (15, 50),
             }
 
             # Shop personalities for Kirana stores (13 stores total)
             KIRANA_SHOP_PROFILES = [
-                # daily essentials focus
                 {'profile': 'kirana_daily', 'focus': ['Dairy & Bakery', 'Fresh Produce', 'Grocery'], 'weight': 0.6, 'secondary': ['Snacks & Biscuits', 'Beverages', 'Cleaning'], 'product_count': (180, 250)},
-                # snacks & drinks focus
                 {'profile': 'kirana_snacks', 'focus': ['Snacks & Biscuits', 'Beverages', 'Sweets & Chocolates'], 'weight': 0.6, 'secondary': ['Grocery', 'Tea & Coffee', 'Breakfast & Pantry'], 'product_count': (150, 200)},
-                # organic / premium focus
                 {'profile': 'kirana_organic', 'focus': ['Homegrown', 'Fresh Produce', 'Spices & Dry Fruits'], 'weight': 0.6, 'secondary': ['Grocery', 'Tea & Coffee', 'Breakfast & Pantry'], 'product_count': (120, 180)},
-                # general/widest range
                 {'profile': 'kirana_general', 'focus': ['Grocery', 'Spices & Dry Fruits', 'Breakfast & Pantry'], 'weight': 0.4, 'secondary': ['Dairy & Bakery', 'Beverages', 'Snacks & Biscuits', 'Tea & Coffee', 'Frozen Foods', 'Baby & Kids'], 'product_count': (220, 300)}
             ]
 
@@ -251,26 +463,83 @@ class Command(BaseCommand):
             shops = list(Shop.objects.all())
             self.stdout.write(f"Found {len(shops)} shops in the database.")
 
-            # Assign profiles to Kirana shops
             kirana_shops = [s for s in shops if s.shop_type == 'kirana']
             kirana_shop_assignments = {}
             for idx, shop in enumerate(kirana_shops):
-                # Cycle through the 4 profiles to distribute personality profiles evenly
                 profile_cfg = KIRANA_SHOP_PROFILES[idx % len(KIRANA_SHOP_PROFILES)]
                 kirana_shop_assignments[shop.id] = profile_cfg
-                self.stdout.write(f"Shop '{shop.name}' assigned to profile '{profile_cfg['profile']}'")
 
-            # Batch creation lists
+            # A. Create Custom Clothing Products
+            self.stdout.write("Creating custom clothing catalog...")
+            cat_clothing = db_categories['Clothing']
+            clothing_db_products = []
+            for item in CUSTOM_CLOTHING_PRODUCTS:
+                subcat_name = item['subcategory']
+                subcat_slug = slugify(subcat_name)
+                subcat, _ = Subcategory.objects.get_or_create(
+                    category=cat_clothing,
+                    slug=subcat_slug,
+                    defaults={'name': subcat_name, 'is_active': True}
+                )
+                prod, _ = Product.objects.get_or_create(
+                    name=item['name'],
+                    defaults={
+                        'description': f"Premium quality {item['name']}.",
+                        'brand': item['brand'],
+                        'category': cat_clothing,
+                        'subcategory': subcat,
+                        'mrp': item['mrp'],
+                        'selling_price': item['price'],
+                        'price': item['price'],
+                        'quantity_label': item['quantity_label'],
+                        'rating': item['rating'],
+                        'review_count': item['review_count'],
+                        'image_url': item['image_url'],
+                        'status': 'active',
+                        'visibility': True,
+                        'food_type': 'na'
+                    }
+                )
+                clothing_db_products.append(prod)
+
+            # B. Create Custom Pet Care Products
+            self.stdout.write("Creating custom pet care catalog...")
+            cat_pet = db_categories['Pet Care']
+            pet_db_products = []
+            for item in CUSTOM_PET_PRODUCTS:
+                subcat_name = item['subcategory']
+                subcat_slug = slugify(subcat_name)
+                subcat, _ = Subcategory.objects.get_or_create(
+                    category=cat_pet,
+                    slug=subcat_slug,
+                    defaults={'name': subcat_name, 'is_active': True}
+                )
+                prod, _ = Product.objects.get_or_create(
+                    name=item['name'],
+                    defaults={
+                        'description': f"High quality {item['name']} for your pets.",
+                        'brand': item['brand'],
+                        'category': cat_pet,
+                        'subcategory': subcat,
+                        'mrp': item['mrp'],
+                        'selling_price': item['price'],
+                        'price': item['price'],
+                        'quantity_label': item['quantity_label'],
+                        'rating': item['rating'],
+                        'review_count': item['review_count'],
+                        'image_url': item['image_url'],
+                        'status': 'active',
+                        'visibility': True,
+                        'food_type': 'na'
+                    }
+                )
+                pet_db_products.append(prod)
+
+            # C. Create Zepto Dataset Products
+            self.stdout.write("Creating Zepto dataset products...")
             products_to_create = []
-            shop_products_to_create = []
-            inventories_to_create = []
-
-            # 4. Create Master Products (in-memory first, then bulk create or get_or_create)
-            created_products = []
+            created_zepto_products = []
             
-            self.stdout.write("Creating master products...")
-            
-            # Pre-fetch existing products to prevent duplicates
             existing_products_map = {
                 (p.name.lower().strip(), p.quantity_label.lower().strip()): p 
                 for p in Product.objects.all()
@@ -280,17 +549,14 @@ class Command(BaseCommand):
                 name = str(row['Name']).strip()
                 qty = str(row['Quantity']).strip()
                 
-                # Check for duplicate
                 key = (name.lower(), qty.lower())
                 if key in existing_products_map:
                     product = existing_products_map[key]
                 else:
-                    # Resolve category and subcategory
                     dataset_cat = row['Category']
                     db_cat_name = CATEGORY_MAPPING.get(dataset_cat, 'Grocery')
                     category_obj = db_categories[db_cat_name]
 
-                    # Create subcategory (slugified)
                     subcat_name = str(row['Sub-Category']).strip()
                     subcat_slug = slugify(subcat_name)
                     subcategory_obj, _ = Subcategory.objects.get_or_create(
@@ -299,10 +565,7 @@ class Command(BaseCommand):
                         defaults={'name': subcat_name, 'is_active': True}
                     )
 
-                    # Extract Brand
                     brand = extract_brand(name)
-
-                    # Rating (Store as None/NULL if NaN)
                     rating_val = row['Ratings']
                     if pd.isna(rating_val) or rating_val <= 0:
                         rating_val = None
@@ -326,43 +589,53 @@ class Command(BaseCommand):
                     )
                     products_to_create.append(product)
                 
-                created_products.append((product, row))
+                created_zepto_products.append((product, row))
 
             if products_to_create:
                 Product.objects.bulk_create(products_to_create)
-                self.stdout.write(self.style.SUCCESS(f"Bulk created {len(products_to_create)} new master products."))
+                self.stdout.write(self.style.SUCCESS(f"Bulk created {len(products_to_create)} new master products from Zepto."))
                 
-                # Refresh from DB to get IDs
                 db_prods = {
                     (p.name.lower().strip(), p.quantity_label.lower().strip()): p 
-                    for p in Product.objects.exclude(quantity_label="")
+                    for p in Product.objects.all()
                 }
-                # Update created_products references
                 updated_created = []
-                for prod, row in created_products:
+                for prod, row in created_zepto_products:
                     if prod.id is None:
                         key = (prod.name.lower().strip(), prod.quantity_label.lower().strip())
                         prod = db_prods.get(key, prod)
                     updated_created.append((prod, row))
-                created_products = updated_created
+                created_zepto_products = updated_created
 
-            # Group products by Category to make shop assignment faster
+            # Group Zepto products by Category
             category_products = {}
-            for prod, row in created_products:
+            for prod, row in created_zepto_products:
                 cat_name = prod.category.name
                 if cat_name not in category_products:
                     category_products[cat_name] = []
                 category_products[cat_name].append((prod, row))
 
-            # 5. Link to Shops & Create Inventory
-            self.stdout.write("Linking products to shops based on shop types and personalities...")
+            # D. Link to Shops & Create Inventory
+            self.stdout.write("Linking products to shops...")
+            shop_products_to_create = []
+            inventories_to_create = []
 
             for shop in shops:
                 shop_type = shop.shop_type
                 eligible_prods = []
 
-                if shop_type == 'kirana':
-                    # Determine personality
+                if shop_type == 'clothing':
+                    # Clothing shops get ONLY custom clothing products. (NO Zepto products)
+                    eligible_prods = [(p, None) for p in clothing_db_products]
+                    self.stdout.write(f"Linking clothing shop '{shop.name}' ONLY with custom clothing catalog.")
+
+                elif shop_type == 'pet':
+                    # Pet shops get ONLY custom pet products. (NO Zepto products)
+                    eligible_prods = [(p, None) for p in pet_db_products]
+                    self.stdout.write(f"Linking pet shop '{shop.name}' ONLY with custom pet catalog.")
+
+                elif shop_type == 'kirana':
+                    # Kirana shops get Zepto products, NO clothing/pet
                     profile_cfg = kirana_shop_assignments.get(shop.id)
                     focus_cats = profile_cfg['focus']
                     secondary_cats = profile_cfg['secondary']
@@ -370,20 +643,18 @@ class Command(BaseCommand):
                     min_cnt, max_cnt = profile_cfg['product_count']
                     target_shop_cnt = random.randint(min_cnt, max_cnt)
 
-                    # Gather products from focus and secondary categories
                     focus_pool = []
                     for cat in focus_cats:
-                        focus_pool.extend(category_products.get(cat, []))
+                        if cat not in ['Clothing', 'Pet Care']:
+                            focus_pool.extend(category_products.get(cat, []))
                     
                     secondary_pool = []
                     for cat in secondary_cats:
-                        secondary_pool.extend(category_products.get(cat, []))
+                        if cat not in ['Clothing', 'Pet Care']:
+                            secondary_pool.extend(category_products.get(cat, []))
 
-                    # Sample from focus pool
                     focus_target = int(target_shop_cnt * weight)
                     focus_sampled = random.sample(focus_pool, min(focus_target, len(focus_pool))) if focus_pool else []
-
-                    # Sample from secondary pool
                     sec_target = target_shop_cnt - len(focus_sampled)
                     sec_sampled = random.sample(secondary_pool, min(sec_target, len(secondary_pool))) if secondary_pool else []
 
@@ -393,12 +664,6 @@ class Command(BaseCommand):
                     # Health & Pharma only
                     pool = category_products.get('Health & Pharma', [])
                     target_shop_cnt = random.randint(80, 130)
-                    eligible_prods = random.sample(pool, min(target_shop_cnt, len(pool))) if pool else []
-
-                elif shop_type == 'clothing':
-                    # Beauty & Makeup, Grooming
-                    pool = category_products.get('Beauty & Makeup', []) + category_products.get('Grooming', [])
-                    target_shop_cnt = random.randint(60, 100)
                     eligible_prods = random.sample(pool, min(target_shop_cnt, len(pool))) if pool else []
 
                 elif shop_type == 'snacks':
@@ -419,24 +684,17 @@ class Command(BaseCommand):
                     target_shop_cnt = random.randint(80, 120)
                     eligible_prods = random.sample(pool, min(target_shop_cnt, len(pool))) if pool else []
 
-                elif shop_type == 'pet':
-                    # Zepto has no pet products, keep empty
-                    eligible_prods = []
-
-                # Create ShopProduct & Inventory entries
-                for prod, row in eligible_prods:
-                    # Shop-specific price variation (±5%)
+                # Create linkages
+                for prod, _ in eligible_prods:
                     price_var = random.uniform(-0.05, 0.05)
                     custom_price = round(float(prod.selling_price) * (1.0 + price_var), 2)
                     
-                    # Ensure price doesn't exceed MRP
                     mrp_float = float(prod.mrp)
                     if custom_price > mrp_float:
                         custom_price = mrp_float
                     if custom_price <= 0:
                         custom_price = float(prod.selling_price)
 
-                    # Create M2M ShopProduct link
                     shop_products_to_create.append(ShopProduct(
                         shop=shop,
                         product=prod,
@@ -444,7 +702,6 @@ class Command(BaseCommand):
                         is_available=True
                     ))
 
-                    # Determine stock level range by Category (Req #3)
                     cat_name = prod.category.name
                     stock_min, stock_max = STOCK_RANGES.get(cat_name, (10, 50))
                     stock_qty = random.randint(stock_min, stock_max)
@@ -458,12 +715,12 @@ class Command(BaseCommand):
                         reorder_level=10,
                         min_stock=5,
                         max_stock=500,
-                        purchase_price=round(custom_price * 0.75, 2), # 25% profit margin simulation
+                        purchase_price=round(custom_price * 0.75, 2),
                         selling_price=custom_price,
                         expiry_date=None,
                     ))
 
-            # Bulk create relationships
+            # Bulk write
             if shop_products_to_create:
                 seen_relations = set()
                 unique_shop_products = []
@@ -483,4 +740,4 @@ class Command(BaseCommand):
                     f"Successfully created {len(unique_shop_products)} ShopProduct relationships and Inventory records."
                 ))
 
-        self.stdout.write(self.style.SUCCESS("Zepto Product Import command finished successfully!"))
+        self.stdout.write(self.style.SUCCESS("Zepto & Custom Product Import finished successfully!"))

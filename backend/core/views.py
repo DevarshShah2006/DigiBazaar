@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Shop, Product, Order, OrderItem, ShopOwner, Wishlist, Rider, DeliveryAssignment, Category, Subcategory, Inventory, DemandForecast
+from .models import Shop, Product, Order, OrderItem, ShopOwner, Wishlist, Rider, DeliveryAssignment, Category, Subcategory, Inventory, DemandForecast, ShopProduct
 from .serializers import (
     ShopSerializer,
     ProductSerializer,
@@ -772,12 +772,36 @@ class ShopProductsListView(APIView):
         if not shop:
             return Response({"detail": "Shop not found"}, status=status.HTTP_404_NOT_FOUND)
         
-        products = shop.products.all()
-        serializer = ProductSerializer(products, many=True)
+        # Get all inventories for this shop
+        inventories = Inventory.objects.filter(shop=shop).select_related('product')
+        
+        products_data = []
+        for inv in inventories:
+            prod = inv.product
+            sp = ShopProduct.objects.filter(shop=shop, product=prod).first()
+            custom_price = sp.custom_price if sp else inv.selling_price
+            if not custom_price:
+                custom_price = prod.price
+
+            products_data.append({
+                "id": prod.id,
+                "name": prod.name,
+                "brand": prod.brand,
+                "image_url": prod.image_url,
+                "quantity_label": prod.quantity_label,
+                "price": float(custom_price),  # Custom shop price
+                "base_price": float(prod.price),
+                "stock": inv.current_stock,
+                "min_stock": inv.min_stock,
+                "max_stock": inv.max_stock,
+                "expiry_date": inv.expiry_date.strftime("%Y-%m-%d") if inv.expiry_date else "",
+                "inventory_id": inv.id,
+            })
+            
         return Response({
             "shop_name": shop.name,
             "live_inventory": shop.live_inventory,
-            "products": serializer.data
+            "products": products_data
         })
 
     def post(self, request):
@@ -797,8 +821,95 @@ class ShopProductsListView(APIView):
         if not product:
             return Response({"detail": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
             
+        # Create ShopProduct & Inventory relations
+        sp, _ = ShopProduct.objects.get_or_create(
+            shop=shop,
+            product=product,
+            defaults={'custom_price': product.price, 'is_available': True}
+        )
+        
+        Inventory.objects.get_or_create(
+            shop=shop,
+            product=product,
+            defaults={
+                'current_stock': 50,
+                'min_stock': 5,
+                'max_stock': 500,
+                'selling_price': product.price,
+                'purchase_price': round(float(product.price) * 0.75, 2)
+            }
+        )
+        
+        # Link product to shop's products list
         shop.products.add(product)
+        
         return Response({"status": "added", "product_id": product.id}, status=status.HTTP_201_CREATED)
+
+    def put(self, request):
+        owner = getattr(request.user, "shop_owner_profile", None)
+        if owner is None:
+            return Response({"detail": "Not a shop owner"}, status=status.HTTP_403_FORBIDDEN)
+        
+        shop = Shop.objects.filter(owner=owner).first()
+        if not shop:
+            return Response({"detail": "Shop not found"}, status=status.HTTP_404_NOT_FOUND)
+            
+        product_id = request.data.get('product_id')
+        if not product_id:
+            return Response({"detail": "product_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        product = Product.objects.filter(pk=product_id).first()
+        if not product:
+            return Response({"detail": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
+            
+        # Retrieve or create ShopProduct and Inventory
+        sp, _ = ShopProduct.objects.get_or_create(shop=shop, product=product)
+        inv, _ = Inventory.objects.get_or_create(shop=shop, product=product)
+        
+        # Update Product fields (name, brand, quantity_label)
+        if 'name' in request.data:
+            product.name = request.data['name']
+        if 'brand' in request.data:
+            product.brand = request.data['brand']
+        if 'quantity_label' in request.data:
+            product.quantity_label = request.data['quantity_label']
+        product.save()
+        
+        # Update ShopProduct custom price
+        if 'price' in request.data and request.data['price'] != "":
+            try:
+                price_val = float(request.data['price'])
+                sp.custom_price = price_val
+                inv.selling_price = price_val
+                inv.purchase_price = round(price_val * 0.75, 2)
+            except ValueError:
+                pass
+        sp.save()
+        
+        # Update Inventory fields
+        if 'stock' in request.data and request.data['stock'] != "":
+            try:
+                inv.current_stock = int(request.data['stock'])
+            except ValueError:
+                pass
+        if 'min_stock' in request.data and request.data['min_stock'] != "":
+            try:
+                inv.min_stock = int(request.data['min_stock'])
+                inv.reorder_level = int(request.data['min_stock'])
+            except ValueError:
+                pass
+        if 'max_stock' in request.data and request.data['max_stock'] != "":
+            try:
+                inv.max_stock = int(request.data['max_stock'])
+            except ValueError:
+                pass
+        if 'expiry_date' in request.data:
+            val = request.data['expiry_date']
+            inv.expiry_date = val if val else None
+            
+        inv.save()
+        
+        return Response({"status": "updated", "product_id": product.id})
 
     def delete(self, request):
         owner = getattr(request.user, "shop_owner_profile", None)
@@ -817,7 +928,11 @@ class ShopProductsListView(APIView):
         if not product:
             return Response({"detail": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
             
+        # Delete ShopProduct and Inventory
+        ShopProduct.objects.filter(shop=shop, product=product).delete()
+        Inventory.objects.filter(shop=shop, product=product).delete()
         shop.products.remove(product)
+        
         return Response({"status": "removed", "product_id": product.id}, status=status.HTTP_200_OK)
 
 
@@ -836,6 +951,23 @@ class ShopToggleLiveInventoryView(APIView):
         shop.live_inventory = not shop.live_inventory
         shop.save()
         return Response({"live_inventory": shop.live_inventory, "shop_name": shop.name})
+
+
+class ShopToggleOpenView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        owner = getattr(request.user, "shop_owner_profile", None)
+        if owner is None:
+            return Response({"detail": "Not a shop owner"}, status=status.HTTP_403_FORBIDDEN)
+        
+        shop = Shop.objects.filter(owner=owner).first()
+        if not shop:
+            return Response({"detail": "Shop not found"}, status=status.HTTP_404_NOT_FOUND)
+            
+        shop.is_open = not shop.is_open
+        shop.save()
+        return Response({"is_open": shop.is_open, "shop_name": shop.name})
 
 
 class RiderStatusToggleView(APIView):

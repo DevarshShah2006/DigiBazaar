@@ -5,6 +5,7 @@ import { CartProvider, useCart } from './context/CartContext'
 import AppRoutes from './routes/AppRoutes'
 import Cart from './components/Cart/Cart'
 import './App.css'
+import { fetchJson } from './api/api'
 
 // ── 1. CUSTOMER NAVBAR (TEXT ONLY) ──
 function CustomerNavbar() {
@@ -254,70 +255,282 @@ function ShopOwnerNavbar() {
   const { logout } = useAuth()
   const [storeOpen, setStoreOpen] = useState(true)
   const [liveInventory, setLiveInventory] = useState(true)
+  const [revenue, setRevenue] = useState(0)
+  const [shopName, setShopName] = useState('Shopkeeper')
+
+  // Search, Alerts & Help Modals
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState(null)
+  const [searchFocused, setSearchFocused] = useState(false)
+  const [alertsOpen, setAlertsOpen] = useState(false)
+  const [helpOpen, setHelpOpen] = useState(false)
+
+  const searchRef = useRef(null)
+
+  const loadNavbarData = () => {
+    fetchJson('/shops/my-products/')
+      .then(data => {
+        if (data) {
+          setStoreOpen(data.is_open)
+          setLiveInventory(data.live_inventory)
+          setShopName(data.shop_name || 'Shopkeeper')
+        }
+      })
+      .catch(() => {})
+
+    fetchJson('/shop/dashboard/revenue-today/')
+      .then(data => {
+        if (data) {
+          setRevenue(data.today_total || 0)
+        }
+      })
+      .catch(() => {})
+  }
+
+  useEffect(() => {
+    loadNavbarData()
+
+    const syncStatus = () => {
+      loadNavbarData()
+    }
+    window.addEventListener('liveInventoryToggled', syncStatus)
+    window.addEventListener('shopStatusChanged', syncStatus)
+    return () => {
+      window.removeEventListener('liveInventoryToggled', syncStatus)
+      window.removeEventListener('shopStatusChanged', syncStatus)
+    }
+  }, [])
+
+  // Global Search API Call
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults(null)
+      return
+    }
+
+    const timer = setTimeout(() => {
+      fetchJson(`/shop/dashboard/search/?q=${encodeURIComponent(searchQuery.trim())}`)
+        .then(data => setSearchResults(data))
+        .catch(() => {})
+    }, 250)
+
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setSearchFocused(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const handleToggleStore = () => {
-    setStoreOpen(!storeOpen)
-    alert(`Store Status toggled: Now ${!storeOpen ? 'OPEN' : 'CLOSED'}`)
+    fetchJson('/shops/toggle-open/', { method: 'POST' })
+      .then(res => {
+        setStoreOpen(res.is_open)
+        window.dispatchEvent(new Event('shopStatusChanged'))
+      })
+      .catch(() => {})
   }
 
   const handleToggleInventory = () => {
-    setLiveInventory(!liveInventory)
-    localStorage.setItem('live_inventory_dashboard', (!liveInventory).toString())
-    window.dispatchEvent(new Event('liveInventoryToggled'))
+    fetchJson('/shops/toggle-live/', { method: 'POST' })
+      .then(res => {
+        setLiveInventory(res.live_inventory)
+        window.dispatchEvent(new Event('liveInventoryToggled'))
+      })
+      .catch(() => {})
+  }
+
+  const handleSearchResultClick = (tabName) => {
+    localStorage.setItem('active_shop_tab', tabName)
+    window.dispatchEvent(new Event('shopTabChanged'))
+    setSearchFocused(false)
+    setSearchQuery('')
   }
 
   return (
     <header className="shop-owner-navbar">
       <Link to="/dashboard" className="shop-owner-nav-logo">
-        DigiBazaar Shopkeeper
+        🏪 {shopName}
       </Link>
 
-      <div className="shop-navbar-search-container">
+      <div className="shop-navbar-search-container" ref={searchRef}>
         <input 
           type="text" 
           placeholder="Search products, orders, customers, invoices, barcode/SKU..."
           className="shop-navbar-search-input"
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          onFocus={() => setSearchFocused(true)}
         />
+
+        {searchFocused && searchQuery.trim() !== '' && (
+          <div className="search-suggestions-dropdown" style={{ width: '100%', top: '48px', position: 'absolute', zIndex: 1000, background: '#0f172a', border: '1px solid #1e293b', borderRadius: '10px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', padding: '12px' }}>
+            <div className="suggestion-header" style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#94a3b8', marginBottom: 8, borderBottom: '1px solid #1e293b', paddingBottom: 4 }}>
+              Global Store Search Results
+            </div>
+            
+            {searchResults ? (
+              <div style={{ maxHeight: '320px', overflowY: 'auto' }}>
+                {searchResults.orders?.length > 0 && (
+                  <div style={{ marginBottom: 10 }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#38bdf8' }}>📦 Orders ({searchResults.orders.length})</span>
+                    {searchResults.orders.map(o => (
+                      <div key={o.id} onClick={() => handleSearchResultClick('orders')} style={{ padding: '6px 8px', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Order #{o.id} - {o.customer}</span>
+                        <strong style={{ color: '#22c55e' }}>₹{o.total_price}</strong>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {searchResults.products?.length > 0 && (
+                  <div style={{ marginBottom: 10 }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#a78bfa' }}>🛍️ Catalog Items ({searchResults.products.length})</span>
+                    {searchResults.products.map(p => (
+                      <div key={p.id} onClick={() => handleSearchResultClick('inventory')} style={{ padding: '6px 8px', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between' }}>
+                        <span>{p.name} ({p.brand})</span>
+                        <span style={{ color: '#cbd5e1' }}>Stock: {p.stock}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {searchResults.coupons?.length > 0 && (
+                  <div>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#f59e0b' }}>🏷️ Coupons ({searchResults.coupons.length})</span>
+                    {searchResults.coupons.map(c => (
+                      <div key={c.id} onClick={() => handleSearchResultClick('promotions')} style={{ padding: '6px 8px', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Code: {c.code}</span>
+                        <span style={{ color: '#f59e0b' }}>{c.discount} OFF</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {!searchResults.orders?.length && !searchResults.products?.length && !searchResults.coupons?.length && (
+                  <div style={{ padding: '12px', fontSize: '0.85rem', color: '#94a3b8', textAlign: 'center' }}>
+                    No matching store records found.
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div style={{ padding: '8px', fontSize: '0.8rem', color: '#94a3b8' }}>Searching...</div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="shop-navbar-right">
         {/* Store Open Status */}
-        <div className="shop-navbar-toggle-group" onClick={handleToggleStore}>
+        <div className="shop-navbar-toggle-group" onClick={handleToggleStore} title="Click to toggle open status">
           <span className={storeOpen ? 'toggle-dot-active' : 'toggle-dot-inactive'}></span>
           <span>{storeOpen ? 'Store Open' : 'Store Closed'}</span>
         </div>
 
         {/* Live Inventory Status */}
-        <div className="shop-navbar-toggle-group" onClick={handleToggleInventory}>
+        <div className="shop-navbar-toggle-group" onClick={handleToggleInventory} title="Click to toggle live inventory priority">
           <span className={liveInventory ? 'toggle-dot-active' : 'toggle-dot-inactive'}></span>
           <span>{liveInventory ? 'Live Inventory: ON' : 'Live Inventory: OFF'}</span>
         </div>
 
         {/* Revenue Badge */}
-        <div className="shop-navbar-revenue">
-          Today: ₹14,500
+        <div className="shop-navbar-revenue" style={{ fontWeight: 'bold' }}>
+          Today: ₹{parseFloat(revenue).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
         </div>
 
         {/* Notifications */}
-        <span className="shop-navbar-bell" onClick={() => alert('New Order Alert: Order #603 pending approval')} style={{ cursor: 'pointer' }}>
+        <span className="shop-navbar-bell" onClick={() => setAlertsOpen(true)} style={{ cursor: 'pointer' }}>
           Alerts
         </span>
 
         {/* Help */}
-        <span className="text-muted" style={{ cursor: 'pointer' }} onClick={() => alert('DigiBazaar Support Desk: support@digibazaar.in')}>
+        <span className="text-muted" style={{ cursor: 'pointer' }} onClick={() => setHelpOpen(true)}>
           Help
         </span>
 
         {/* Profile Avatar */}
         <div className="shop-navbar-avatar" title="Merchant Profile" onClick={logout} style={{ cursor: 'pointer' }}>
-          M
+          {shopName[0]?.toUpperCase() || 'M'}
         </div>
       </div>
+
+      {/* Operational Alerts Modal */}
+      {alertsOpen && (
+        <div className="modal-backdrop" onClick={() => setAlertsOpen(false)}>
+          <div className="modal-container" onClick={e => e.stopPropagation()} style={{ maxWidth: '450px' }}>
+            <div className="modal-header">
+              <h3>🔔 Store Operational Center</h3>
+              <button className="modal-close-btn" onClick={() => setAlertsOpen(false)}>✕</button>
+            </div>
+            <div className="modal-body" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ background: 'rgba(59, 130, 246, 0.1)', borderLeft: '4px solid #3b82f6', padding: '10px 12px', borderRadius: '4px' }}>
+                <strong style={{ color: '#38bdf8', fontSize: '0.9rem' }}>✓ System Operational</strong>
+                <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#cbd5e1' }}>DigiBazaar dispatch server & payment gateways running smoothly.</p>
+              </div>
+
+              <div style={{ background: 'rgba(245, 158, 11, 0.1)', borderLeft: '4px solid #f59e0b', padding: '10px 12px', borderRadius: '4px' }}>
+                <strong style={{ color: '#fbbf24', fontSize: '0.9rem' }}>⚡ Auto-Dispatch Reminder</strong>
+                <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#cbd5e1' }}>Live Inventory is enabled. Unconfirmed orders will auto-accept within 90 seconds.</p>
+              </div>
+
+              <div style={{ background: 'rgba(16, 185, 129, 0.1)', borderLeft: '4px solid #10b981', padding: '10px 12px', borderRadius: '4px' }}>
+                <strong style={{ color: '#34d399', fontSize: '0.9rem' }}>🤖 ML Demand Forecast Ready</strong>
+                <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#cbd5e1' }}>Tomorrow's stock demand predictions updated. Check Inventory tab for reorder alerts.</p>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="modal-cancel-btn" onClick={() => setAlertsOpen(false)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Help & Support Drawer */}
+      {helpOpen && (
+        <div className="modal-backdrop" onClick={() => setHelpOpen(false)}>
+          <div className="modal-container" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <div className="modal-header">
+              <h3>❓ Merchant AI Support Desk</h3>
+              <button className="modal-close-btn" onClick={() => setHelpOpen(false)}>✕</button>
+            </div>
+            <div className="modal-body" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <p style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Have questions about commissions, deliveries, or inventory management?</p>
+              
+              <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <h5 style={{ margin: '0 0 4px 0', color: '#38bdf8' }}>Q: How does Live Inventory Priority work?</h5>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: '#cbd5e1' }}>Enabling Live Inventory guarantees 5% reduced commission fee and auto-accepts customer orders for instant rider pickup.</p>
+              </div>
+
+              <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <h5 style={{ margin: '0 0 4px 0', color: '#38bdf8' }}>Q: When are payout settlements transferred?</h5>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: '#cbd5e1' }}>Earnings are deposited daily at 11:59 PM directly to your configured UPI / Bank account in Shop Settings.</p>
+              </div>
+
+              <div style={{ marginTop: '10px', background: 'rgba(139, 92, 246, 0.1)', padding: '12px', borderRadius: '6px', textAlign: 'center' }}>
+                <span style={{ fontSize: '0.85rem', color: '#c084fc' }}>Need urgent assistance?</span>
+                <div style={{ fontWeight: 'bold', color: '#fff', marginTop: '4px' }}>📧 support@digibazaar.in | 📞 +91 1800-419-7000</div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="modal-save-btn" onClick={() => { alert('Support ticket #9021 created! Our partner manager will call you within 15 minutes.'); setHelpOpen(false); }}>
+                Request Support Callback
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   )
 }
 
 function ShopOwnerSidebar() {
+  const navigate = useNavigate()
+  const location = useLocation()
   const [activeTab, setActiveTab] = useState(localStorage.getItem('active_shop_tab') || 'dashboard')
 
   useEffect(() => {
@@ -332,6 +545,9 @@ function ShopOwnerSidebar() {
     localStorage.setItem('active_shop_tab', tabName)
     setActiveTab(tabName)
     window.dispatchEvent(new Event('shopTabChanged'))
+    if (location.pathname !== '/dashboard') {
+      navigate('/dashboard')
+    }
   }
 
   return (
@@ -374,14 +590,14 @@ function ShopOwnerSidebar() {
           Sales Analytics
         </button>
         <button 
-          className="sidebar-nav-link"
-          onClick={() => alert('Sales Report Export: Daily, Weekly, Monthly tax reports available in Phase 2.')}
+          className={`sidebar-nav-link ${activeTab === 'reports' ? 'active' : ''}`}
+          onClick={() => handleTabClick('reports')}
         >
           Sales Reports
         </button>
         <button 
-          className="sidebar-nav-link"
-          onClick={() => alert('Customer Loyalty Portal: 15 repeat customers active today.')}
+          className={`sidebar-nav-link ${activeTab === 'customers' ? 'active' : ''}`}
+          onClick={() => handleTabClick('customers')}
         >
           Customers List
         </button>
@@ -391,8 +607,8 @@ function ShopOwnerSidebar() {
       <div className="sidebar-group-box">
         <span className="sidebar-group-title">Marketing</span>
         <button 
-          className="sidebar-nav-link"
-          onClick={() => alert('Manage discount campaigns or set coupon WELCOME10')}
+          className={`sidebar-nav-link ${activeTab === 'promotions' ? 'active' : ''}`}
+          onClick={() => handleTabClick('promotions')}
         >
           Promotions & Coupons
         </button>
@@ -402,9 +618,9 @@ function ShopOwnerSidebar() {
       <div className="sidebar-group-box">
         <span className="sidebar-group-title">Growth</span>
         <button 
-          className="sidebar-nav-link"
-          onClick={() => alert('Premium Upgrade: Reduce commission to 5% flat and get featured banner slots.')}
-          style={{ color: '#0891b2', fontWeight: '800' }}
+          className={`sidebar-nav-link ${activeTab === 'growth' ? 'active' : ''}`}
+          onClick={() => handleTabClick('growth')}
+          style={{ color: activeTab === 'growth' ? '#fff' : '#0891b2', fontWeight: '800' }}
         >
           Premium Features
         </button>
@@ -414,8 +630,8 @@ function ShopOwnerSidebar() {
       <div className="sidebar-group-box" style={{ marginTop: 'auto' }}>
         <span className="sidebar-group-title">System</span>
         <button 
-          className="sidebar-nav-link"
-          onClick={() => alert('Store Information, Timings and Location settings.')}
+          className={`sidebar-nav-link ${activeTab === 'settings' ? 'active' : ''}`}
+          onClick={() => handleTabClick('settings')}
         >
           Shop Settings
         </button>
