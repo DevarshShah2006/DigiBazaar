@@ -876,3 +876,41 @@
   font-size: 12px;
 }
 
+.rider-history-summary-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 16px 12px;
+  margin-bottom: 18px;
+}
+
+.rider-history-summary-card .summary-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.rider-history-summary-card .lbl {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rider-history-summary-card .val {
+  font-size: 15px;
+  color: #38bdf8;
+  font-weight: 800;
+}
+
+.rider-history-summary-card .summary-divider {
+  width: 1px;
+  height: 28px;
+  background: #334155;
+}
+

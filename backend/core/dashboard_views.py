@@ -715,8 +715,8 @@ class ShopPromotionsView(APIView):
         if not shop:
             return Response({'detail': 'Shop not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        # Get existing coupons associated with shop or global
-        coupons = Coupon.objects.filter(Q(applicable_shops=shop) | Q(applicable_shops=None)).order_by('-created_at').distinct()
+        # Get only coupons that belong specifically to THIS shop
+        coupons = Coupon.objects.filter(applicable_shops=shop).order_by('-created_at').distinct()
         coupon_list = [
             {
                 'id': c.id,

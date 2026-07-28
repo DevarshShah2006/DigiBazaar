@@ -16,7 +16,7 @@ export function AuthProvider({ children }) {
   const login = useCallback(async (credentials) => {
     let data;
     if (credentials.phone && credentials.otp) {
-      data = await verifyOTP({ phone: credentials.phone, otp: credentials.otp })
+      data = await verifyOTP({ phone: credentials.phone, otp: credentials.otp, role: credentials.role })
     } else {
       const payload = credentials.phone ? {
         username: `user_${credentials.phone}`,

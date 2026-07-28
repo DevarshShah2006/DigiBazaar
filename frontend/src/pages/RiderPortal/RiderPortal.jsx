@@ -284,29 +284,52 @@ export default function RiderPortal() {
       {activeTab === 'history' && (
         <div className="rider-tab-content">
           <h3>Completed Deliveries Log</h3>
+          
+          <div className="rider-history-summary-card">
+            <div className="summary-col">
+              <span className="lbl">Total Drops</span>
+              <span className="val">{data.completed_deliveries || 0}</span>
+            </div>
+            <div className="summary-divider"></div>
+            <div className="summary-col">
+              <span className="lbl">Total Earnings</span>
+              <span className="val">₹{parseFloat(data.total_earnings || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+            </div>
+            <div className="summary-divider"></div>
+            <div className="summary-col">
+              <span className="lbl">Rating</span>
+              <span className="val">⭐ {parseFloat(data.rating || 5.0).toFixed(1)}</span>
+            </div>
+          </div>
+
           <div className="rider-history-list">
-            <div className="history-item">
-              <div>
-                <h4>Order #101</h4>
-                <p>Completed · Paldi Zone</p>
-                <span className="history-time-txt">Today, 2:15 PM</span>
+            {data.completed_history && data.completed_history.length > 0 ? (
+              data.completed_history.map(item => (
+                <div key={item.id} className="history-item">
+                  <div>
+                    <h4>Order #{item.order_id}</h4>
+                    <p>{item.shop_name} · {item.delivery_address}</p>
+                    <span className="history-time-txt">{item.completed_at}</span>
+                  </div>
+                  <div className="history-right">
+                    <span className="pay-amount">+ ₹{item.earning.toFixed(2)}</span>
+                    <span className="rating-tag">5.0 / 5</span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="history-item">
+                <div>
+                  <h4>Lifetime Deliveries Record</h4>
+                  <p>Total Drops: {data.completed_deliveries} | Standard Earnings: ₹{parseFloat(data.total_earnings || 0).toFixed(2)}</p>
+                  <span className="history-time-txt">Historical Seeded Record</span>
+                </div>
+                <div className="history-right">
+                  <span className="pay-amount">+ ₹{parseFloat(data.total_earnings || 0).toFixed(2)}</span>
+                  <span className="rating-tag">5.0 / 5</span>
+                </div>
               </div>
-              <div className="history-right">
-                <span className="pay-amount">+ ₹45.00</span>
-                <span className="rating-tag">5.0 / 5</span>
-              </div>
-            </div>
-            <div className="history-item">
-              <div>
-                <h4>Order #98</h4>
-                <p>Completed · Paldi Main Road</p>
-                <span className="history-time-txt">Yesterday, 7:40 PM</span>
-              </div>
-              <div className="history-right">
-                <span className="pay-amount">+ ₹45.00</span>
-                <span className="rating-tag">5.0 / 5</span>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       )}
@@ -318,9 +341,16 @@ export default function RiderPortal() {
           
           <div className="profile-details-card">
             <h4>Personal Info</h4>
-            <p><strong>Name:</strong> {user?.username || 'Rider Partner'}</p>
-            <p><strong>Phone:</strong> {data.phone || '9876543210'}</p>
+            <p><strong>Name:</strong> {data.full_name || user?.username || 'Rider Partner'}</p>
+            <p><strong>Phone:</strong> {data.phone || user?.username?.replace('rider_', '') || '9876500013'}</p>
             <p><strong>Email:</strong> {user?.email || 'rider@digibazaar.in'}</p>
+          </div>
+
+          <div className="profile-details-card">
+            <h4>Performance Stats</h4>
+            <p><strong>Total Completed Deliveries:</strong> {data.completed_deliveries} drops</p>
+            <p><strong>Total Earnings:</strong> ₹{parseFloat(data.total_earnings || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+            <p><strong>Overall Rating:</strong> ⭐ {parseFloat(data.rating || 5.0).toFixed(2)} / 5.0</p>
           </div>
 
           <div className="profile-details-card">
@@ -334,7 +364,7 @@ export default function RiderPortal() {
             <h4>Bank Payout Details</h4>
             <p><strong>Bank Name:</strong> HDFC Bank Ltd</p>
             <p><strong>Account Number:</strong> *******5432</p>
-            <p><strong>UPI ID:</strong> {data.phone || '9876543210'}@okhdfcbank</p>
+            <p><strong>UPI ID:</strong> {(data.phone || '9876500013')}@okhdfcbank</p>
             <p><strong>Weekly Payout Status:</strong> PENDING (Settled every Monday)</p>
           </div>
 

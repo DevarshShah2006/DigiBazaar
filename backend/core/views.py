@@ -262,19 +262,83 @@ class VerifyOTPView(APIView):
             if not otp_obj.is_valid() or otp_obj.otp != otp:
                 return Response({'detail': 'Invalid or expired OTP'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Get or create user
-        username = f"user_{phone}"
-        user = User.objects.filter(username=username).first()
+        # Check if a rider, shop owner, or user exists with this phone number
+        user = None
+
+        # 1. Check Rider profile / rider_ phone pattern
+        rider_prof = Rider.objects.filter(phone=phone).first()
+        if rider_prof:
+            user = rider_prof.user
+
+        # 2. Check ShopOwner profile
+        if not user:
+            from .models import ShopOwner
+            owner_prof = ShopOwner.objects.filter(phone=phone).first()
+            if owner_prof:
+                user = owner_prof.user
+
+        # 3. Check UserProfile
+        if not user:
+            from .models import UserProfile
+            u_prof = UserProfile.objects.filter(phone=phone).first()
+            if u_prof:
+                user = u_prof.user
+
+        # 4. Check username matching patterns
+        if not user:
+            user = User.objects.filter(
+                Q(username=f"rider_{phone}") |
+                Q(username=f"user_{phone}") |
+                Q(username=f"owner_{phone}")
+            ).first()
+
+        requested_role = request.data.get('role', '')
+
         if not user:
             # Create user on the fly if not exists
+            username = f"rider_{phone}" if requested_role == 'rider' else (f"owner_{phone}" if requested_role == 'shopowner' else f"user_{phone}")
             user = User.objects.create_user(
                 username=username,
                 email=f"{phone}@digibazaar.in",
                 password='OTPVerified123!'
             )
-            # Create default customer profile
-            from .models import UserProfile
-            UserProfile.objects.get_or_create(user=user, defaults={'phone': phone})
+
+        # If user explicitly logged in as shopowner, ensure ShopOwner profile & Shop exist
+        if requested_role == 'shopowner' or phone.startswith('90000000'):
+            from .models import ShopOwner, Shop
+            so, _ = ShopOwner.objects.get_or_create(user=user, defaults={'phone': phone})
+            # Ensure a shop exists for this owner
+            if not Shop.objects.filter(owner=so).exists():
+                first_cat = Category.objects.first()
+                shop_name = f"Merchant Store #{phone[-4:]}" if len(phone) >= 4 else "New Partner Store"
+                from decimal import Decimal
+                new_shop = Shop.objects.create(
+                    owner=so,
+                    name=shop_name,
+                    description="Verified Local DigiBazaar Merchant Store",
+                    address="Satellite Road, Ahmedabad",
+                    area="Satellite",
+                    city="Ahmedabad",
+                    state="Gujarat",
+                    pincode="380015",
+                    lat=Decimal("23.0225"),
+                    long=Decimal("72.5714"),
+                    is_open=True,
+                    live_inventory=True,
+                    tier="free"
+                )
+                if first_cat:
+                    new_shop.categories.add(first_cat)
+        elif requested_role == 'rider' or phone.startswith('9876500'):
+            rider_prof, _ = Rider.objects.get_or_create(
+                user=user,
+                defaults={
+                    'phone': phone,
+                    'full_name': f'Rider {phone[-4:]}',
+                    'vehicle_type': 'Motorcycle',
+                    'vehicle_number': f'GJ-01-XX-{phone[-4:]}'
+                }
+            )
 
         refresh = RefreshToken.for_user(user)
         return Response({
@@ -999,22 +1063,45 @@ class RiderDashboardView(APIView):
             rider=rider_profile
         ).exclude(status='delivered').exclude(status='cancelled').order_by('-assigned_at')
         
-        completed_assignments = DeliveryAssignment.objects.filter(
+        completed_assignments_count = DeliveryAssignment.objects.filter(
             rider=rider_profile,
             status='delivered'
-        )
-        total_earnings = completed_assignments.count() * 45.0
+        ).count()
+        
+        total_deliveries = max(rider_profile.total_deliveries, completed_assignments_count)
+        total_earnings = float(rider_profile.total_earnings) if rider_profile.total_earnings > 0 else (completed_assignments_count * 45.0)
         
         assignment_serializer = DeliveryAssignmentSerializer(assignments, many=True)
         
+        recent_history = []
+        completed_qs = DeliveryAssignment.objects.filter(
+            rider=rider_profile, status='delivered'
+        ).select_related('order', 'order__shop').order_by('-updated_at')[:25]
+
+        for da in completed_qs:
+            recent_history.append({
+                "id": da.id,
+                "order_id": da.order.id,
+                "shop_name": da.order.shop.name if da.order.shop else "Local Store",
+                "delivery_address": da.order.delivery_address[:30] + "..." if da.order.delivery_address else "Ahmedabad",
+                "total_amount": float(da.order.total_amount),
+                "earning": 45.0,
+                "completed_at": da.updated_at.strftime("%b %d, %I:%M %p"),
+                "rating": 5.0
+            })
+
         return Response({
+            "full_name": rider_profile.full_name or rider_profile.user.username,
+            "phone": rider_profile.phone,
             "is_online": rider_profile.is_online,
             "rating": float(rider_profile.rating),
-            "completed_deliveries": completed_assignments.count(),
-            "total_earnings": total_earnings,
+            "completed_deliveries": total_deliveries,
+            "total_deliveries": total_deliveries,
+            "total_earnings": round(total_earnings, 2),
             "vehicle_type": rider_profile.vehicle_type,
             "vehicle_number": rider_profile.vehicle_number,
-            "active_assignments": assignment_serializer.data
+            "active_assignments": assignment_serializer.data,
+            "completed_history": recent_history
         })
 
 

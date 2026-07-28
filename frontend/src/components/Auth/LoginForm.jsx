@@ -49,8 +49,8 @@ const LoginForm = () => {
     e.preventDefault()
     setLoading(true)
     const enteredOtp = otp.join('')
-    // Pass both phone and OTP to verify
-    const result = await login({ phone, otp: enteredOtp })
+    // Pass phone, OTP, and selected role to verify
+    const result = await login({ phone, otp: enteredOtp, role })
     setLoading(false)
     if (result.success) {
       setStep('success')

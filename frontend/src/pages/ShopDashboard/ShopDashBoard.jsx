@@ -587,11 +587,26 @@ function ShopDashboard() {
 
   if (error && ordersLoading === false && user?.role !== 'shopowner') {
     return (
-      <div className="shop-error-container container">
-        <div className="error-card-panel">
-          <h2>🚫 Access Restricted</h2>
-          <p>{error}</p>
-          <button className="back-home-btn" onClick={() => navigate('/')}>Return to Homepage</button>
+      <div className="shop-error-container container" style={{ padding: '60px 20px', textAlign: 'center' }}>
+        <div className="error-card-panel" style={{ background: '#1e293b', padding: '36px', borderRadius: '16px', border: '1px solid #334155', maxWidth: '520px', margin: '0 auto', color: '#fff' }}>
+          <h2 style={{ fontSize: '22px', color: '#f43f5e', marginBottom: '12px' }}>🚫 Access Restricted</h2>
+          <p style={{ color: '#94a3b8', fontSize: '14px', marginBottom: '20px' }}>
+            You are currently logged in as <strong>{user?.username || 'Customer'}</strong> ({user?.role || 'customer'}). This section is reserved for verified Shop Owners.
+          </p>
+          <div style={{ background: '#0f172a', padding: '16px', borderRadius: '10px', textAlign: 'left', marginBottom: '24px', fontSize: '13px', border: '1px solid #334155' }}>
+            <p style={{ fontWeight: 'bold', color: '#38bdf8', marginBottom: '6px' }}>💡 How to log in as a Shop Owner:</p>
+            <p style={{ color: '#cbd5e1', margin: '4px 0' }}>• Click <strong>Log In as Shop Owner</strong> below</p>
+            <p style={{ color: '#cbd5e1', margin: '4px 0' }}>• Use Phone Number: <strong style={{ color: '#f59e0b' }}>9000000037</strong> (H&M Satellite)</p>
+            <p style={{ color: '#cbd5e1', margin: '4px 0' }}>• OTP: <strong style={{ color: '#f59e0b' }}>123456</strong></p>
+          </div>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+            <button className="back-home-btn" style={{ padding: '10px 20px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => { logout(); navigate('/login'); }}>
+              Log In as Shop Owner
+            </button>
+            <button className="back-home-btn" style={{ padding: '10px 20px', background: '#334155', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' }} onClick={() => navigate('/')}>
+              Return to Homepage
+            </button>
+          </div>
         </div>
       </div>
     )

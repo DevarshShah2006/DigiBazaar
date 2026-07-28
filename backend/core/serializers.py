@@ -143,12 +143,15 @@ class RiderSerializer(serializers.ModelSerializer):
             'id',
             'username',
             'phone',
+            'full_name',
             'is_online',
             'lat',
             'long',
             'rating',
             'vehicle_type',
             'vehicle_number',
+            'total_deliveries',
+            'total_earnings',
         )
 
 
