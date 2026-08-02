@@ -9,6 +9,7 @@ import MyOrders from '../pages/MyOrders/MyOrders'
 import OrderConfirmation from '../pages/OrderConfirmation/OrderConfirmation'
 import RiderPortal from '../pages/RiderPortal/RiderPortal'
 import Checkout from '../pages/Checkout/Checkout'
+import AdminDashboard from '../pages/AdminDashboard/AdminDashboard'
 
 function AppRoutes() {
   return (
@@ -23,6 +24,7 @@ function AppRoutes() {
       <Route path='/checkout' element={<Checkout />} />
       <Route path='/my-orders' element={<MyOrders />} />
       <Route path='/order-confirmation/:orderId' element={<OrderConfirmation />} />
+      <Route path='/admin' element={<AdminDashboard />} />
     </Routes>
   )
 }

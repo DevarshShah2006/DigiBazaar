@@ -220,16 +220,28 @@ function OrderConfirmation() {
               {order.items && order.items.map(item => (
                 <div key={item.id} className="bill-row">
                   <span>{item.product_name} x {item.quantity}</span>
-                  <span>₹{(item.price_at_order * item.quantity).toFixed(2)}</span>
+                  <span>₹{(parseFloat(item.price_at_order) * item.quantity).toFixed(2)}</span>
                 </div>
               ))}
               <div className="bill-row delivery-row-fee">
                 <span>Delivery Charge ({getFulfillmentText(order.fulfillment_option)})</span>
-                <span>₹{parseFloat(order.delivery_charge).toFixed(2)}</span>
+                <span>₹{parseFloat(order.delivery_charge || 0).toFixed(2)}</span>
               </div>
+              {order.tax_amount && parseFloat(order.tax_amount) > 0 && (
+                <div className="bill-row">
+                  <span>Taxes & GST (5%)</span>
+                  <span>₹{parseFloat(order.tax_amount).toFixed(2)}</span>
+                </div>
+              )}
+              {order.discount_amount && parseFloat(order.discount_amount) > 0 && (
+                <div className="bill-row discount-row" style={{ color: '#10b981' }}>
+                  <span>Discount</span>
+                  <span>- ₹{parseFloat(order.discount_amount).toFixed(2)}</span>
+                </div>
+              )}
               <div className="grand-total-row">
-                <span>Paid via {order.fulfillment_option === 'pickup' ? 'N/A' : 'Online UPI'}</span>
-                <span>₹{parseFloat(order.total_price).toFixed(2)}</span>
+                <span>Paid via {order.payment_method ? order.payment_method.toUpperCase() : 'UPI'}</span>
+                <span>₹{(order.total_amount ? parseFloat(order.total_amount) : parseFloat(order.total_price || 0)).toFixed(2)}</span>
               </div>
             </div>
           </div>

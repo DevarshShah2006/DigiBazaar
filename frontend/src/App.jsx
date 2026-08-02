@@ -220,8 +220,13 @@ function CustomerNavbar() {
               <div className="profile-dropdown-popover" onClick={e => e.stopPropagation()}>
                 <div className="profile-popover-info">
                   <h4>{user?.username}</h4>
-                  <p>{user?.email || 'Customer Account'}</p>
+                  <p>{user?.email || 'Registered Account'}</p>
                 </div>
+                {(user?.role === 'admin' || user?.username?.includes('admin') || user?.username?.includes('9111111111')) && (
+                  <Link to="/admin" className="profile-dropdown-link" style={{ background: '#e0e7ff', color: '#4338ca', fontWeight: 'bold' }} onClick={() => setProfileOpen(false)}>
+                    🛡️ Admin Portal
+                  </Link>
+                )}
                 <Link to="/my-orders" className="profile-dropdown-link" onClick={() => setProfileOpen(false)}>
                   My Orders
                 </Link>
@@ -723,12 +728,197 @@ function RiderBottomNavigation() {
 }
 
 
+// ── ADMIN TOP NAVBAR ──
+function AdminTopNavbar() {
+  const { user, logout } = useAuth()
+  const [profileOpen, setProfileOpen] = useState(false)
+  const profileRef = useRef(null)
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setProfileOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  return (
+    <nav style={{
+      background: '#ffffff',
+      borderBottom: '1px solid #e2e8f0',
+      padding: '12px 28px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      boxShadow: '0 2px 10px rgba(15, 23, 42, 0.04)',
+      position: 'sticky',
+      top: 0,
+      zIndex: 1000,
+      fontFamily: 'system-ui, -apple-system, sans-serif'
+    }}>
+      {/* Brand & Badge */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        <Link to="/admin" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '20px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.5px' }}>
+            DigiBazaar <span style={{ color: '#4338ca' }}>Admin</span>
+          </span>
+        </Link>
+        <span style={{
+          background: '#e0e7ff',
+          color: '#4338ca',
+          fontSize: '11px',
+          fontWeight: '700',
+          padding: '4px 10px',
+          borderRadius: '20px',
+          border: '1px solid #c7d2fe'
+        }}>
+          SuperAdmin Control Center
+        </span>
+      </div>
+
+      {/* Center: Admin HQ Address & Operations Status */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        background: '#f8fafc',
+        border: '1px solid #e2e8f0',
+        padding: '6px 16px',
+        borderRadius: '20px',
+        fontSize: '12px',
+        color: '#475569'
+      }}>
+        <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}></span>
+        <div>
+          <strong>HQ Operations Address:</strong> Commerce Tower, Paldi, Ahmedabad - 380007
+        </div>
+      </div>
+
+      {/* Right Controls & Profile */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        <Link 
+          to="/" 
+          style={{
+            fontSize: '13px',
+            fontWeight: '600',
+            color: '#475569',
+            textDecoration: 'none',
+            padding: '6px 12px',
+            borderRadius: '8px',
+            background: '#f1f5f9'
+          }}
+        >
+          Customer Store View
+        </Link>
+
+        {/* Profile Popover */}
+        <div style={{ position: 'relative' }} ref={profileRef}>
+          <div 
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              cursor: 'pointer',
+              background: '#f8fafc',
+              border: '1px solid #cbd5e1',
+              padding: '6px 14px',
+              borderRadius: '20px'
+            }}
+            onClick={() => setProfileOpen(!profileOpen)}
+          >
+            <div style={{
+              width: '26px',
+              height: '26px',
+              borderRadius: '50%',
+              background: '#4338ca',
+              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '12px',
+              fontWeight: 'bold'
+            }}>
+              A
+            </div>
+            <span style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>
+              {user?.username || 'admin_9111111111'}
+            </span>
+            <span style={{ fontSize: '10px', color: '#64748b' }}>▼</span>
+          </div>
+
+          {profileOpen && (
+            <div style={{
+              position: 'absolute',
+              right: 0,
+              top: '42px',
+              width: '240px',
+              background: '#ffffff',
+              border: '1px solid #e2e8f0',
+              borderRadius: '12px',
+              boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+              padding: '12px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              zIndex: 1001
+            }}>
+              <div style={{ padding: '8px 10px', borderBottom: '1px solid #f1f5f9' }}>
+                <strong style={{ fontSize: '13px', color: '#0f172a', display: 'block' }}>{user?.username}</strong>
+                <span style={{ fontSize: '11px', color: '#64748b' }}>Phone: 9111111111 (SuperAdmin)</span>
+              </div>
+              <Link to="/admin" style={{ fontSize: '13px', textDecoration: 'none', color: '#4338ca', fontWeight: 'bold', padding: '6px 10px', borderRadius: '6px', background: '#e0e7ff' }} onClick={() => setProfileOpen(false)}>
+                Admin Dashboard
+              </Link>
+              <Link to="/dashboard" style={{ fontSize: '13px', textDecoration: 'none', color: '#334155', padding: '6px 10px', borderRadius: '6px' }} onClick={() => setProfileOpen(false)}>
+                Shop Owner Portal
+              </Link>
+              <Link to="/rider" style={{ fontSize: '13px', textDecoration: 'none', color: '#334155', padding: '6px 10px', borderRadius: '6px' }} onClick={() => setProfileOpen(false)}>
+                Rider Delivery Portal
+              </Link>
+              <button 
+                style={{
+                  background: '#fee2e2',
+                  color: '#dc2626',
+                  border: 'none',
+                  padding: '8px',
+                  borderRadius: '6px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  marginTop: '4px'
+                }}
+                onClick={logout}
+              >
+                Logout Admin Account
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </nav>
+  )
+}
+
 // ── MAIN APPLICATION WRAPPER ──
 function AppInner() {
   const location = useLocation()
   
   const isShopRoute = location.pathname.startsWith('/dashboard')
   const isRiderRoute = location.pathname.startsWith('/rider')
+  const isAdminRoute = location.pathname.startsWith('/admin')
+
+  if (isAdminRoute) {
+    return (
+      <>
+        <AdminTopNavbar />
+        <main>
+          <AppRoutes />
+        </main>
+      </>
+    )
+  }
 
   if (isShopRoute) {
     return (

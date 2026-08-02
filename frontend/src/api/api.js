@@ -1,4 +1,5 @@
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000/api'
+const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost'
+const API_BASE = import.meta.env.VITE_API_BASE || `http://${hostname}:8000/api`
 
 function getToken() {
   return localStorage.getItem('access_token')

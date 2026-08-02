@@ -124,6 +124,8 @@ export default function Checkout() {
         })),
         fulfillment_option: fulfillment,
         delivery_address: address,
+        payment_method: paymentMethod,
+        discount_amount: discount,
         lat: 23.0125, // Mock coordinates
         long: 72.5575
       }
