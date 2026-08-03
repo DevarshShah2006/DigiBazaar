@@ -143,5 +143,21 @@ export function AuthProvider({ children }) {
 }
 
 export function useAuth() {
-  return useContext(AuthContext)
+  const ctx = useContext(AuthContext)
+  if (ctx === null || ctx === undefined) {
+    // Fallback to a safe no-op shape to avoid runtime destructure errors
+    // when components are rendered outside the provider (e.g. during HMR)
+    // This prevents crashes but indicates a mounting issue elsewhere.
+    // eslint-disable-next-line no-console
+    console.warn('useAuth() called without an AuthProvider - returning fallback')
+    return {
+      user: null,
+      login: async () => ({ success: false, error: 'No provider' }),
+      logout: () => {},
+      signup: async () => ({ success: false, error: 'No provider' }),
+      isLoggedIn: false
+    }
+  }
+
+  return ctx
 }
