@@ -103,7 +103,9 @@ export default function RiderPortal() {
           {/* Header profile summary card */}
           <div className="rider-header-card">
             <div className="rider-header-profile">
-              <div className="rider-avatar">Rider</div>
+              <div className="rider-avatar" aria-label="Rider profile avatar">
+                {(user?.username || 'R').charAt(0).toUpperCase()}
+              </div>
               <div>
                 <h2>Hello, {user?.username || 'Partner'}!</h2>
                 <p>{data.vehicle_type} · {data.vehicle_number}</p>
