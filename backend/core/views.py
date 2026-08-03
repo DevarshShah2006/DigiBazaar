@@ -222,6 +222,14 @@ class LoginView(APIView):
             }
         )
 
+
+class MeView(APIView):
+    """Returns the current authenticated user's profile data."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        return Response({'user': UserSerializer(request.user).data})
+
 # OTP Authentication Views
 import random
 from datetime import timedelta
@@ -433,8 +441,8 @@ class CheckoutView(APIView):
 
     def post(self, request):
         items = request.data.get('items', [])
-        if not isinstance(items, list):
-            return Response({'detail': 'Items must be a list'}, status=status.HTTP_400_BAD_REQUEST)
+        if not isinstance(items, list) or len(items) == 0:
+            return Response({'detail': 'Items must be a non-empty list'}, status=status.HTTP_400_BAD_REQUEST)
 
         fulfillment_option = request.data.get('fulfillment_option', 'digibazaar_delivery')
         delivery_address = request.data.get('delivery_address', '')
@@ -445,31 +453,42 @@ class CheckoutView(APIView):
         user_lat = float(lat) if lat is not None else 23.0125
         user_long = float(long_) if long_ is not None else 72.5575
 
-        # Group items by shop using requested shop or ranking algorithm fallback
+        # ── BUSINESS RULE: DigiExpress must be single store ──────────────────
+        if fulfillment_option == 'digibazaar_delivery':
+            shop_ids_in_cart = set()
+            for item in items:
+                sid = item.get('shop_id')
+                if sid:
+                    shop_ids_in_cart.add(int(sid))
+            if len(shop_ids_in_cart) > 1:
+                return Response({
+                    'detail': 'DigiBazaar Express only allows items from a SINGLE store per order. '
+                              'Please remove items from other stores or use Shop Delivery.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        # ── Group items by shop ───────────────────────────────────────────────
         orders_by_shop = {}
         for item in items:
             product_id = item.get('product_id')
             quantity = item.get('quantity', 1)
             requested_shop_id = item.get('shop_id')
-            
+
             product = Product.objects.prefetch_related('shops').filter(pk=product_id).first()
             if not product:
                 continue
 
             shop = None
             if requested_shop_id:
-                shop = product.shops.filter(pk=requested_shop_id).first()
-                if not shop:
-                    shop = Shop.objects.filter(pk=requested_shop_id).first()
-                    if shop:
-                        shop.products.add(product)
+                shop = Shop.objects.filter(pk=requested_shop_id, is_open=True).first()
+                if shop and not shop.products.filter(pk=product_id).exists():
+                    shop.products.add(product)
 
             if shop is None:
                 ranked_shops = rank_shops_for_product(product, user_lat=user_lat, user_long=user_long)
                 if ranked_shops:
                     shop = ranked_shops[0]
                 else:
-                    shop = Shop.objects.first()
+                    shop = Shop.objects.filter(is_open=True).first()
                     if shop:
                         shop.products.add(product)
 
@@ -477,37 +496,71 @@ class CheckoutView(APIView):
                 continue
 
             group = orders_by_shop.setdefault(shop.id, {'shop': shop, 'items': []})
-            group['items'].append({'product': product, 'quantity': quantity})
+
+            # Get actual price from ShopProduct/Inventory
+            item_price = None
+            inv = Inventory.objects.filter(shop=shop, product=product).first()
+            sp = ShopProduct.objects.filter(shop=shop, product=product).first()
+            if sp and sp.custom_price:
+                item_price = Decimal(str(sp.custom_price))
+            elif inv and inv.selling_price:
+                item_price = Decimal(str(inv.selling_price))
+            else:
+                item_price = Decimal(str(product.price or 0))
+
+            group['items'].append({
+                'product': product,
+                'quantity': quantity,
+                'price': item_price,
+                'inv': inv,
+            })
+
+        if not orders_by_shop:
+            return Response({'detail': 'No valid products found in available shops'}, status=status.HTTP_400_BAD_REQUEST)
 
         created_orders = []
+
         for group in orders_by_shop.values():
             shop = group['shop']
-            
-            # Calculate delivery charge
+
+            # ── Calculate distance & delivery charge ─────────────────────────
             distance_km = 1.0
             if shop.lat and shop.long:
                 distance_km = haversine_distance(user_lat, user_long, float(shop.lat), float(shop.long))
-                
-            charge = Decimal("0.00")
-            if fulfillment_option == 'shop_delivery':
-                charge = Decimal("25.00")
+
+            charge = Decimal('0.00')
+            if fulfillment_option == 'pickup':
+                charge = Decimal('0.00')
+            elif fulfillment_option == 'shop_delivery':
+                charge = shop.delivery_charge_flat or Decimal('25.00')
             elif fulfillment_option == 'digibazaar_delivery':
-                calc_charge = max(20.0, 20.0 + (distance_km * 5.0))
-                charge = Decimal(str(round(calc_charge, 2)))
+                raw = max(20.0, 20.0 + (distance_km * 5.0))
+                charge = Decimal(str(round(raw, 2)))
 
-            # Calculate Subtotal & Totals
-            subtotal = Decimal("0.00")
-            for item in group['items']:
-                item_price = Decimal(str(item['product'].price or 0))
-                subtotal += item_price * item['quantity']
+            # ── Calculate totals ─────────────────────────────────────────────
+            subtotal = sum(i['price'] * i['quantity'] for i in group['items'])
 
-            tax_amount = round(subtotal * Decimal("0.05"), 2)
-            total_amount = max(Decimal("0.00"), subtotal + charge + tax_amount - discount_amount)
+            # ── BUSINESS RULE: Shop Delivery minimum ₹50 ────────────────────
+            if fulfillment_option == 'shop_delivery' and subtotal < Decimal('50.00'):
+                return Response({
+                    'detail': f'Minimum order for Shop Delivery is ₹50. Your subtotal is ₹{subtotal:.2f}.'
+                }, status=status.HTTP_400_BAD_REQUEST)
 
-            # Determine initial status & payment status
-            initial_status = 'accepted' if shop.live_inventory else 'pending'
+            tax_amount = round(subtotal * Decimal('0.05'), 2)
+            total_amount = max(Decimal('0.00'), subtotal + charge + tax_amount - discount_amount)
+
+            # ── BUSINESS RULE: Live inventory = instant accept, else pending ──
+            # Live inventory shops automatically accept orders
+            # Non-live shops get 1 minute to accept, else system auto-cancels/reroutes
+            if shop.live_inventory:
+                initial_status = 'accepted'
+                status_note = f'Order auto-accepted (Live Inventory) via {fulfillment_option}'
+            else:
+                initial_status = 'pending'
+                status_note = f'Order placed via {fulfillment_option} — waiting for shop acceptance (1 min timeout)'
+
             payment_status = 'paid' if payment_method in ['upi', 'card', 'netbanking', 'wallet'] else 'pending'
-            
+
             order = Order.objects.create(
                 user=request.user,
                 shop=shop,
@@ -525,82 +578,99 @@ class CheckoutView(APIView):
                 payment_status=payment_status,
             )
 
-            # Create initial OrderTimeline entry
+            # Create timeline entry
             OrderTimeline.objects.create(
                 order=order,
                 status=initial_status,
                 timestamp=timezone.now(),
-                note=f"Order placed via {fulfillment_option}"
+                note=status_note
             )
-            
+
+            # Create order items & deduct inventory
             for item in group['items']:
                 OrderItem.objects.create(
                     order=order,
                     product=item['product'],
                     quantity=item['quantity'],
-                    price_at_order=item['product'].price,
+                    price_at_order=item['price'],
                 )
 
-                # Deduct inventory if Inventory record exists
-                inv = Inventory.objects.filter(shop=shop, product=item['product']).first()
+                inv = item.get('inv')
                 if inv:
-                    if inv.current_stock >= item['quantity']:
-                        inv.current_stock -= item['quantity']
-                    else:
-                        inv.current_stock = 0
+                    old_stock = inv.current_stock
+                    inv.current_stock = max(0, inv.current_stock - item['quantity'])
                     inv.save()
                     InventoryLog.objects.create(
                         inventory=inv,
-                        change_type="sale",
+                        change_type='sale',
                         quantity_change=-item['quantity'],
                         stock_after=inv.current_stock,
-                        reference=f"Order #{order.id}"
+                        reference=f'Order #{order.id}'
                     )
-            
-            # Attach ML delivery recommendation
+
+            # ── ML delivery recommendation ───────────────────────────────────
             OrderService.attach_ml_recommendation(order, user_lat=user_lat, user_long=user_long)
 
-            # If digibazaar_delivery, assign a rider
-            if fulfillment_option == 'digibazaar_delivery':
-                # Find an online rider, or create a mockup online rider if none exists
-                rider = Rider.objects.filter(is_online=True).first()
-                if not rider:
-                    # Create mock rider
-                    mock_user, _ = User.objects.get_or_create(
-                        username='user_9876543210',
-                        defaults={'email': 'rider@digibazaar.in'}
-                    )
-                    mock_user.set_password('OTPVerified123!')
-                    mock_user.save()
-                    rider, _ = Rider.objects.get_or_create(
-                        user=mock_user,
-                        defaults={
-                            'phone': '9876543210',
-                            'is_online': True,
-                            'vehicle_type': 'Motorcycle',
-                            'vehicle_number': 'GJ-01-HA-9876',
-                            'lat': user_lat + 0.005,
-                            'long': user_long + 0.005
-                        }
-                    )
-                    rider.is_online = True
-                    rider.save()
-                
-                order.rider = rider
-                order.save()
-                
-                # Create DeliveryAssignment
-                DeliveryAssignment.objects.create(
-                    order=order,
-                    rider=rider,
-                    status='assigned',
-                    eta=int(5 + distance_km * 4)
-                )
-                
+            # ── Rider assignment (DigiBazaar Express only, after shop accepts) ─
+            # For live inventory (instant accept), assign rider immediately
+            # For non-live, rider is assigned when shop accepts
+            if fulfillment_option == 'digibazaar_delivery' and shop.live_inventory:
+                self._assign_nearest_rider(order, user_lat, user_long, distance_km)
+
             created_orders.append(order)
 
         serializer = OrderSerializer(created_orders, many=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def _assign_nearest_rider(self, order, user_lat, user_long, distance_km):
+        """Assign the nearest available online rider — Zepto/Blinkit style."""
+        online_riders = Rider.objects.filter(is_online=True).select_related('user')
+
+        if not online_riders.exists():
+            # Create a fallback mock rider if none available
+            mock_user, _ = User.objects.get_or_create(
+                username='rider_9876543210',
+                defaults={'email': 'rider@digibazaar.in'}
+            )
+            mock_user.set_password('OTPVerified123!')
+            mock_user.save()
+            rider, _ = Rider.objects.get_or_create(
+                user=mock_user,
+                defaults={
+                    'phone': '9876543210',
+                    'full_name': 'DigiBazaar Rider',
+                    'is_online': True,
+                    'vehicle_type': 'Motorcycle',
+                    'vehicle_number': 'GJ-01-HA-9876',
+                    'lat': user_lat + 0.005,
+                    'long': user_long + 0.005
+                }
+            )
+            rider.is_online = True
+            rider.save()
+        else:
+            # Find nearest rider by location
+            nearest_rider = None
+            min_dist = float('inf')
+            for r in online_riders:
+                if r.lat and r.long:
+                    d = haversine_distance(user_lat, user_long, float(r.lat), float(r.long))
+                    if d < min_dist:
+                        min_dist = d
+                        nearest_rider = r
+            rider = nearest_rider or online_riders.first()
+
+        order.rider = rider
+        order.save(update_fields=['rider'])
+
+        eta_mins = int(5 + distance_km * 4)  # Base 5 mins + 4 mins/km
+        DeliveryAssignment.objects.create(
+            order=order,
+            rider=rider,
+            status='assigned',
+            eta=eta_mins,
+        )
+        return rider
 
 
 class MyOrdersView(generics.ListAPIView):
@@ -623,7 +693,7 @@ class ShopOrdersView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        orders = (
+        queryset = (
             Order.objects
             .filter(shop__owner=owner)
             .select_related("shop", "user")
@@ -631,8 +701,28 @@ class ShopOrdersView(APIView):
             .order_by("-created_at")
         )
 
-        serializer = OrderSerializer(orders, many=True)
-        return Response(serializer.data)
+        total_count = queryset.count()
+        page_size = 25
+        try:
+            page = int(request.query_params.get("page", 1))
+        except (ValueError, TypeError):
+            page = 1
+
+        import math
+        total_pages = math.ceil(total_count / page_size) if total_count > 0 else 1
+        page = max(1, min(page, total_pages))
+        start = (page - 1) * page_size
+        end = start + page_size
+
+        orders_slice = queryset[start:end]
+        serializer = OrderSerializer(orders_slice, many=True)
+        return Response({
+            "total_count": total_count,
+            "total_pages": total_pages,
+            "current_page": page,
+            "page_size": page_size,
+            "orders": serializer.data
+        })
 
 
 class AcceptOrderView(APIView):
@@ -659,6 +749,39 @@ class AcceptOrderView(APIView):
                 {"detail": str(e)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        # Assign nearest rider when shop accepts a DigiBazaar Express order
+        if order.fulfillment_option == 'digibazaar_delivery' and not order.rider:
+            user_lat = float(order.lat) if order.lat else 23.0125
+            user_long = float(order.long) if order.long else 72.5575
+            shop = order.shop
+            distance_km = 1.0
+            if shop.lat and shop.long:
+                from ml_engine.ranking import haversine_distance
+                distance_km = haversine_distance(user_lat, user_long, float(shop.lat), float(shop.long))
+
+            online_riders = Rider.objects.filter(is_online=True)
+            if online_riders.exists():
+                nearest_rider = None
+                min_dist = float('inf')
+                for r in online_riders:
+                    if r.lat and r.long:
+                        d = haversine_distance(user_lat, user_long, float(r.lat), float(r.long))
+                        if d < min_dist:
+                            min_dist = d
+                            nearest_rider = r
+                rider = nearest_rider or online_riders.first()
+                order.rider = rider
+                order.save(update_fields=['rider'])
+                DeliveryAssignment.objects.get_or_create(
+                    order=order,
+                    defaults={
+                        'rider': rider,
+                        'status': 'assigned',
+                        'eta': int(5 + distance_km * 4)
+                    }
+                )
+
         return Response(OrderSerializer(order).data)
 
 
@@ -681,25 +804,40 @@ class RejectOrderView(APIView):
 
         try:
             order.update_status("rejected")
-            
+
             # Re-routing logic to the next best shop
             items = list(order.items.all())
             if items:
                 first_product = items[0].product
-                ranked_shops = rank_shops_for_product(first_product, user_lat=order.lat, user_long=order.long)
-                next_shops = [s for s in ranked_shops if s.id != order.shop.id]
+                user_lat = float(order.lat) if order.lat else 23.0125
+                user_long = float(order.long) if order.long else 72.5575
+                ranked_shops = rank_shops_for_product(first_product, user_lat=user_lat, user_long=user_long)
+                next_shops = [s for s in ranked_shops if s.id != order.shop.id and s.is_open]
                 if next_shops:
                     next_shop = next_shops[0]
+                    new_status = 'accepted' if next_shop.live_inventory else 'pending'
                     new_order = Order.objects.create(
                         user=order.user,
                         shop=next_shop,
-                        status='accepted' if next_shop.live_inventory else 'pending',
+                        status=new_status,
                         fulfillment_option=order.fulfillment_option,
                         delivery_address=order.delivery_address,
                         lat=order.lat,
                         long=order.long,
+                        subtotal=order.subtotal,
                         delivery_charge=order.delivery_charge,
+                        tax_amount=order.tax_amount,
+                        discount_amount=order.discount_amount,
+                        total_amount=order.total_amount,
+                        payment_method=order.payment_method,
+                        payment_status=order.payment_status,
                         rider=order.rider
+                    )
+                    OrderTimeline.objects.create(
+                        order=new_order,
+                        status=new_status,
+                        timestamp=timezone.now(),
+                        note=f'Rerouted from {order.shop.name} (rejected) to {next_shop.name}'
                     )
                     for item in items:
                         OrderItem.objects.create(
@@ -708,12 +846,31 @@ class RejectOrderView(APIView):
                             quantity=item.quantity,
                             price_at_order=item.price_at_order
                         )
-                    # Point delivery assignment to new order
-                    if order.rider:
+                    # If DigiBazaar delivery and new shop is live, assign rider
+                    if new_order.fulfillment_option == 'digibazaar_delivery' and next_shop.live_inventory and not new_order.rider:
+                        from ml_engine.ranking import haversine_distance
+                        distance_km = 1.0
+                        if next_shop.lat and next_shop.long:
+                            distance_km = haversine_distance(user_lat, user_long, float(next_shop.lat), float(next_shop.long))
+                        online_riders = Rider.objects.filter(is_online=True)
+                        if online_riders.exists():
+                            rider = online_riders.first()
+                            new_order.rider = rider
+                            new_order.save(update_fields=['rider'])
+                            DeliveryAssignment.objects.create(
+                                order=new_order,
+                                rider=rider,
+                                status='assigned',
+                                eta=int(5 + distance_km * 4)
+                            )
+                    # Move delivery assignment if rider already assigned
+                    elif order.rider:
                         assignment = DeliveryAssignment.objects.filter(order=order).first()
                         if assignment:
                             assignment.order = new_order
                             assignment.save()
+                    order.replacement_order = new_order
+                    order.save(update_fields=['replacement_order'])
                     return Response({
                         "detail": f"Order rejected. Rerouted to {next_shop.name}",
                         "rerouted": True,
@@ -761,8 +918,121 @@ class AdvanceOrderView(APIView):
         return Response(OrderSerializer(order).data)
 
 
+class OrderTimeoutView(APIView):
+    """
+    Auto-cancel pending orders older than 1 minute (non-live shop timeout).
+    Called by frontend polling. Returns list of timed-out orders with reroute info.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        from datetime import timedelta
+        timeout_seconds = int(request.data.get('timeout_seconds', 60))
+        cutoff = timezone.now() - timedelta(seconds=timeout_seconds)
+
+        # Find pending orders older than timeout that are owned by this shop owner
+        owner = getattr(request.user, 'shop_owner_profile', None)
+        if owner:
+            timed_out_orders = Order.objects.filter(
+                status='pending',
+                shop__owner=owner,
+                created_at__lt=cutoff
+            )
+        else:
+            # Admin can trigger global timeout
+            timed_out_orders = Order.objects.filter(
+                status='pending',
+                created_at__lt=cutoff
+            )
+
+        rerouted = []
+        cancelled = []
+
+        for order in timed_out_orders:
+            items = list(order.items.all())
+            user_lat = float(order.lat) if order.lat else 23.0125
+            user_long = float(order.long) if order.long else 72.5575
+
+            # Try to reroute to next shop
+            rerouted_flag = False
+            if items:
+                first_product = items[0].product
+                ranked_shops = rank_shops_for_product(
+                    first_product, user_lat=user_lat, user_long=user_long
+                )
+                next_shops = [s for s in ranked_shops if s.id != order.shop_id and s.is_open]
+                if next_shops:
+                    next_shop = next_shops[0]
+                    new_status = 'accepted' if next_shop.live_inventory else 'cancelled'
+                    if new_status == 'accepted':
+                        # Create rerouted order
+                        new_order = Order.objects.create(
+                            user=order.user,
+                            shop=next_shop,
+                            status='accepted',
+                            fulfillment_option=order.fulfillment_option,
+                            delivery_address=order.delivery_address,
+                            lat=order.lat,
+                            long=order.long,
+                            subtotal=order.subtotal,
+                            delivery_charge=order.delivery_charge,
+                            tax_amount=order.tax_amount,
+                            discount_amount=order.discount_amount,
+                            total_amount=order.total_amount,
+                            payment_method=order.payment_method,
+                            payment_status=order.payment_status,
+                        )
+                        OrderTimeline.objects.create(
+                            order=new_order,
+                            status='accepted',
+                            timestamp=timezone.now(),
+                            note=f'Auto-rerouted: {order.shop.name} timed out. Assigned to {next_shop.name}'
+                        )
+                        for item in items:
+                            OrderItem.objects.create(
+                                order=new_order,
+                                product=item.product,
+                                quantity=item.quantity,
+                                price_at_order=item.price_at_order
+                            )
+                        # Mark original as cancelled (timeout)
+                        order.status = 'cancelled'
+                        order.cancellation_reason = 'auto_timeout'
+                        order.replacement_order = new_order
+                        order.save()
+                        OrderTimeline.objects.create(
+                            order=order,
+                            status='cancelled',
+                            timestamp=timezone.now(),
+                            note='Auto-cancelled: shop did not accept within 1 minute'
+                        )
+                        rerouted.append({'original_order_id': order.id, 'new_order_id': new_order.id, 'shop': next_shop.name})
+                        rerouted_flag = True
+
+            if not rerouted_flag:
+                # No available shop — cancel order
+                if order.status == 'pending':
+                    order.status = 'cancelled'
+                    order.cancellation_reason = 'auto_timeout'
+                    order.save()
+                    OrderTimeline.objects.create(
+                        order=order,
+                        status='cancelled',
+                        timestamp=timezone.now(),
+                        note='Auto-cancelled: no available shop accepted within 1 minute'
+                    )
+                    cancelled.append({'order_id': order.id})
+
+        return Response({
+            'rerouted': rerouted,
+            'cancelled': cancelled,
+            'total_processed': len(rerouted) + len(cancelled)
+        })
+
+
 from django.db.models import Min, Sum, F
 from django.db.models.functions import TruncDate
+
 
 class ProductShopsView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -896,16 +1166,31 @@ class ShopProductsListView(APIView):
         if not shop:
             return Response({"detail": "Shop not found"}, status=status.HTTP_404_NOT_FOUND)
         
-        # Get all inventories for this shop
-        inventories = Inventory.objects.filter(shop=shop).select_related('product')
+        total_inventories = Inventory.objects.filter(shop=shop).count()
+        page_size = 25
+        try:
+            page = int(request.query_params.get("page", 1))
+        except (ValueError, TypeError):
+            page = 1
+
+        import math
+        total_pages = math.ceil(total_inventories / page_size) if total_inventories > 0 else 1
+        page = max(1, min(page, total_pages))
+        start = (page - 1) * page_size
+        end = start + page_size
+
+        inventories = Inventory.objects.filter(shop=shop).select_related('product').order_by('-id')[start:end]
         
+        prod_ids = [inv.product_id for inv in inventories]
+        shop_products_map = {
+            sp.product_id: sp.custom_price
+            for sp in ShopProduct.objects.filter(shop=shop, product_id__in=prod_ids)
+        }
+
         products_data = []
         for inv in inventories:
             prod = inv.product
-            sp = ShopProduct.objects.filter(shop=shop, product=prod).first()
-            custom_price = sp.custom_price if sp else inv.selling_price
-            if not custom_price:
-                custom_price = prod.price
+            custom_price = shop_products_map.get(prod.id) or inv.selling_price or prod.price
 
             products_data.append({
                 "id": prod.id,
@@ -924,7 +1209,12 @@ class ShopProductsListView(APIView):
             
         return Response({
             "shop_name": shop.name,
+            "is_open": shop.is_open,
             "live_inventory": shop.live_inventory,
+            "total_count": total_inventories,
+            "total_pages": total_pages,
+            "current_page": page,
+            "page_size": page_size,
             "products": products_data
         })
 

@@ -6,6 +6,7 @@ from .views import (
     ShopViewSet,
     SignupView,
     LoginView,
+    MeView,
     TokenRefreshView,
     SendOTPView,
     VerifyOTPView,
@@ -20,6 +21,7 @@ from .views import (
     AcceptOrderView,
     RejectOrderView,
     AdvanceOrderView,
+    OrderTimeoutView,
     ProductShopsView,
     OrderDetailView,
     CategoryListView,
@@ -76,6 +78,7 @@ router.register(r'wishlist', WishlistViewSet, basename='wishlist')
 urlpatterns = [
     path('auth/signup/', SignupView.as_view(), name='signup'),
     path('auth/login/', LoginView.as_view(), name='login'),
+    path('auth/me/', MeView.as_view(), name='auth_me'),
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/send-otp/', SendOTPView.as_view(), name='send_otp'),
     path('auth/verify-otp/', VerifyOTPView.as_view(), name='verify_otp'),
@@ -119,6 +122,7 @@ urlpatterns = [
     path('orders/accept/', AcceptOrderView.as_view(), name='accept_order'),
     path('orders/reject/', RejectOrderView.as_view(), name='reject_order'),
     path('orders/advance/', AdvanceOrderView.as_view(), name='advance_order'),
+    path('orders/timeout/', OrderTimeoutView.as_view(), name='order_timeout'),
     path('orders/recommend-delivery/', DeliveryRecommendationView.as_view(), name='recommend_delivery'),
     path('orders/<int:pk>/', OrderDetailView.as_view(), name='order_detail'),
 

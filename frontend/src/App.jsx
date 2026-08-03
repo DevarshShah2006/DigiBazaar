@@ -239,7 +239,7 @@ function CustomerNavbar() {
                 <button className="profile-dropdown-link" onClick={() => alert('Profile Settings coming soon!')}>
                   Settings
                 </button>
-                <button className="profile-dropdown-link logout-btn" onClick={logout}>
+                <button className="profile-dropdown-link logout-btn" onClick={() => { logout(); navigate('/'); setProfileOpen(false) }}>
                   Logout
                 </button>
               </div>
@@ -257,11 +257,14 @@ function CustomerNavbar() {
 
 // ── 2. SHOP OWNER NAVBAR & SIDEBAR (TEXT ONLY) ──
 function ShopOwnerNavbar() {
-  const { logout } = useAuth()
+  const { logout, user } = useAuth()
+  const navigate = useNavigate()
   const [storeOpen, setStoreOpen] = useState(true)
-  const [liveInventory, setLiveInventory] = useState(true)
   const [revenue, setRevenue] = useState(0)
-  const [shopName, setShopName] = useState('Shopkeeper')
+  // Initialize shop name immediately from stored data, fall back to user info
+  const [shopName, setShopName] = useState(() => {
+    return 'My Store'
+  })
 
   // Search, Alerts & Help Modals
   const [searchQuery, setSearchQuery] = useState('')
@@ -269,16 +272,16 @@ function ShopOwnerNavbar() {
   const [searchFocused, setSearchFocused] = useState(false)
   const [alertsOpen, setAlertsOpen] = useState(false)
   const [helpOpen, setHelpOpen] = useState(false)
+  const [dynamicAlerts, setDynamicAlerts] = useState([])
 
   const searchRef = useRef(null)
 
   const loadNavbarData = () => {
     fetchJson('/shops/my-products/')
       .then(data => {
-        if (data) {
-          setStoreOpen(data.is_open)
-          setLiveInventory(data.live_inventory)
-          setShopName(data.shop_name || 'Shopkeeper')
+        if (data && data.shop_name) {
+          setStoreOpen(Boolean(data.is_open))
+          setShopName(data.shop_name)
         }
       })
       .catch(() => {})
@@ -286,10 +289,69 @@ function ShopOwnerNavbar() {
     fetchJson('/shop/dashboard/revenue-today/')
       .then(data => {
         if (data) {
-          setRevenue(data.today_total || 0)
+          setRevenue(data.revenue_today ?? data.today_total ?? 0)
         }
       })
       .catch(() => {})
+
+    // Load dynamic operational alerts
+    Promise.all([
+      fetchJson('/orders/shop-orders/').catch(() => []),
+      fetchJson('/shop/dashboard/low-stock/').catch(() => []),
+      fetchJson('/shop/dashboard/weather/').catch(() => null)
+    ]).then(([ordersData, lowStockData, weatherData]) => {
+      const alerts = []
+      const pendingOrders = (Array.isArray(ordersData) ? ordersData : []).filter(o => o.status === 'pending')
+      
+      if (pendingOrders.length > 0) {
+        alerts.push({
+          id: 'pending-orders',
+          badge: 'URGENT',
+          badgeBg: '#fee2e2',
+          badgeColor: '#dc2626',
+          title: `${pendingOrders.length} Pending Order(s) Awaiting Acceptance`,
+          message: 'Review and accept incoming customer orders promptly to prevent auto-cancellation.',
+          actionTab: 'orders'
+        })
+      }
+
+      const lowStockCount = Array.isArray(lowStockData?.low_stock) ? lowStockData.low_stock.length : (Array.isArray(lowStockData) ? lowStockData.length : 0)
+      if (lowStockCount > 0) {
+        alerts.push({
+          id: 'low-stock',
+          badge: 'STOCK ALERT',
+          badgeBg: '#fef3c7',
+          badgeColor: '#b45309',
+          title: `${lowStockCount} Product(s) Running Low in Stock`,
+          message: 'Update stock levels in Inventory to maintain continuous order dispatch.',
+          actionTab: 'inventory'
+        })
+      }
+
+      if (weatherData && weatherData.is_raining) {
+        alerts.push({
+          id: 'weather',
+          badge: 'RAIN WARNING',
+          badgeBg: '#e0f2fe',
+          badgeColor: '#0369a1',
+          title: `Rainy Weather Reported in ${weatherData.city}`,
+          message: 'Delivery rider assignments may take 5-10 mins longer due to weather conditions.',
+          actionTab: 'dashboard'
+        })
+      }
+
+      alerts.push({
+        id: 'system',
+        badge: 'SYSTEM OPERATIONAL',
+        badgeBg: '#dcfce7',
+        badgeColor: '#15803d',
+        title: 'DigiBazaar Dispatch Engine Active',
+        message: 'Payment gateways, instant dispatch, and store services are running smoothly.',
+        actionTab: 'dashboard'
+      })
+
+      setDynamicAlerts(alerts)
+    })
   }
 
   useEffect(() => {
@@ -300,9 +362,16 @@ function ShopOwnerNavbar() {
     }
     window.addEventListener('liveInventoryToggled', syncStatus)
     window.addEventListener('shopStatusChanged', syncStatus)
+    window.addEventListener('shopTabChanged', syncStatus)
+    
+    // Refresh navbar data periodically every 30 seconds
+    const interval = setInterval(loadNavbarData, 30000)
+
     return () => {
       window.removeEventListener('liveInventoryToggled', syncStatus)
       window.removeEventListener('shopStatusChanged', syncStatus)
+      window.removeEventListener('shopTabChanged', syncStatus)
+      clearInterval(interval)
     }
   }, [])
 
@@ -335,19 +404,12 @@ function ShopOwnerNavbar() {
   const handleToggleStore = () => {
     fetchJson('/shops/toggle-open/', { method: 'POST' })
       .then(res => {
-        setStoreOpen(res.is_open)
-        window.dispatchEvent(new Event('shopStatusChanged'))
+        if (res && res.is_open !== undefined) {
+          setStoreOpen(Boolean(res.is_open))
+          window.dispatchEvent(new Event('shopStatusChanged'))
+        }
       })
-      .catch(() => {})
-  }
-
-  const handleToggleInventory = () => {
-    fetchJson('/shops/toggle-live/', { method: 'POST' })
-      .then(res => {
-        setLiveInventory(res.live_inventory)
-        window.dispatchEvent(new Event('liveInventoryToggled'))
-      })
-      .catch(() => {})
+      .catch(err => console.error("Toggle store error:", err))
   }
 
   const handleSearchResultClick = (tabName) => {
@@ -360,46 +422,92 @@ function ShopOwnerNavbar() {
   return (
     <header className="shop-owner-navbar">
       <Link to="/dashboard" className="shop-owner-nav-logo">
-        🏪 {shopName}
+        {shopName}
       </Link>
 
+      {/* Light-Themed Search Container */}
       <div className="shop-navbar-search-container" ref={searchRef}>
-        <input 
-          type="text" 
-          placeholder="Search products, orders, customers, invoices, barcode/SKU..."
-          className="shop-navbar-search-input"
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          onFocus={() => setSearchFocused(true)}
-        />
+        <div className="search-input-wrapper-inner" style={{ position: 'relative' }}>
+          <input 
+            type="text" 
+            placeholder="Search products, orders, customers, coupons..."
+            className="shop-navbar-search-input"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            onFocus={() => setSearchFocused(true)}
+            style={{
+              paddingRight: searchQuery ? '30px' : '12px'
+            }}
+          />
+          {searchQuery && (
+            <button 
+              onClick={() => { setSearchQuery(''); setSearchResults(null); }}
+              style={{
+                position: 'absolute',
+                right: '8px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#64748b',
+                fontSize: '12px',
+                fontWeight: 'bold'
+              }}
+            >
+              ✕
+            </button>
+          )}
+        </div>
 
         {searchFocused && searchQuery.trim() !== '' && (
-          <div className="search-suggestions-dropdown" style={{ width: '100%', top: '48px', position: 'absolute', zIndex: 1000, background: '#0f172a', border: '1px solid #1e293b', borderRadius: '10px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', padding: '12px' }}>
-            <div className="suggestion-header" style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#94a3b8', marginBottom: 8, borderBottom: '1px solid #1e293b', paddingBottom: 4 }}>
-              Global Store Search Results
+          <div className="search-suggestions-dropdown" style={{
+            width: '100%',
+            top: '44px',
+            position: 'absolute',
+            zIndex: 1000,
+            background: '#ffffff',
+            border: '1px solid #e2e8f0',
+            borderRadius: '12px',
+            boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+            padding: '12px'
+          }}>
+            <div className="suggestion-header" style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#64748b', marginBottom: 8, borderBottom: '1px solid #f1f5f9', paddingBottom: 6, fontWeight: '700' }}>
+              Store Search Results
             </div>
             
             {searchResults ? (
-              <div style={{ maxHeight: '320px', overflowY: 'auto' }}>
+              <div style={{ maxHeight: '340px', overflowY: 'auto' }}>
                 {searchResults.orders?.length > 0 && (
-                  <div style={{ marginBottom: 10 }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#38bdf8' }}>📦 Orders ({searchResults.orders.length})</span>
+                  <div style={{ marginBottom: 12 }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#0284c7', display: 'block', marginBottom: 4 }}>Orders ({searchResults.orders.length})</span>
                     {searchResults.orders.map(o => (
-                      <div key={o.id} onClick={() => handleSearchResultClick('orders')} style={{ padding: '6px 8px', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between' }}>
-                        <span>Order #{o.id} - {o.customer}</span>
-                        <strong style={{ color: '#22c55e' }}>₹{o.total_price}</strong>
+                      <div key={o.id} onClick={() => handleSearchResultClick('orders')} style={{ padding: '8px 10px', cursor: 'pointer', borderRadius: '6px', fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4, background: '#f8fafc', border: '1px solid #f1f5f9' }}>
+                        <div>
+                          <strong style={{ color: '#0f172a' }}>Order #{o.id}</strong>
+                          <span style={{ color: '#64748b', marginLeft: 6 }}>• {o.customer}</span>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <strong style={{ color: '#16a34a' }}>₹{o.total_price}</strong>
+                          <span style={{ display: 'block', fontSize: '0.7rem', color: '#64748b', textTransform: 'capitalize' }}>{o.status}</span>
+                        </div>
                       </div>
                     ))}
                   </div>
                 )}
 
                 {searchResults.products?.length > 0 && (
-                  <div style={{ marginBottom: 10 }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#a78bfa' }}>🛍️ Catalog Items ({searchResults.products.length})</span>
+                  <div style={{ marginBottom: 12 }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#7c3aed', display: 'block', marginBottom: 4 }}>Inventory Products ({searchResults.products.length})</span>
                     {searchResults.products.map(p => (
-                      <div key={p.id} onClick={() => handleSearchResultClick('inventory')} style={{ padding: '6px 8px', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between' }}>
-                        <span>{p.name} ({p.brand})</span>
-                        <span style={{ color: '#cbd5e1' }}>Stock: {p.stock}</span>
+                      <div key={p.id} onClick={() => handleSearchResultClick('inventory')} style={{ padding: '8px 10px', cursor: 'pointer', borderRadius: '6px', fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4, background: '#f8fafc', border: '1px solid #f1f5f9' }}>
+                        <div>
+                          <strong style={{ color: '#0f172a' }}>{p.name}</strong>
+                          {p.brand && <span style={{ color: '#64748b', marginLeft: 6 }}>({p.brand})</span>}
+                        </div>
+                        <span style={{ background: p.stock <= 5 ? '#fee2e2' : '#e0f2fe', color: p.stock <= 5 ? '#dc2626' : '#0369a1', padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700' }}>
+                          Stock: {p.stock}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -407,89 +515,125 @@ function ShopOwnerNavbar() {
 
                 {searchResults.coupons?.length > 0 && (
                   <div>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#f59e0b' }}>🏷️ Coupons ({searchResults.coupons.length})</span>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#d97706', display: 'block', marginBottom: 4 }}>Active Coupons ({searchResults.coupons.length})</span>
                     {searchResults.coupons.map(c => (
-                      <div key={c.id} onClick={() => handleSearchResultClick('promotions')} style={{ padding: '6px 8px', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between' }}>
-                        <span>Code: {c.code}</span>
-                        <span style={{ color: '#f59e0b' }}>{c.discount} OFF</span>
+                      <div key={c.id} onClick={() => handleSearchResultClick('promotions')} style={{ padding: '8px 10px', cursor: 'pointer', borderRadius: '6px', fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', border: '1px solid #f1f5f9' }}>
+                        <strong style={{ color: '#d97706' }}>{c.code}</strong>
+                        <span style={{ color: '#0f172a', fontWeight: '600' }}>{c.discount} OFF</span>
                       </div>
                     ))}
                   </div>
                 )}
 
                 {!searchResults.orders?.length && !searchResults.products?.length && !searchResults.coupons?.length && (
-                  <div style={{ padding: '12px', fontSize: '0.85rem', color: '#94a3b8', textAlign: 'center' }}>
+                  <div style={{ padding: '16px', fontSize: '0.85rem', color: '#64748b', textAlign: 'center' }}>
                     No matching store records found.
                   </div>
                 )}
               </div>
             ) : (
-              <div style={{ padding: '8px', fontSize: '0.8rem', color: '#94a3b8' }}>Searching...</div>
+              <div style={{ padding: '12px', fontSize: '0.85rem', color: '#64748b', textAlign: 'center' }}>Searching catalog & store records...</div>
             )}
           </div>
         )}
       </div>
 
       <div className="shop-navbar-right">
-        {/* Store Open Status */}
-        <div className="shop-navbar-toggle-group" onClick={handleToggleStore} title="Click to toggle open status">
+        {/* Store Open/Closed Toggle */}
+        <div className="shop-navbar-toggle-group" onClick={handleToggleStore} title="Click to toggle store open status">
           <span className={storeOpen ? 'toggle-dot-active' : 'toggle-dot-inactive'}></span>
           <span>{storeOpen ? 'Store Open' : 'Store Closed'}</span>
         </div>
 
-        {/* Live Inventory Status */}
-        <div className="shop-navbar-toggle-group" onClick={handleToggleInventory} title="Click to toggle live inventory priority">
-          <span className={liveInventory ? 'toggle-dot-active' : 'toggle-dot-inactive'}></span>
-          <span>{liveInventory ? 'Live Inventory: ON' : 'Live Inventory: OFF'}</span>
-        </div>
-
-        {/* Revenue Badge */}
+        {/* Revenue Display */}
         <div className="shop-navbar-revenue" style={{ fontWeight: 'bold' }}>
-          Today: ₹{parseFloat(revenue).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+          Today: ₹{parseFloat(revenue || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </div>
 
-        {/* Notifications */}
-        <span className="shop-navbar-bell" onClick={() => setAlertsOpen(true)} style={{ cursor: 'pointer' }}>
-          Alerts
-        </span>
+        {/* Dynamic Alerts Badge */}
+        <div className="shop-navbar-bell-wrapper" onClick={() => setAlertsOpen(true)} style={{ cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span className="shop-navbar-bell">Alerts</span>
+          {dynamicAlerts.length > 0 && (
+            <span style={{
+              background: '#dc2626',
+              color: '#ffffff',
+              fontSize: '0.7rem',
+              fontWeight: 'bold',
+              borderRadius: '10px',
+              padding: '1px 6px',
+              marginLeft: '2px'
+            }}>
+              {dynamicAlerts.length}
+            </span>
+          )}
+        </div>
 
-        {/* Help */}
-        <span className="text-muted" style={{ cursor: 'pointer' }} onClick={() => setHelpOpen(true)}>
+        {/* Help Drawer Trigger - Styled identical to Alerts */}
+        <span className="shop-navbar-help" onClick={() => setHelpOpen(true)}>
           Help
         </span>
 
-        {/* Profile Avatar */}
-        <div className="shop-navbar-avatar" title="Merchant Profile" onClick={logout} style={{ cursor: 'pointer' }}>
+        {/* Merchant Profile Avatar */}
+        <div className="shop-navbar-avatar" title="Click to Logout" onClick={() => { logout(); navigate('/'); }} style={{ cursor: 'pointer', position: 'relative' }} data-tooltip="Logout">
           {shopName[0]?.toUpperCase() || 'M'}
         </div>
       </div>
 
-      {/* Operational Alerts Modal */}
+      {/* Dynamic Operational Alerts Modal */}
       {alertsOpen && (
         <div className="modal-backdrop" onClick={() => setAlertsOpen(false)}>
-          <div className="modal-container" onClick={e => e.stopPropagation()} style={{ maxWidth: '450px' }}>
-            <div className="modal-header">
-              <h3>🔔 Store Operational Center</h3>
-              <button className="modal-close-btn" onClick={() => setAlertsOpen(false)}>✕</button>
+          <div className="modal-container" onClick={e => e.stopPropagation()} style={{ maxWidth: '480px', background: '#ffffff', color: '#0f172a' }}>
+            <div className="modal-header" style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: '12px' }}>
+              <h3 style={{ color: '#0f172a', fontSize: '1.1rem', margin: 0 }}>Store Operational Alerts</h3>
+              <button className="modal-close-btn" onClick={() => setAlertsOpen(false)} style={{ color: '#64748b' }}>✕</button>
             </div>
-            <div className="modal-body" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ background: 'rgba(59, 130, 246, 0.1)', borderLeft: '4px solid #3b82f6', padding: '10px 12px', borderRadius: '4px' }}>
-                <strong style={{ color: '#38bdf8', fontSize: '0.9rem' }}>✓ System Operational</strong>
-                <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#cbd5e1' }}>DigiBazaar dispatch server & payment gateways running smoothly.</p>
-              </div>
-
-              <div style={{ background: 'rgba(245, 158, 11, 0.1)', borderLeft: '4px solid #f59e0b', padding: '10px 12px', borderRadius: '4px' }}>
-                <strong style={{ color: '#fbbf24', fontSize: '0.9rem' }}>⚡ Auto-Dispatch Reminder</strong>
-                <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#cbd5e1' }}>Live Inventory is enabled. Unconfirmed orders will auto-accept within 90 seconds.</p>
-              </div>
-
-              <div style={{ background: 'rgba(16, 185, 129, 0.1)', borderLeft: '4px solid #10b981', padding: '10px 12px', borderRadius: '4px' }}>
-                <strong style={{ color: '#34d399', fontSize: '0.9rem' }}>🤖 ML Demand Forecast Ready</strong>
-                <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#cbd5e1' }}>Tomorrow's stock demand predictions updated. Check Inventory tab for reorder alerts.</p>
-              </div>
+            <div className="modal-body" style={{ padding: '16px 0', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {dynamicAlerts.length > 0 ? (
+                dynamicAlerts.map(alert => (
+                  <div key={alert.id} style={{
+                    background: '#f8fafc',
+                    borderLeft: `4px solid ${alert.badgeColor}`,
+                    border: '1px solid #e2e8f0',
+                    borderLeftWidth: '4px',
+                    borderLeftColor: alert.badgeColor,
+                    padding: '12px',
+                    borderRadius: '8px'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                      <strong style={{ color: '#0f172a', fontSize: '0.9rem' }}>{alert.title}</strong>
+                      <span style={{ background: alert.badgeBg, color: alert.badgeColor, fontSize: '0.65rem', fontWeight: '800', padding: '2px 8px', borderRadius: '10px' }}>
+                        {alert.badge}
+                      </span>
+                    </div>
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#475569' }}>{alert.message}</p>
+                    {alert.actionTab && (
+                      <button 
+                        onClick={() => {
+                          handleSearchResultClick(alert.actionTab)
+                          setAlertsOpen(false)
+                        }}
+                        style={{
+                          marginTop: '8px',
+                          background: 'none',
+                          border: 'none',
+                          color: '#0891b2',
+                          fontWeight: 'bold',
+                          fontSize: '0.75rem',
+                          cursor: 'pointer',
+                          padding: 0
+                        }}
+                      >
+                        Go to {alert.actionTab.toUpperCase()} →
+                      </button>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <p style={{ color: '#64748b', fontSize: '0.85rem', textAlign: 'center' }}>No active operational alerts.</p>
+              )}
             </div>
-            <div className="modal-footer">
-              <button className="modal-cancel-btn" onClick={() => setAlertsOpen(false)}>Close</button>
+            <div className="modal-footer" style={{ borderTop: '1px solid #e2e8f0', paddingTop: '12px' }}>
+              <button className="modal-cancel-btn" onClick={() => setAlertsOpen(false)} style={{ background: '#f1f5f9', color: '#334155' }}>Close</button>
             </div>
           </div>
         </div>
@@ -498,31 +642,31 @@ function ShopOwnerNavbar() {
       {/* AI Help & Support Drawer */}
       {helpOpen && (
         <div className="modal-backdrop" onClick={() => setHelpOpen(false)}>
-          <div className="modal-container" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px' }}>
-            <div className="modal-header">
-              <h3>❓ Merchant AI Support Desk</h3>
-              <button className="modal-close-btn" onClick={() => setHelpOpen(false)}>✕</button>
+          <div className="modal-container" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px', background: '#ffffff', color: '#0f172a' }}>
+            <div className="modal-header" style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: '12px' }}>
+              <h3 style={{ color: '#0f172a', fontSize: '1.1rem', margin: 0 }}>Merchant Support Desk</h3>
+              <button className="modal-close-btn" onClick={() => setHelpOpen(false)} style={{ color: '#64748b' }}>✕</button>
             </div>
-            <div className="modal-body" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <p style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Have questions about commissions, deliveries, or inventory management?</p>
+            <div className="modal-body" style={{ padding: '16px 0', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <p style={{ fontSize: '0.85rem', color: '#64748b', margin: 0 }}>Have questions about commissions, deliveries, or inventory management?</p>
               
-              <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <h5 style={{ margin: '0 0 4px 0', color: '#38bdf8' }}>Q: How does Live Inventory Priority work?</h5>
-                <p style={{ margin: 0, fontSize: '0.8rem', color: '#cbd5e1' }}>Enabling Live Inventory guarantees 5% reduced commission fee and auto-accepts customer orders for instant rider pickup.</p>
+              <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                <h5 style={{ margin: '0 0 4px 0', color: '#0891b2', fontSize: '0.9rem' }}>Q: How does Live Inventory Priority work?</h5>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: '#475569' }}>Live Inventory guarantees 5% reduced commission fee and auto-assigns customer orders. Live Inventory activation is managed by system admins.</p>
               </div>
 
-              <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <h5 style={{ margin: '0 0 4px 0', color: '#38bdf8' }}>Q: When are payout settlements transferred?</h5>
-                <p style={{ margin: 0, fontSize: '0.8rem', color: '#cbd5e1' }}>Earnings are deposited daily at 11:59 PM directly to your configured UPI / Bank account in Shop Settings.</p>
+              <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                <h5 style={{ margin: '0 0 4px 0', color: '#0891b2', fontSize: '0.9rem' }}>Q: When are payout settlements transferred?</h5>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: '#475569' }}>Earnings are deposited daily at 11:59 PM directly to your configured UPI / Bank account in Shop Settings.</p>
               </div>
 
-              <div style={{ marginTop: '10px', background: 'rgba(139, 92, 246, 0.1)', padding: '12px', borderRadius: '6px', textAlign: 'center' }}>
-                <span style={{ fontSize: '0.85rem', color: '#c084fc' }}>Need urgent assistance?</span>
-                <div style={{ fontWeight: 'bold', color: '#fff', marginTop: '4px' }}>📧 support@digibazaar.in | 📞 +91 1800-419-7000</div>
+              <div style={{ marginTop: '6px', background: '#ecfeff', padding: '12px', borderRadius: '8px', border: '1px solid #a5f3fc', textAlign: 'center' }}>
+                <span style={{ fontSize: '0.85rem', color: '#0891b2', fontWeight: 'bold' }}>Need urgent assistance?</span>
+                <div style={{ fontWeight: 'bold', color: '#0f172a', marginTop: '4px', fontSize: '0.85rem' }}>support@digibazaar.in | +91 1800-419-7000</div>
               </div>
             </div>
-            <div className="modal-footer">
-              <button className="modal-save-btn" onClick={() => { alert('Support ticket #9021 created! Our partner manager will call you within 15 minutes.'); setHelpOpen(false); }}>
+            <div className="modal-footer" style={{ borderTop: '1px solid #e2e8f0', paddingTop: '12px' }}>
+              <button className="modal-save-btn" onClick={() => { alert('Support ticket created. Our partner manager will contact you.'); setHelpOpen(false); }} style={{ background: '#0891b2', color: '#ffffff' }}>
                 Request Support Callback
               </button>
             </div>
@@ -536,7 +680,8 @@ function ShopOwnerNavbar() {
 function ShopOwnerSidebar() {
   const navigate = useNavigate()
   const location = useLocation()
-  const [activeTab, setActiveTab] = useState(localStorage.getItem('active_shop_tab') || 'dashboard')
+  // Always start on dashboard — localStorage is cleared on ShopDashboard mount
+  const [activeTab, setActiveTab] = useState('dashboard')
 
   useEffect(() => {
     const handleTabChange = () => {
@@ -731,6 +876,7 @@ function RiderBottomNavigation() {
 // ── ADMIN TOP NAVBAR ──
 function AdminTopNavbar() {
   const { user, logout } = useAuth()
+  const navigate = useNavigate()
   const [profileOpen, setProfileOpen] = useState(false)
   const profileRef = useRef(null)
 
@@ -889,7 +1035,7 @@ function AdminTopNavbar() {
                   fontSize: '12px',
                   marginTop: '4px'
                 }}
-                onClick={logout}
+                onClick={() => { logout(); navigate('/'); setProfileOpen(false) }}
               >
                 Logout Admin Account
               </button>
@@ -904,12 +1050,18 @@ function AdminTopNavbar() {
 // ── MAIN APPLICATION WRAPPER ──
 function AppInner() {
   const location = useLocation()
-  
+  const { user } = useAuth()
+
+  // Determine layout by BOTH route AND user role
+  // Route-based checks for portal paths
   const isShopRoute = location.pathname.startsWith('/dashboard')
   const isRiderRoute = location.pathname.startsWith('/rider')
   const isAdminRoute = location.pathname.startsWith('/admin')
 
-  if (isAdminRoute) {
+  // Role-based checks for home page (so admin at '/' gets redirected via AppRoutes)
+  const userRole = user?.role
+
+  if (isAdminRoute && userRole === 'admin') {
     return (
       <>
         <AdminTopNavbar />
@@ -920,7 +1072,7 @@ function AppInner() {
     )
   }
 
-  if (isShopRoute) {
+  if (isShopRoute && (userRole === 'shopowner' || userRole === 'admin')) {
     return (
       <>
         <ShopOwnerNavbar />
@@ -934,7 +1086,7 @@ function AppInner() {
     )
   }
 
-  if (isRiderRoute) {
+  if (isRiderRoute && (userRole === 'rider' || userRole === 'admin')) {
     return (
       <>
         <RiderTopNavbar />
@@ -946,6 +1098,7 @@ function AppInner() {
     )
   }
 
+  // Default: customer layout (also renders AppRoutes which handles redirects)
   return (
     <>
       <CustomerNavbar />

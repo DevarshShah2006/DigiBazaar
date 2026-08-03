@@ -1,12 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { fetchJson } from '../../api/api'
-import { useAuth } from '../../context/AuthContext'
-import { useNavigate } from 'react-router-dom'
 import './AdminDashboard.css'
 
 export default function AdminDashboard() {
-  const { isLoggedIn } = useAuth()
-  const navigate = useNavigate()
 
   const [activeTab, setActiveTab] = useState('overview')
   const [loading, setLoading] = useState(true)
@@ -41,12 +37,7 @@ export default function AdminDashboard() {
   const [modalType, setModalType] = useState(null) // 'order', 'shop', 'rider', 'user'
   const [editItem, setEditItem] = useState(null)
 
-  // Redirect non-authenticated users
-  useEffect(() => {
-    if (!isLoggedIn) {
-      navigate('/login')
-    }
-  }, [isLoggedIn, navigate])
+  // Auth is handled by AdminRoute in AppRoutes — no need to redirect here
 
   // Fetch Dashboard Stats, Shops, Riders, Users
   const loadInitialData = async () => {
@@ -59,10 +50,10 @@ export default function AdminDashboard() {
         fetchJson('/admin/users/'),
       ])
 
-      setStats(statsData)
-      setShops(shopsData || [])
-      setRiders(ridersData || [])
-      setUsers(usersData || [])
+      if (statsData) setStats(statsData)
+      setShops(Array.isArray(shopsData) ? shopsData : [])
+      setRiders(Array.isArray(ridersData) ? ridersData : [])
+      setUsers(Array.isArray(usersData) ? usersData : [])
     } catch (err) {
       console.error('Failed to load initial admin data', err)
     } finally {
@@ -553,8 +544,8 @@ export default function AdminDashboard() {
                             <th>Shop</th>
                             <th>Items</th>
                             <th>Fulfillment</th>
+                            <th>Contact Numbers</th>
                             <th>Payment</th>
-                            <th>Delivery Fee</th>
                             <th>Grand Total</th>
                             <th>Status Update</th>
                             <th>Assign Rider</th>
@@ -569,16 +560,20 @@ export default function AdminDashboard() {
                                 <div><strong>{o.user_name || 'Customer'}</strong></div>
                                 <span style={{ fontSize: '11px', color: '#64748b' }}>{o.delivery_address?.slice(0, 25)}...</span>
                               </td>
-                              <td><strong>{o.shop_name}</strong></td>
-                              <td>{o.items?.length || 1} items</td>
-                              <td>{o.fulfillment_option?.replace('_', ' ')}</td>
                               <td>
-                                <div>{o.payment_method?.toUpperCase() || 'UPI'}</div>
-                                <span style={{ fontSize: '11px', color: o.payment_status === 'paid' ? '#10b981' : '#f59e0b', fontWeight: 'bold' }}>
-                                  {o.payment_status?.toUpperCase() || 'PENDING'}
-                                </span>
+                                <strong>{o.shop_name}</strong>
+                                {o.shop_address && <div style={{fontSize:'11px', color:'#64748b'}}>{o.shop_address?.slice(0,30)}</div>}
                               </td>
-                              <td>₹{parseFloat(o.delivery_charge || 0).toFixed(2)}</td>
+                              <td>{o.items?.length || 1} items</td>
+                              <td>{o.fulfillment_option?.replace(/_/g, ' ')}</td>
+                              <td style={{fontSize:'12px', minWidth: '160px'}}>
+                                <div style={{display:'flex', flexDirection:'column', gap:2}}>
+                                  {o.user_phone && <span>👤 Cust: <strong>{o.user_phone}</strong></span>}
+                                  {o.shop_phone && <span>🏪 Shop: <strong>{o.shop_phone}</strong></span>}
+                                  {o.rider_phone && <span>🛵 Rider: <strong>{o.rider_phone}</strong></span>}
+                                  {!o.user_phone && !o.shop_phone && !o.rider_phone && <span style={{color:'#94a3b8'}}>—</span>}
+                                </div>
+                              </td>
                               <td><strong style={{ fontSize: '14px', color: '#0f172a' }}>₹{parseFloat(o.total_amount || o.total_price || 0).toFixed(2)}</strong></td>
                               <td>
                                 <select 
