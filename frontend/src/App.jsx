@@ -805,15 +805,34 @@ function RiderTopNavbar() {
 
   return (
     <header className="rider-top-navbar">
-      <div className="rider-top-logo-txt">DigiBazaar Partner</div>
-      <div className={`rider-status-header-badge ${online ? 'online' : 'offline'}`}>
-        {online ? 'ONLINE' : 'OFFLINE'}
-      </div>
+      <Link className="rider-top-logo-txt" to="/rider" onClick={() => {
+        localStorage.setItem('active_rider_tab', 'home')
+        window.dispatchEvent(new Event('riderTabChanged'))
+      }}>
+        <span className="rider-brand-mark">D</span>
+        <span>DigiBazaar <em>Rider</em></span>
+      </Link>
+      <nav className="rider-desktop-nav" aria-label="Rider navigation">
+        {['home', 'deliveries', 'map', 'history'].map(tab => (
+          <button key={tab} onClick={() => {
+            localStorage.setItem('active_rider_tab', tab)
+            window.dispatchEvent(new Event('riderTabChanged'))
+          }}>
+            {tab === 'home' ? 'Dashboard' : tab[0].toUpperCase() + tab.slice(1)}
+          </button>
+        ))}
+      </nav>
       <div className="rider-navbar-right-box">
+        <div className={`rider-status-header-badge ${online ? 'online' : 'offline'}`}>
+          <span></span>{online ? 'Online' : 'Offline'}
+        </div>
         <span className="rider-bell-alert" onClick={() => alert('Active jobs will be auto-allocated.')} style={{ cursor: 'pointer' }}>
-          Alerts
+          Notifications
         </span>
-        <div className="rider-nav-avatar">R</div>
+        <button className="rider-nav-avatar" aria-label="Open profile" onClick={() => {
+          localStorage.setItem('active_rider_tab', 'profile')
+          window.dispatchEvent(new Event('riderTabChanged'))
+        }}>R</button>
       </div>
     </header>
   )
@@ -842,7 +861,7 @@ function RiderBottomNavigation() {
         className={`rider-bottom-nav-tab ${activeTab === 'home' ? 'active' : ''}`}
         onClick={() => handleTabClick('home')}
       >
-        <span>Home</span>
+        <span>Dashboard</span>
       </button>
       <button 
         className={`rider-bottom-nav-tab ${activeTab === 'deliveries' ? 'active' : ''}`}
@@ -1093,7 +1112,6 @@ function AppInner() {
         <main className="rider-layout-wrapper-panel">
           <AppRoutes />
         </main>
-        <RiderBottomNavigation />
       </>
     )
   }

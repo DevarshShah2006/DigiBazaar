@@ -914,3 +914,23 @@
   background: #334155;
 }
 
+.delivery-proof-card {
+  margin: 20px 0;
+  padding: 16px;
+  border: 1px solid rgba(129, 140, 248, .25);
+  border-radius: 12px;
+  background: linear-gradient(130deg, rgba(49, 46, 129, .22), rgba(15, 23, 42, .8));
+}
+.proof-card-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.proof-eyebrow { color: #a5b4fc; text-transform: uppercase; letter-spacing: .1em; font-size: 10px; font-weight: 800; }
+.proof-card-heading h4 { margin: 4px 0 0; color: #f8fafc; font-size: 14px; }
+.proof-code { font-size: 11px; color: #c7d2fe; background: rgba(99, 102, 241, .2); padding: 5px 8px; border-radius: 6px; }
+.proof-details { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 15px 0; }
+.proof-details span { color: #cbd5e1; font-size: 11px; }
+.proof-details strong { color: #94a3b8; display: block; text-transform: uppercase; letter-spacing: .05em; font-size: 9px; margin-bottom: 3px; }
+.signature-row { display: flex; align-items: end; gap: 14px; padding-top: 11px; border-top: 1px solid rgba(148, 163, 184, .14); }
+.signature-line { flex: 1; min-height: 28px; border-bottom: 1px dashed #94a3b8; color: #94a3b8; font-size: 10px; display: flex; align-items: end; padding-bottom: 3px; }
+.signature-state { color: #fbbf24; font-size: 10px; font-weight: 800; text-transform: uppercase; white-space: nowrap; }
+.rider-portal-footer { display: flex; justify-content: space-between; gap: 16px; margin-top: 24px; padding: 18px 3px 2px; border-top: 1px solid rgba(148, 163, 184, .14); color: #64748b; font-size: 11px; }
+@media (max-width: 540px) { .proof-details { grid-template-columns: 1fr; } .rider-portal-footer { flex-direction: column; gap: 5px; } }
+

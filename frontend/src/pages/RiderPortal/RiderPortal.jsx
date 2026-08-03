@@ -173,6 +173,25 @@ export default function RiderPortal() {
                 </div>
               </div>
 
+              <section className="delivery-proof-card" aria-label="Delivery payload and confirmation">
+                <div className="proof-card-heading">
+                  <div>
+                    <span className="proof-eyebrow">Delivery payload</span>
+                    <h4>Package & handover record</h4>
+                  </div>
+                  <span className="proof-code">#{active.order_details.id}</span>
+                </div>
+                <div className="proof-details">
+                  <span><strong>Contents</strong> Sealed order package</span>
+                  <span><strong>Recipient</strong> {active.order_details.user_name}</span>
+                  <span><strong>Verification</strong> OTP at doorstep</span>
+                </div>
+                <div className="signature-row">
+                  <div className="signature-line"><span>Recipient signature / confirmation</span></div>
+                  <span className="signature-state">{active.status === 'delivered' ? 'Confirmed' : 'Awaiting delivery'}</span>
+                </div>
+              </section>
+
               {/* Dynamic Action Buttons */}
               {active.status === 'assigned' && (
                 <button 
@@ -373,6 +392,11 @@ export default function RiderPortal() {
           </button>
         </div>
       )}
+
+      <footer className="rider-portal-footer">
+        <span>© {new Date().getFullYear()} DigiBazaar Rider Partner</span>
+        <span>Safe deliveries, trusted local commerce.</span>
+      </footer>
     </div>
   )
 }
