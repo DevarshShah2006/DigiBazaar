@@ -50,18 +50,21 @@ const ADVANCE_CONFIG = {
   ready: { label: 'Mark Completed', next: 'completed' },
 }
 
-// Order Countdown Timer component
+// Order Countdown Timer component — triggers backend timeout when time runs out
 function OrderCountdownTimer({ createdAt, onTimeout }) {
-  const [timeLeft, setTimeLeft] = useState(90)
+  const TIMEOUT_SECS = 60  // 1 minute
+  const [timeLeft, setTimeLeft] = useState(TIMEOUT_SECS)
+  const [expired, setExpired] = useState(false)
 
   useEffect(() => {
     const calculateTimeLeft = () => {
       const elapsed = Math.floor((Date.now() - new Date(createdAt).getTime()) / 1000)
-      const remaining = 90 - elapsed
-      if (remaining <= 0) {
+      const remaining = TIMEOUT_SECS - elapsed
+      if (remaining <= 0 && !expired) {
         setTimeLeft(0)
+        setExpired(true)
         onTimeout()
-      } else {
+      } else if (remaining > 0) {
         setTimeLeft(remaining)
       }
     }
@@ -69,7 +72,7 @@ function OrderCountdownTimer({ createdAt, onTimeout }) {
     calculateTimeLeft()
     const timer = setInterval(calculateTimeLeft, 1000)
     return () => clearInterval(timer)
-  }, [createdAt, onTimeout])
+  }, [createdAt, onTimeout, expired])
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60)
@@ -78,8 +81,55 @@ function OrderCountdownTimer({ createdAt, onTimeout }) {
   }
 
   return (
-    <div className="order-timer-badge">
-      Auto-reject in: <span className="timer-seconds font-mono">{formatTime(timeLeft)}</span>
+    <div className={`order-timer-badge ${timeLeft <= 20 ? 'urgent' : ''}`}>
+      {timeLeft > 0
+        ? <>Auto-reject in: <span className="timer-seconds font-mono">{formatTime(timeLeft)}</span></>
+        : <span style={{color:'#ef4444', fontWeight: 700}}>⏰ Timed out — routing to next shop…</span>
+      }
+    </div>
+  )
+}
+
+function PaginationControls({ currentPage, totalPages, onPageChange }) {
+  const page = currentPage || 1
+  const total = totalPages || 1
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, marginTop: 24, marginBottom: 20 }}>
+      <button
+        disabled={page <= 1}
+        onClick={() => onPageChange(page - 1)}
+        style={{
+          padding: '8px 18px',
+          borderRadius: '8px',
+          border: '1px solid #cbd5e1',
+          background: page <= 1 ? '#f1f5f9' : '#ffffff',
+          color: page <= 1 ? '#94a3b8' : '#0f172a',
+          fontWeight: '700',
+          cursor: page <= 1 ? 'not-allowed' : 'pointer',
+          boxShadow: page <= 1 ? 'none' : '0 1px 3px rgba(0,0,0,0.1)'
+        }}
+      >
+        Previous
+      </button>
+      <span style={{ fontSize: '0.9rem', color: '#0f172a', fontWeight: '700', padding: '0 8px' }}>
+        Page {page} of {total}
+      </span>
+      <button
+        disabled={page >= total}
+        onClick={() => onPageChange(page + 1)}
+        style={{
+          padding: '8px 18px',
+          borderRadius: '8px',
+          border: '1px solid #cbd5e1',
+          background: page >= total ? '#f1f5f9' : '#ffffff',
+          color: page >= total ? '#94a3b8' : '#0f172a',
+          fontWeight: '700',
+          cursor: page >= total ? 'not-allowed' : 'pointer',
+          boxShadow: page >= total ? 'none' : '0 1px 3px rgba(0,0,0,0.1)'
+        }}
+      >
+        Next
+      </button>
     </div>
   )
 }
@@ -87,27 +137,47 @@ function OrderCountdownTimer({ createdAt, onTimeout }) {
 function ShopDashboard() {
   const { isLoggedIn, user } = useAuth()
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState(
-    localStorage.getItem('active_shop_tab') || 'dashboard'
-  )
+  // Always start fresh on dashboard tab when component mounts (page reload/fresh open)
+  const [activeTab, setActiveTab] = useState(() => {
+    // Clear stale tab from localStorage on every fresh mount so we always land on dashboard
+    localStorage.removeItem('active_shop_tab')
+    return 'dashboard'
+  })
 
   useEffect(() => {
     const handleTabChange = () => {
       const tab = localStorage.getItem('active_shop_tab') || 'dashboard'
       setActiveTab(tab)
     }
+    const handleStatusSync = () => {
+      fetchJson('/shops/my-products/').then(data => {
+        if (data) setShopInfo(data)
+      }).catch(() => {})
+    }
     window.addEventListener('shopTabChanged', handleTabChange)
-    return () => window.removeEventListener('shopTabChanged', handleTabChange)
+    window.addEventListener('shopStatusChanged', handleStatusSync)
+    window.addEventListener('liveInventoryToggled', handleStatusSync)
+    return () => {
+      window.removeEventListener('shopTabChanged', handleTabChange)
+      window.removeEventListener('shopStatusChanged', handleStatusSync)
+      window.removeEventListener('liveInventoryToggled', handleStatusSync)
+    }
   }, [])
 
   const [orders, setOrders] = useState([])
   const [ordersLoading, setOrdersLoading] = useState(true)
+  const [ordersPage, setOrdersPage] = useState(1)
+  const [ordersTotalCount, setOrdersTotalCount] = useState(0)
+  const [ordersTotalPages, setOrdersTotalPages] = useState(1)
   const [shopInfo, setShopInfo] = useState(null)
   
   // Isolated inventory states
   const [myInventory, setMyInventory] = useState([])
   const [allProductsCatalog, setAllProductsCatalog] = useState([])
   const [inventoryLoading, setInventoryLoading] = useState(false)
+  const [inventoryPage, setInventoryPage] = useState(1)
+  const [inventoryTotalCount, setInventoryTotalCount] = useState(0)
+  const [inventoryTotalPages, setInventoryTotalPages] = useState(1)
   const [selectedProductIdToAdd, setSelectedProductIdToAdd] = useState('')
   const [editingItem, setEditingItem] = useState(null)
 
@@ -137,6 +207,9 @@ function ShopDashboard() {
 
   const [crmData, setCrmData] = useState(null)
   const [crmLoading, setCrmLoading] = useState(false)
+  const [crmPage, setCrmPage] = useState(1)
+  const [crmTotalCount, setCrmTotalCount] = useState(0)
+  const [crmTotalPages, setCrmTotalPages] = useState(1)
 
   const [promotionsData, setPromotionsData] = useState(null)
   const [promotionsLoading, setPromotionsLoading] = useState(false)
@@ -158,20 +231,33 @@ function ShopDashboard() {
     }
   }, [])
 
+  // Auth guard — only runs once on mount (role check handled by AppRoutes already)
   useEffect(() => {
     if (!isLoggedIn) {
       navigate('/login')
       return
     }
-    // Block regular customers from accessing shop portal
-    if (user?.role !== 'shopowner' && user?.role !== 'admin') {
-      setError('You are not registered as a shop owner. Access Restricted.')
-      setOrdersLoading(false)
+    // Initial data load for default tab (dashboard)
+    loadDashboardData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn])
+
+  // Reload data whenever active tab changes (after initial mount)
+  const isFirstRender = useRef(true)
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
       return
     }
+    if (isLoggedIn) {
+      loadDashboardData()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab])
 
-    loadDashboardData()
-  }, [isLoggedIn, navigate, activeTab])
+  const handleTabClick = (tabName) => {
+    setActiveTab(tabName)
+  }
 
   const loadDashboardData = () => {
     if (activeTab === 'dashboard') {
@@ -214,12 +300,15 @@ function ShopDashboard() {
     }
   }
 
-  const loadCustomerCRM = async () => {
+  const loadCustomerCRM = async (page = crmPage) => {
     setCrmLoading(true)
     setError('')
     try {
-      const data = await fetchJson('/shop/dashboard/customers/')
+      const data = await fetchJson(`/shop/dashboard/customers/?page=${page}`)
       setCrmData(data)
+      setCrmTotalCount(data.total_count || (data.customers ? data.customers.length : 0))
+      setCrmTotalPages(data.total_pages || 1)
+      setCrmPage(data.current_page || page)
     } catch {
       setError('Failed to load customer CRM data.')
     } finally {
@@ -402,12 +491,21 @@ function ShopDashboard() {
     }
   }
 
-  const loadOrders = async () => {
+  const loadOrders = async (page = ordersPage) => {
     setOrdersLoading(true)
     setError('')
     try {
-      const data = await getOrders()
-      setOrders(Array.isArray(data) ? data : (data.results || []))
+      const data = await getOrders(page)
+      if (data && data.orders) {
+        setOrders(data.orders)
+        setOrdersTotalCount(data.total_count || data.orders.length)
+        setOrdersTotalPages(data.total_pages || 1)
+        setOrdersPage(data.current_page || page)
+      } else if (Array.isArray(data)) {
+        setOrders(data)
+        setOrdersTotalCount(data.length)
+        setOrdersTotalPages(1)
+      }
       
       // Load current shop info (like live inventory flag)
       const shopProductsData = await fetchJson('/shops/my-products/')
@@ -419,17 +517,23 @@ function ShopDashboard() {
     }
   }
 
-  const loadInventory = async () => {
+  const loadInventory = async (page = inventoryPage) => {
     setInventoryLoading(true)
     setError('')
     try {
-      const data = await fetchJson('/shops/my-products/')
+      const data = await fetchJson(`/shops/my-products/?page=${page}`)
       setMyInventory(data.products || [])
       setShopInfo(data)
+      setInventoryTotalCount(data.total_count || (data.products ? data.products.length : 0))
+      setInventoryTotalPages(data.total_pages || 1)
+      setInventoryPage(data.current_page || page)
 
-      // Fetch global product catalog to let them add items
-      const globalProds = await fetchJson('/products/list/')
-      setAllProductsCatalog(globalProds.results || globalProds || [])
+      // Asynchronously fetch global product catalog once for product creation without blocking inventory page rendering
+      if (allProductsCatalog.length === 0) {
+        fetchJson('/products/list/').then(globalProds => {
+          setAllProductsCatalog(globalProds.results || globalProds || [])
+        }).catch(() => {})
+      }
     } catch {
       setError('Failed to load inventory.')
     } finally {
@@ -521,19 +625,61 @@ function ShopDashboard() {
       })
   }
 
+  // Auto-refresh orders every 30 seconds
+  useEffect(() => {
+    if (!isLoggedIn) return
+    const refreshInterval = setInterval(() => {
+      if (activeTab === 'dashboard' || activeTab === 'orders') {
+        loadOrders(ordersPage)
+      }
+    }, 30000)
+    return () => clearInterval(refreshInterval)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn, activeTab, ordersPage])
+
   const handleAccept = async (id) => {
-    await acceptOrder(id)
-    loadOrders()
+    try {
+      await acceptOrder(id)
+      loadOrders(ordersPage)
+    } catch (e) {
+      alert('Failed to accept order: ' + (e?.message || 'Server error'))
+    }
   }
 
   const handleReject = async (id) => {
-    await rejectOrder(id)
-    loadOrders()
+    try {
+      const res = await rejectOrder(id)
+      if (res?.rerouted) {
+        alert(`Order rejected. Rerouted to: ${res.new_order?.shop_name || 'next shop'}`)
+      }
+      loadOrders(ordersPage)
+    } catch (e) {
+      alert('Failed to reject order: ' + (e?.message || 'Server error'))
+    }
   }
 
   const handleAdvance = async (id) => {
-    await advanceOrder(id)
-    loadOrders()
+    try {
+      await advanceOrder(id)
+      loadOrders(ordersPage)
+    } catch (e) {
+      alert('Failed to advance order: ' + (e?.message || 'Server error'))
+    }
+  }
+
+  // Called by countdown timer — trigger backend auto-timeout/reroute
+  const handleOrderTimeout = async () => {
+    try {
+      const res = await fetchJson('/orders/timeout/', {
+        method: 'POST',
+        body: JSON.stringify({ timeout_seconds: 60 })
+      })
+      if (res && res.total_processed > 0) {
+        loadOrders(ordersPage)
+      }
+    } catch {
+      // Silent fail — don't alert user on background timeout check
+    }
   }
 
   const counts = orders.reduce((acc, o) => {
@@ -587,11 +733,26 @@ function ShopDashboard() {
 
   if (error && ordersLoading === false && user?.role !== 'shopowner') {
     return (
-      <div className="shop-error-container container">
-        <div className="error-card-panel">
-          <h2>🚫 Access Restricted</h2>
-          <p>{error}</p>
-          <button className="back-home-btn" onClick={() => navigate('/')}>Return to Homepage</button>
+      <div className="shop-error-container container" style={{ padding: '60px 20px', textAlign: 'center' }}>
+        <div className="error-card-panel" style={{ background: '#1e293b', padding: '36px', borderRadius: '16px', border: '1px solid #334155', maxWidth: '520px', margin: '0 auto', color: '#fff' }}>
+          <h2 style={{ fontSize: '22px', color: '#f43f5e', marginBottom: '12px' }}>🚫 Access Restricted</h2>
+          <p style={{ color: '#94a3b8', fontSize: '14px', marginBottom: '20px' }}>
+            You are currently logged in as <strong>{user?.username || 'Customer'}</strong> ({user?.role || 'customer'}). This section is reserved for verified Shop Owners.
+          </p>
+          <div style={{ background: '#0f172a', padding: '16px', borderRadius: '10px', textAlign: 'left', marginBottom: '24px', fontSize: '13px', border: '1px solid #334155' }}>
+            <p style={{ fontWeight: 'bold', color: '#38bdf8', marginBottom: '6px' }}>💡 How to log in as a Shop Owner:</p>
+            <p style={{ color: '#cbd5e1', margin: '4px 0' }}>• Click <strong>Log In as Shop Owner</strong> below</p>
+            <p style={{ color: '#cbd5e1', margin: '4px 0' }}>• Use Phone Number: <strong style={{ color: '#f59e0b' }}>9000000037</strong> (H&M Satellite)</p>
+            <p style={{ color: '#cbd5e1', margin: '4px 0' }}>• OTP: <strong style={{ color: '#f59e0b' }}>123456</strong></p>
+          </div>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+            <button className="back-home-btn" style={{ padding: '10px 20px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => { logout(); navigate('/login'); }}>
+              Log In as Shop Owner
+            </button>
+            <button className="back-home-btn" style={{ padding: '10px 20px', background: '#334155', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' }} onClick={() => navigate('/')}>
+              Return to Homepage
+            </button>
+          </div>
         </div>
       </div>
     )
@@ -600,29 +761,35 @@ function ShopDashboard() {
   return (
     <div className="shop-dashboard fade-in">
       <div className="container">
-        {/* Banner with Live Inventory Info */}
+        {/* Banner with Store Info */}
         <div className="shop-info-banner">
           <div className="banner-details">
             <span className="shop-tag">PARTNER SHOP</span>
-            <h2>🏪 {shopInfo?.shop_name || 'Your Local Store'}</h2>
-            <p>Commission Tier: <strong className="commission-badge">{shopInfo?.live_inventory ? '5% (Live)' : '10% (Non-Live)'}</strong></p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4, flexWrap: 'wrap' }}>
+              <h2 style={{ margin: 0 }}>{shopInfo?.shop_name || 'Your Local Store'}</h2>
+              <span style={{
+                background: shopInfo?.live_inventory ? '#dcfce7' : '#f1f5f9',
+                color: shopInfo?.live_inventory ? '#15803d' : '#64748b',
+                padding: '4px 12px',
+                borderRadius: '16px',
+                fontSize: '0.78rem',
+                fontWeight: '700',
+                border: `1px solid ${shopInfo?.live_inventory ? '#86efac' : '#cbd5e1'}`
+              }}>
+                Live Inventory Status: {shopInfo?.live_inventory ? 'On' : 'Off'}
+              </span>
+            </div>
+            <p style={{ margin: '6px 0 0 0', color: '#64748b', fontSize: '0.88rem' }}>
+              Commission Tier: <strong className="commission-badge" style={{ color: '#0891b2' }}>{shopInfo?.live_inventory ? '5% (Live)' : '10% (Standard)'}</strong>
+            </p>
             {weatherData && (
-              <div className="weather-widget" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255, 255, 255, 0.08)', padding: '4px 10px', borderRadius: 12, fontSize: '0.85rem', marginTop: 6, color: '#fff' }}>
-                <span>📍 {weatherData.city}:</span>
-                <strong style={{ color: '#38bdf8' }}>{weatherData.temp}°C</strong>
+              <div className="weather-widget" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#e0f2fe', border: '1px solid #bae6fd', padding: '4px 12px', borderRadius: 16, fontSize: '0.82rem', marginTop: 8, color: '#0369a1' }}>
+                <span>Location: {weatherData.city}</span>
+                <strong style={{ color: '#0284c7' }}>{weatherData.temp}°C</strong>
                 <span>• {weatherData.condition}</span>
-                {weatherData.is_raining && <span style={{ color: '#ff6b6b' }}>🌧️ Raining</span>}
+                {weatherData.is_raining && <span style={{ color: '#dc2626', fontWeight: 'bold' }}>Rain Expected</span>}
               </div>
             )}
-          </div>
-          <div className="live-toggle-wrapper">
-            <div className="toggle-text">
-              <h4>Live Inventory Priority</h4>
-              <p>Auto-assign orders with no confirmation</p>
-            </div>
-            <button className={`live-toggle-btn ${shopInfo?.live_inventory ? 'active' : ''}`} onClick={handleToggleLive}>
-              {shopInfo?.live_inventory ? 'Enabled' : 'Disabled'}
-            </button>
           </div>
         </div>
 
@@ -632,7 +799,7 @@ function ShopDashboard() {
             Overview
           </button>
           <button className={`shop-tab-btn ${activeTab === 'orders' ? 'active' : ''}`} onClick={() => handleTabClick('orders')}>
-            Orders ({orders.length})
+            Orders ({ordersTotalCount || orders.length})
           </button>
           <button className={`shop-tab-btn ${activeTab === 'inventory' ? 'active' : ''}`} onClick={() => handleTabClick('inventory')}>
             Inventory
@@ -665,8 +832,8 @@ function ShopDashboard() {
               </div>
             ) : (
               <>
-                {/* First Row: Stats Cards */}
-                <div className="overview-stats-grid">
+                {/* First Row: Small Rectangle Stats Cards (Side by Side) */}
+                <div className="overview-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>
                   <div className="overview-stat-card border-cyan">
                     <div>
                       <h4>Today's Orders</h4>
@@ -808,34 +975,34 @@ function ShopDashboard() {
                   </div>
                 </div>
 
-                {/* Fourth Row: Inventory Alerts */}
-                {forecastData?.forecast_today?.some(fc => fc.status === 'restock_required') && (
-                  <div className="alert-card out-of-stock" style={{ flex: '1 1 100%', marginBottom: 15, border: '1px solid #ef4444' }}>
-                    <h4 style={{ color: '#ef4444' }}>⚠️ ML Stock Deficit Alerts (Tomorrow)</h4>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
-                      {forecastData.forecast_today
-                        .filter(fc => fc.status === 'restock_required')
-                        .slice(0, 3)
-                        .map(fc => (
-                          <div className="alert-item" key={fc.product_id} style={{ color: '#ff6b6b', fontSize: '0.85rem' }}>
-                            Product <strong>{fc.product_name}</strong>: demand tomorrow is predicted at <strong>{Math.round(fc.predicted_tomorrow)} units</strong>, but current stock is only <strong>{fc.current_stock}</strong>. Recommended restock: <span style={{ textDecoration: 'underline', fontWeight: 'bold' }}>{fc.reorder_recommended}</span> units.
-                          </div>
-                        ))}
+                {/* Fourth Row: Inventory & Operational Alert Cards (Side by Side) */}
+                <div className="overview-alerts-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
+                  {forecastData?.forecast_today?.some(fc => fc.status === 'restock_required') && (
+                    <div className="alert-card out-of-stock" style={{ border: '1px solid #ef4444', borderLeft: '4px solid #ef4444' }}>
+                      <h4 style={{ color: '#dc2626' }}>ML Stock Deficit Alerts</h4>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
+                        {forecastData.forecast_today
+                          .filter(fc => fc.status === 'restock_required')
+                          .slice(0, 3)
+                          .map(fc => (
+                            <div className="alert-item" key={fc.product_id} style={{ color: '#dc2626', fontSize: '0.8rem' }}>
+                              <strong>{fc.product_name}</strong>: demand {Math.round(fc.predicted_tomorrow)}, stock {fc.current_stock}. Reorder: <strong>{fc.reorder_recommended}</strong>.
+                            </div>
+                          ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                <div className="overview-alerts-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 15 }}>
                   <div className="alert-card low-stock">
                     <h4>Low Stock Alert</h4>
                     {lowStockList.length > 0 ? (
                       lowStockList.map((item, idx) => (
-                        <div className="alert-item" key={idx} style={{ color: '#ffaa00' }}>
-                          ⚠️ {item.product_name} - {item.remaining} left
+                        <div className="alert-item" key={idx} style={{ color: '#b45309' }}>
+                          [Stock Low] {item.product_name} - {item.remaining} left
                         </div>
                       ))
                     ) : (
-                      <div className="alert-item" style={{ color: '#10b981' }}>✓ All stock levels normal</div>
+                      <div className="alert-item" style={{ color: '#10b981' }}>All stock levels normal</div>
                     )}
                   </div>
                   
@@ -844,11 +1011,11 @@ function ShopDashboard() {
                     {outOfStockList.length > 0 ? (
                       outOfStockList.map((item, idx) => (
                         <div className="alert-item" key={idx} style={{ color: '#ef4444' }}>
-                          ❌ {item.product_name} - Out of stock
+                          [Out of Stock] {item.product_name}
                         </div>
                       ))
                     ) : (
-                      <div className="alert-item" style={{ color: '#10b981' }}>✓ All items in stock</div>
+                      <div className="alert-item" style={{ color: '#10b981' }}>All items in stock</div>
                     )}
                   </div>
                   
@@ -857,30 +1024,30 @@ function ShopDashboard() {
                     {expiringProducts.length > 0 ? (
                       expiringProducts.map((item, idx) => (
                         <div className="alert-item" key={idx} style={{ color: '#f59e0b' }}>
-                          ⏳ {item.product_name} - {item.remaining}
+                          [Expiring] {item.product_name} - {item.remaining}
                         </div>
                       ))
                     ) : (
-                      <div className="alert-item" style={{ color: '#10b981' }}>✓ No items expiring soon</div>
+                      <div className="alert-item" style={{ color: '#10b981' }}>No items expiring soon</div>
                     )}
                   </div>
 
-                  <div className="alert-card border-purple" style={{ background: 'rgba(139, 92, 246, 0.05)', border: '1px solid rgba(139, 92, 246, 0.1)', padding: 15, borderRadius: 8 }}>
-                    <h4 style={{ color: '#a78bfa', margin: '0 0 10px 0', fontSize: '1.05rem' }}>📉 Slow Moving Products</h4>
+                  <div className="alert-card border-purple" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderLeft: '4px solid #8b5cf6', padding: 15, borderRadius: 8 }}>
+                    <h4 style={{ color: '#7c3aed', margin: '0 0 10px 0', fontSize: '0.9rem' }}>Slow Moving Products</h4>
                     {slowMovingProducts.length > 0 ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                         {slowMovingProducts.map((item, idx) => (
-                          <div key={idx} style={{ fontSize: '0.8rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: 6 }}>
-                            <div style={{ fontWeight: '500' }}>{item.product_name}</div>
-                            <div style={{ color: '#aaa', fontSize: '0.75rem' }}>Sold: {item.sold_count} units (30d) | Stock: {item.current_stock}</div>
-                            <div style={{ color: '#a78bfa', fontWeight: '500', marginTop: 3 }}>
-                              💡 Suggestion: <span style={{ textDecoration: 'underline', cursor: 'pointer' }} onClick={() => alert(`Marketing Campaign Created: ${item.recommendation} for ${item.product_name}`)}>{item.recommendation}</span>
+                          <div key={idx} style={{ fontSize: '0.8rem', borderBottom: '1px solid #f1f5f9', paddingBottom: 6 }}>
+                            <div style={{ fontWeight: '500', color: '#0f172a' }}>{item.product_name}</div>
+                            <div style={{ color: '#64748b', fontSize: '0.75rem' }}>Sold: {item.sold_count} (30d) | Stock: {item.current_stock}</div>
+                            <div style={{ color: '#7c3aed', fontWeight: '500', marginTop: 3 }}>
+                              Suggestion: <span style={{ textDecoration: 'underline', cursor: 'pointer' }} onClick={() => alert(`Marketing Campaign Created: ${item.recommendation} for ${item.product_name}`)}>{item.recommendation}</span>
                             </div>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <div className="alert-item" style={{ color: '#10b981', fontSize: '0.85rem' }}>✓ No slow moving products detected</div>
+                      <div className="alert-item" style={{ color: '#10b981', fontSize: '0.85rem' }}>No slow moving products detected</div>
                     )}
                   </div>
                 </div>
@@ -983,27 +1150,38 @@ function ShopDashboard() {
                         </span>
                       </div>
 
-                      {/* If order is pending, show the 90-sec countdown timer */}
+                      {/* If order is pending, show the 60-sec countdown timer */}
                       {order.status === 'pending' && (
-                        <OrderCountdownTimer 
-                          createdAt={order.created_at} 
-                          onTimeout={() => handleReject(order.id)} 
+                        <OrderCountdownTimer
+                          createdAt={order.created_at}
+                          onTimeout={handleOrderTimeout}
                         />
                       )}
 
                       <div className="card-middle-details">
-                        <p><strong>Customer:</strong> {order.user_name}</p>
-                        <p><strong>Fulfillment:</strong> <span className="fulfill-badge">{order.fulfillment_option.replace('_', ' ')}</span></p>
-                        
+                        <p><strong>Customer:</strong> {order.user_name} {order.user_phone && <span style={{color:'#64748b', fontSize:'0.85rem'}}>({order.user_phone})</span>}</p>
+                        <p><strong>Fulfillment:</strong> <span className="fulfill-badge">{order.fulfillment_option?.replace(/_/g, ' ')}</span></p>
+                        {order.delivery_address && <p style={{fontSize:'0.82rem', color:'#64748b'}}><strong>Address:</strong> {order.delivery_address}</p>}
+                        {order.rider_details && (
+                          <p style={{fontSize:'0.82rem', color:'#3b82f6'}}>
+                            <strong>Rider:</strong> {order.rider_details.full_name || order.rider_details.username}
+                            {order.rider_phone && <> ({order.rider_phone})</>}
+                          </p>
+                        )}
                         <div className="order-items-preview">
                           <h5>Items list:</h5>
                           <ul>
                             {order.items.map(item => (
                               <li key={item.id}>
-                                {item.product_name} x {item.quantity}
+                                {item.product_name} x {item.quantity} <span style={{color:'#64748b'}}>@ ₹{parseFloat(item.price_at_order).toFixed(2)}</span>
                               </li>
                             ))}
                           </ul>
+                        </div>
+                        <div style={{marginTop:8, padding:'8px 12px', background:'#f8fafc', borderRadius:6, fontSize:'0.82rem', display:'flex', gap:16}}>
+                          <span><strong>Subtotal:</strong> ₹{parseFloat(order.subtotal || 0).toFixed(2)}</span>
+                          <span><strong>Delivery:</strong> ₹{parseFloat(order.delivery_charge || 0).toFixed(2)}</span>
+                          <span><strong>Total:</strong> ₹{parseFloat(order.total_price || 0).toFixed(2)}</span>
                         </div>
                       </div>
 
@@ -1030,6 +1208,7 @@ function ShopDashboard() {
                 })}
               </div>
             )}
+            <PaginationControls currentPage={ordersPage} totalPages={ordersTotalPages} onPageChange={(p) => loadOrders(p)} />
           </>
         )}
 
@@ -1149,6 +1328,7 @@ function ShopDashboard() {
                 ))}
               </div>
             )}
+            <PaginationControls currentPage={inventoryPage} totalPages={inventoryTotalPages} onPageChange={(p) => loadInventory(p)} />
           </div>
         )}
 
@@ -1376,28 +1556,28 @@ function ShopDashboard() {
                   </div>
 
                   <div className="chart-card-box">
-                    <h4>🤖 ML Sales Anomaly & Tax Forecast</h4>
+                    <h4>ML Sales Anomaly & Tax Forecast</h4>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 10 }}>
-                      <div style={{ background: 'rgba(255,255,255,0.03)', padding: 12, borderRadius: 6, border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <span style={{ fontSize: '0.8rem', color: '#aaa' }}>Predicted Next Week Sales:</span>
-                        <h4 style={{ margin: '4px 0 0 0', color: '#38bdf8' }}>₹{reportsData.ml_insights.predicted_next_week_revenue.toLocaleString()}</h4>
+                      <div style={{ background: '#f8fafc', padding: 12, borderRadius: 6, border: '1px solid #e2e8f0' }}>
+                        <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Predicted Next Week Sales:</span>
+                        <h4 style={{ margin: '4px 0 0 0', color: '#0891b2' }}>₹{reportsData.ml_insights.predicted_next_week_revenue.toLocaleString()}</h4>
                       </div>
-                      <div style={{ background: 'rgba(255,255,255,0.03)', padding: 12, borderRadius: 6, border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <span style={{ fontSize: '0.8rem', color: '#aaa' }}>Est. Next Week Tax Liability:</span>
-                        <h4 style={{ margin: '4px 0 0 0', color: '#f59e0b' }}>₹{reportsData.ml_insights.predicted_next_week_tax.toLocaleString()}</h4>
+                      <div style={{ background: '#f8fafc', padding: 12, borderRadius: 6, border: '1px solid #e2e8f0' }}>
+                        <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Est. Next Week Tax Liability:</span>
+                        <h4 style={{ margin: '4px 0 0 0', color: '#d97706' }}>₹{reportsData.ml_insights.predicted_next_week_tax.toLocaleString()}</h4>
                       </div>
 
                       {reportsData.ml_insights.anomalies.length > 0 ? (
                         <div>
-                          <strong style={{ fontSize: '0.8rem', color: '#ff6b6b' }}>Detected Sales Anomalies:</strong>
+                          <strong style={{ fontSize: '0.8rem', color: '#dc2626' }}>Detected Sales Anomalies:</strong>
                           {reportsData.ml_insights.anomalies.map((anom, idx) => (
-                            <div key={idx} style={{ fontSize: '0.75rem', color: anom.type === 'high_surge' ? '#10b981' : '#ef4444', marginTop: 4 }}>
+                            <div key={idx} style={{ fontSize: '0.75rem', color: anom.type === 'high_surge' ? '#16a34a' : '#dc2626', marginTop: 4 }}>
                               • {anom.date}: {anom.note}
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <span style={{ fontSize: '0.75rem', color: '#10b981' }}>✓ Sales variance is within normal expected distribution.</span>
+                        <span style={{ fontSize: '0.75rem', color: '#16a34a' }}>Sales variance is within normal expected distribution.</span>
                       )}
                     </div>
                   </div>
@@ -1519,6 +1699,7 @@ function ShopDashboard() {
                     </tbody>
                   </table>
                 </div>
+                <PaginationControls currentPage={crmPage} totalPages={crmTotalPages} onPageChange={(p) => loadCustomerCRM(p)} />
               </>
             )}
           </div>
@@ -1527,7 +1708,7 @@ function ShopDashboard() {
         {activeTab === 'promotions' && (
           <div className="shop-promotions-section">
             <div style={{ marginBottom: 20 }}>
-              <h3 style={{ margin: 0, fontSize: '1.4rem' }}>🏷️ Smart Promotions & Discount Campaign Manager</h3>
+              <h3 style={{ margin: 0, fontSize: '1.4rem' }}>Smart Promotions & Discount Campaign Manager</h3>
               <p className="text-muted" style={{ margin: '4px 0 0 0', fontSize: '0.85rem' }}>Create store promo codes and launch ML-driven dynamic price discounts for targeted inventory.</p>
             </div>
 
@@ -1569,12 +1750,12 @@ function ShopDashboard() {
                 {/* ML Smart Recommendations */}
                 {promotionsData.ml_recommendations?.length > 0 && (
                   <div className="chart-card-box" style={{ marginBottom: 25, borderLeft: '4px solid #8b5cf6' }}>
-                    <h4 style={{ color: '#a78bfa' }}>🤖 ML Dynamic Promotion Recommendations</h4>
+                    <h4 style={{ color: '#a78bfa' }}>ML Dynamic Promotion Recommendations</h4>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 12, marginTop: 12 }}>
                       {promotionsData.ml_recommendations.map((rec, idx) => (
-                        <div key={idx} style={{ background: 'rgba(255,255,255,0.03)', padding: 12, borderRadius: 6, border: '1px solid rgba(255,255,255,0.08)' }}>
-                          <strong style={{ color: '#fff', fontSize: '0.9rem' }}>{rec.product_name}</strong>
-                          <p style={{ margin: '4px 0 8px 0', fontSize: '0.75rem', color: '#ffaa00' }}>⚠️ {rec.reason}</p>
+                        <div key={idx} style={{ background: '#f8fafc', padding: 12, borderRadius: 6, border: '1px solid #e2e8f0' }}>
+                          <strong style={{ color: '#0f172a', fontSize: '0.9rem' }}>{rec.product_name}</strong>
+                          <p style={{ margin: '4px 0 8px 0', fontSize: '0.75rem', color: '#d97706' }}>Note: {rec.reason}</p>
                           <button
                             className="advance-order-action-btn"
                             style={{ width: '100%', fontSize: '0.8rem', padding: '6px' }}
@@ -1583,7 +1764,7 @@ function ShopDashboard() {
                               setNewPromoDiscount(rec.suggested_discount_pct)
                             }}
                           >
-                            🚀 {rec.action_label}
+                            {rec.action_label}
                           </button>
                         </div>
                       ))}
@@ -1627,7 +1808,7 @@ function ShopDashboard() {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'flex-end' }}>
                       <button type="submit" className="add-to-inv-btn" style={{ width: '100%', padding: '10px' }}>
-                        ➕ Create Coupon
+                        Create Coupon
                       </button>
                     </div>
                   </form>
@@ -1651,13 +1832,13 @@ function ShopDashboard() {
                     <tbody>
                       {promotionsData.coupons.map(c => (
                         <tr key={c.id}>
-                          <td><strong style={{ color: '#38bdf8' }}>{c.code}</strong></td>
-                          <td style={{ fontWeight: 'bold', color: '#10b981' }}>{c.discount_value}% OFF</td>
+                          <td><strong style={{ color: '#0891b2' }}>{c.code}</strong></td>
+                          <td style={{ fontWeight: 'bold', color: '#16a34a' }}>{c.discount_value}% OFF</td>
                           <td>₹{c.min_order_value}</td>
                           <td>{c.used_count} times</td>
-                          <td style={{ color: '#aaa', fontSize: '0.8rem' }}>{c.valid_until}</td>
+                          <td style={{ color: '#64748b', fontSize: '0.8rem' }}>{c.valid_until}</td>
                           <td>
-                            <span className="table-status-pill" style={{ background: c.is_active ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)', color: c.is_active ? '#10b981' : '#ef4444' }}>
+                            <span className="table-status-pill" style={{ background: c.is_active ? '#dcfce7' : '#fee2e2', color: c.is_active ? '#15803d' : '#dc2626' }}>
                               {c.is_active ? 'Active' : 'Inactive'}
                             </span>
                           </td>
@@ -1686,7 +1867,7 @@ function ShopDashboard() {
         {activeTab === 'growth' && (
           <div className="shop-growth-section">
             <div style={{ marginBottom: 20 }}>
-              <h3 style={{ margin: 0, fontSize: '1.4rem' }}>🚀 Merchant Growth & Tier Hub</h3>
+              <h3 style={{ margin: 0, fontSize: '1.4rem' }}>Merchant Growth & Tier Hub</h3>
               <p className="text-muted" style={{ margin: '4px 0 0 0', fontSize: '0.85rem' }}>Lower commission rates, unlock featured marketplace banners, and simulate revenue expansion.</p>
             </div>
 
@@ -1697,24 +1878,24 @@ function ShopDashboard() {
             ) : (
               <>
                 {/* ML Growth Simulator Box */}
-                <div className="chart-card-box" style={{ marginBottom: 25, background: 'linear-gradient(135deg, rgba(8,145,178,0.15) 0%, rgba(139,92,246,0.15) 100%)', border: '1px solid rgba(8,145,178,0.3)' }}>
-                  <h4 style={{ color: '#38bdf8' }}>🤖 ML Store Growth & Revenue Uplift Simulator</h4>
-                  <p style={{ fontSize: '0.85rem', color: '#cbd5e1', margin: '4px 0 16px 0' }}>
+                <div className="chart-card-box" style={{ marginBottom: 25, background: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                  <h4 style={{ color: '#0891b2' }}>ML Store Growth & Revenue Uplift Simulator</h4>
+                  <p style={{ fontSize: '0.85rem', color: '#475569', margin: '4px 0 16px 0' }}>
                     Based on your 30-day store revenue of <strong>₹{growthData.monthly_volume.toLocaleString()}</strong>, upgrading to Gold Super-Seller Tier produces:
                   </p>
 
                   <div className="overview-stats-grid" style={{ marginBottom: 15 }}>
-                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: 12, borderRadius: 8 }}>
-                      <span style={{ fontSize: '0.75rem', color: '#aaa' }}>Est. Monthly Commission Savings</span>
-                      <h3 style={{ margin: '4px 0 0 0', color: '#10b981' }}>+₹{growthData.ml_growth_simulator.estimated_monthly_savings.toLocaleString()}</h3>
+                    <div style={{ background: '#ffffff', padding: 12, borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                      <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Est. Monthly Commission Savings</span>
+                      <h3 style={{ margin: '4px 0 0 0', color: '#16a34a' }}>+₹{growthData.ml_growth_simulator.estimated_monthly_savings.toLocaleString()}</h3>
                     </div>
-                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: 12, borderRadius: 8 }}>
-                      <span style={{ fontSize: '0.75rem', color: '#aaa' }}>Predicted Sales Uplift</span>
-                      <h3 style={{ margin: '4px 0 0 0', color: '#38bdf8' }}>+{growthData.ml_growth_simulator.predicted_revenue_uplift_pct}% Volume</h3>
+                    <div style={{ background: '#ffffff', padding: 12, borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                      <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Predicted Sales Uplift</span>
+                      <h3 style={{ margin: '4px 0 0 0', color: '#0891b2' }}>+{growthData.ml_growth_simulator.predicted_revenue_uplift_pct}% Volume</h3>
                     </div>
-                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: 12, borderRadius: 8 }}>
-                      <span style={{ fontSize: '0.75rem', color: '#aaa' }}>Projected Net Profit Gain</span>
-                      <h3 style={{ margin: '4px 0 0 0', color: '#f59e0b' }}>+₹{growthData.ml_growth_simulator.predicted_net_profit_gain.toLocaleString()} / mo</h3>
+                    <div style={{ background: '#ffffff', padding: 12, borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                      <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Projected Net Profit Gain</span>
+                      <h3 style={{ margin: '4px 0 0 0', color: '#d97706' }}>+₹{growthData.ml_growth_simulator.predicted_net_profit_gain.toLocaleString()} / mo</h3>
                     </div>
                   </div>
                 </div>
@@ -1722,23 +1903,23 @@ function ShopDashboard() {
                 {/* Plan Comparison Grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 20 }}>
                   {growthData.tiers.map(t => (
-                    <div key={t.id} style={{ background: '#0f172a', border: t.is_current ? '2px solid #0891b2' : '1px solid #1e293b', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <div key={t.id} style={{ background: '#ffffff', border: t.is_current ? '2px solid #0891b2' : '1px solid #e2e8f0', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                       <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <h3 style={{ margin: 0, color: t.id === 'premium' ? '#f59e0b' : '#fff' }}>{t.name}</h3>
+                          <h3 style={{ margin: 0, color: t.id === 'premium' ? '#d97706' : '#0f172a' }}>{t.name}</h3>
                           {t.is_current && <span className="shop-tag">ACTIVE PLAN</span>}
                         </div>
                         <h2 style={{ fontSize: '2rem', margin: '16px 0 8px 0', color: '#0891b2' }}>{t.commission_rate}</h2>
-                        <ul style={{ paddingLeft: 20, margin: '16px 0', color: '#cbd5e1', fontSize: '0.85rem', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        <ul style={{ paddingLeft: 20, margin: '16px 0', color: '#475569', fontSize: '0.85rem', display: 'flex', flexDirection: 'column', gap: 8 }}>
                           {t.features.map((f, idx) => (
-                            <li key={idx}>✓ {f}</li>
+                            <li key={idx}>{f}</li>
                           ))}
                         </ul>
                       </div>
 
                       {!t.is_current && t.id === 'premium' && (
                         <button className="add-to-inv-btn" onClick={handleUpgradeTier} style={{ width: '100%', marginTop: 20, padding: 12, fontWeight: 'bold' }}>
-                          🚀 Upgrade Store to Gold Tier (5% Flat)
+                          Upgrade Store to Gold Tier (5% Flat)
                         </button>
                       )}
                     </div>
@@ -1752,7 +1933,7 @@ function ShopDashboard() {
         {activeTab === 'settings' && (
           <div className="shop-settings-section">
             <div style={{ marginBottom: 20 }}>
-              <h3 style={{ margin: 0, fontSize: '1.4rem' }}>⚙️ Shop Operating Profile & Settings</h3>
+              <h3 style={{ margin: 0, fontSize: '1.4rem' }}>Shop Operating Profile & Settings</h3>
               <p className="text-muted" style={{ margin: '4px 0 0 0', fontSize: '0.85rem' }}>Manage store address, operating hours, delivery parameters, and payout bank accounts.</p>
             </div>
 
@@ -1764,13 +1945,36 @@ function ShopDashboard() {
               <form onSubmit={handleSaveSettings} className="add-product-form-box" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 {/* AI Operating Hours Widget */}
                 {settingsData.ml_recommended_hours && (
-                  <div style={{ background: 'rgba(8, 145, 178, 0.1)', padding: 12, borderRadius: 8, borderLeft: '4px solid #0891b2' }}>
-                    <strong style={{ color: '#38bdf8', fontSize: '0.85rem' }}>🤖 ML Locality Hours Optimizer:</strong>
-                    <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#cbd5e1' }}>
+                  <div style={{ background: '#ecfeff', padding: 12, borderRadius: 8, borderLeft: '4px solid #0891b2' }}>
+                    <strong style={{ color: '#0891b2', fontSize: '0.85rem' }}>ML Locality Hours Optimizer:</strong>
+                    <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#334155' }}>
                       {settingsData.ml_recommended_hours.reason}. Suggested operating hours: <strong>{settingsData.ml_recommended_hours.recommended_open} - {settingsData.ml_recommended_hours.recommended_close}</strong>.
                     </p>
                   </div>
                 )}
+
+                {/* Live Inventory Priority Information Block */}
+                <div className="modal-span-2" style={{ background: '#f8fafc', padding: 14, borderRadius: 8, border: '1px solid #e2e8f0', marginBottom: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
+                    <div>
+                      <strong style={{ color: '#0f172a', fontSize: '0.9rem' }}>Live Inventory Status</strong>
+                      <p style={{ margin: '3px 0 0 0', fontSize: '0.8rem', color: '#64748b' }}>
+                        Live Inventory auto-assigns orders with no confirmation delay and reduces platform commission to 5%.
+                      </p>
+                    </div>
+                    <span style={{
+                      background: settingsData.live_inventory ? '#dcfce7' : '#f1f5f9',
+                      color: settingsData.live_inventory ? '#15803d' : '#475569',
+                      padding: '6px 14px',
+                      borderRadius: '20px',
+                      fontSize: '0.8rem',
+                      fontWeight: '700',
+                      border: `1px solid ${settingsData.live_inventory ? '#86efac' : '#cbd5e1'}`
+                    }}>
+                      {settingsData.live_inventory ? 'On' : 'Off'}
+                    </span>
+                  </div>
+                </div>
 
                 <div className="modal-grid-form">
                   <div className="modal-span-2">

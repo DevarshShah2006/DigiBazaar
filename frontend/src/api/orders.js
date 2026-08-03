@@ -1,7 +1,7 @@
 import { fetchJson } from './api'
 
-export function getOrders() {
-  return fetchJson('/orders/shop-orders/')
+export function getOrders(page = 1) {
+  return fetchJson(`/orders/shop-orders/?page=${page}`)
 }
 
 export function acceptOrder(orderId) {

@@ -63,5 +63,24 @@ export function CartProvider({ children }) {
 }
 
 export function useCart() {
-  return useContext(CartContext)
+  const ctx = useContext(CartContext)
+  if (ctx === null || ctx === undefined) {
+    // Provide a safe fallback to avoid runtime errors when CartProvider
+    // is not mounted. This should not be necessary in normal app usage.
+    // eslint-disable-next-line no-console
+    console.warn('useCart() called without a CartProvider - returning fallback')
+    return {
+      items: [],
+      addItem: () => {},
+      removeItem: () => {},
+      updateQuantity: () => {},
+      clearCart: () => {},
+      isOpen: false,
+      setIsOpen: () => {},
+      total: 0,
+      itemCount: 0
+    }
+  }
+
+  return ctx
 }

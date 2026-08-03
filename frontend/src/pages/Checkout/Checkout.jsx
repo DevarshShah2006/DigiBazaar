@@ -116,6 +116,23 @@ export default function Checkout() {
   const handlePlaceOrder = async () => {
     setLoading(true)
     try {
+      // Pre-check: DigiExpress + multi-store warning
+      if (fulfillment === 'digibazaar_delivery') {
+        const shopIds = new Set(items.map(i => i.shop_id || (i.shops && i.shops[0]?.id)).filter(Boolean))
+        if (shopIds.size > 1) {
+          alert('DigiBazaar Express only allows items from a SINGLE store per order. Please use Shop Delivery for multi-store orders.')
+          setLoading(false)
+          return
+        }
+      }
+
+      // Pre-check: Shop Delivery minimum ₹50
+      if (fulfillment === 'shop_delivery' && subtotal < 50) {
+        alert(`Minimum order for Shop Delivery is ₹50. Your subtotal is ₹${subtotal.toFixed(2)}.`)
+        setLoading(false)
+        return
+      }
+
       const payload = {
         items: items.map(i => ({
           product_id: i.id,
@@ -124,7 +141,9 @@ export default function Checkout() {
         })),
         fulfillment_option: fulfillment,
         delivery_address: address,
-        lat: 23.0125, // Mock coordinates
+        payment_method: paymentMethod,
+        discount_amount: discount,
+        lat: 23.0125,
         long: 72.5575
       }
 
@@ -132,14 +151,14 @@ export default function Checkout() {
         method: 'POST',
         body: JSON.stringify(payload)
       })
-      
+
       if (res && (res.detail || res.error)) {
         alert(res.detail || res.error || 'Failed to place order.')
         return
       }
-      
+
       clearCart()
-      
+
       if (res && res.length > 0) {
         navigate(`/order-confirmation/${res[0].id}`)
       } else if (res && res.id) {
@@ -148,7 +167,7 @@ export default function Checkout() {
         navigate('/my-orders')
       }
     } catch (err) {
-      alert('Failed to place order. Please try again.')
+      alert('Failed to place order. Please check your connection and try again.')
     } finally {
       setLoading(false)
     }

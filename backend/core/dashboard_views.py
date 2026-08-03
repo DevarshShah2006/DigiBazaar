@@ -507,8 +507,8 @@ class ShopCustomerCRMView(APIView):
         if not shop:
             return Response({'detail': 'Shop not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        # Include all non-cancelled orders for this owner (matching ShopAnalyticsView)
-        orders = Order.objects.filter(shop__owner=owner).exclude(status__in=['cancelled', 'rejected']).select_related('user')
+        # Include latest 25 non-cancelled orders for this owner (matching Admin optimization)
+        orders = Order.objects.filter(shop__owner=owner).exclude(status__in=['cancelled', 'rejected']).select_related('user').order_by('-created_at')[:25]
         now = timezone.now()
 
         # Group by customer
@@ -650,6 +650,19 @@ class ShopCustomerCRMView(APIView):
         at_risk_count = sum(1 for c in customers_list if c['churn_risk_pct'] >= 50)
         avg_clv = round(sum(c['total_spent'] for c in customers_list) / total_unique_customers, 2) if total_unique_customers > 0 else 0.0
 
+        page_size = 25
+        try:
+            page = int(request.query_params.get('page', 1))
+        except (ValueError, TypeError):
+            page = 1
+
+        total_pages = math.ceil(total_unique_customers / page_size) if total_unique_customers > 0 else 1
+        page = max(1, min(page, total_pages))
+        start = (page - 1) * page_size
+        end = start + page_size
+
+        paginated_customers = customers_list[start:end]
+
         return Response({
             'crm_summary': {
                 'total_unique_customers': total_unique_customers,
@@ -658,7 +671,11 @@ class ShopCustomerCRMView(APIView):
                 'at_risk_count': at_risk_count,
                 'avg_customer_ltv': avg_clv
             },
-            'customers': customers_list
+            'total_count': total_unique_customers,
+            'total_pages': total_pages,
+            'current_page': page,
+            'page_size': page_size,
+            'customers': paginated_customers
         })
 
 
@@ -715,8 +732,8 @@ class ShopPromotionsView(APIView):
         if not shop:
             return Response({'detail': 'Shop not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        # Get existing coupons associated with shop or global
-        coupons = Coupon.objects.filter(Q(applicable_shops=shop) | Q(applicable_shops=None)).order_by('-created_at').distinct()
+        # Get only coupons that belong specifically to THIS shop
+        coupons = Coupon.objects.filter(applicable_shops=shop).order_by('-created_at').distinct()
         coupon_list = [
             {
                 'id': c.id,

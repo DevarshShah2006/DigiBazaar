@@ -6,6 +6,7 @@ from .views import (
     ShopViewSet,
     SignupView,
     LoginView,
+    MeView,
     TokenRefreshView,
     SendOTPView,
     VerifyOTPView,
@@ -20,6 +21,7 @@ from .views import (
     AcceptOrderView,
     RejectOrderView,
     AdvanceOrderView,
+    OrderTimeoutView,
     ProductShopsView,
     OrderDetailView,
     CategoryListView,
@@ -54,6 +56,20 @@ from .dashboard_views import (
     ShopGlobalSearchView,
 )
 
+from .admin_views import (
+    AdminStatsView,
+    AdminOrdersView,
+    AdminOrderDetailView,
+    AdminShopsView,
+    AdminShopDetailView,
+    AdminRidersView,
+    AdminRiderDetailView,
+    AdminUsersView,
+    AdminUserDetailView,
+    AdminProductsView,
+    AdminProductDetailView,
+)
+
 router = DefaultRouter()
 router.register(r'products', ProductViewSet, basename='product')
 router.register(r'shops', ShopViewSet, basename='shop')
@@ -62,6 +78,7 @@ router.register(r'wishlist', WishlistViewSet, basename='wishlist')
 urlpatterns = [
     path('auth/signup/', SignupView.as_view(), name='signup'),
     path('auth/login/', LoginView.as_view(), name='login'),
+    path('auth/me/', MeView.as_view(), name='auth_me'),
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/send-otp/', SendOTPView.as_view(), name='send_otp'),
     path('auth/verify-otp/', VerifyOTPView.as_view(), name='verify_otp'),
@@ -105,8 +122,23 @@ urlpatterns = [
     path('orders/accept/', AcceptOrderView.as_view(), name='accept_order'),
     path('orders/reject/', RejectOrderView.as_view(), name='reject_order'),
     path('orders/advance/', AdvanceOrderView.as_view(), name='advance_order'),
+    path('orders/timeout/', OrderTimeoutView.as_view(), name='order_timeout'),
     path('orders/recommend-delivery/', DeliveryRecommendationView.as_view(), name='recommend_delivery'),
     path('orders/<int:pk>/', OrderDetailView.as_view(), name='order_detail'),
+
+    # Admin Portal APIs
+    path('admin/dashboard-stats/', AdminStatsView.as_view(), name='admin_stats'),
+    path('admin/orders/', AdminOrdersView.as_view(), name='admin_orders'),
+    path('admin/orders/<int:pk>/', AdminOrderDetailView.as_view(), name='admin_order_detail'),
+    path('admin/shops/', AdminShopsView.as_view(), name='admin_shops'),
+    path('admin/shops/<int:pk>/', AdminShopDetailView.as_view(), name='admin_shop_detail'),
+    path('admin/riders/', AdminRidersView.as_view(), name='admin_riders'),
+    path('admin/riders/<int:pk>/', AdminRiderDetailView.as_view(), name='admin_rider_detail'),
+    path('admin/users/', AdminUsersView.as_view(), name='admin_users'),
+    path('admin/users/<int:pk>/', AdminUserDetailView.as_view(), name='admin_user_detail'),
+    path('admin/products/', AdminProductsView.as_view(), name='admin_products'),
+    path('admin/products/<int:pk>/', AdminProductDetailView.as_view(), name='admin_product_detail'),
+
     path('', include(router.urls)),
 ]
 

@@ -106,6 +106,16 @@
   border-color: #6366f1;
   background: #eef2ff;
 }
+.role-select-card.active.admin {
+  border-color: #4338ca;
+  background: #e0e7ff;
+}
+
+.portal-admin {
+  --primary: #4338ca;
+  --primary-hover: #3730a3;
+  --primary-light: #e0e7ff;
+}
 
 .phone-input-group {
   display: flex;
