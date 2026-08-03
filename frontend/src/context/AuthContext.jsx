@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { loginUser, signupUser, verifyOTP } from '../api/auth'
 
 const AuthContext = createContext(null)
@@ -56,12 +57,19 @@ export function AuthProvider({ children }) {
     return { success: false, error: data.detail || 'Signup failed' }
   }, [])
 
+  const navigate = useNavigate()
+
   const logout = useCallback(() => {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
     localStorage.removeItem('user')
     setUser(null)
-  }, [])
+    try {
+      navigate('/login')
+    } catch (e) {
+      window.location.href = '/login'
+    }
+  }, [navigate])
 
   return (
     <AuthContext.Provider value={{ user, login, logout, signup, isLoggedIn: !!user }}>

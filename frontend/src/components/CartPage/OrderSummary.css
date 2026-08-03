@@ -1,0 +1,123 @@
+.order-summary-card {
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 28px;
+  box-shadow: 0 20px 60px rgba(32, 57, 91, 0.08);
+  border: 1px solid rgba(22, 38, 78, 0.05);
+}
+
+.order-summary-card__header {
+  margin-bottom: 22px;
+}
+
+.order-summary-card__eyebrow {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: #6d6d6d;
+  margin: 0 0 6px;
+}
+
+.order-summary-card__title {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0;
+  color: #121212;
+}
+
+.order-summary-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #4c4c4c;
+  font-size: 15px;
+}
+
+.summary-row strong {
+  color: #111827;
+  font-weight: 700;
+}
+
+.promo-row {
+  display: flex;
+  gap: 12px;
+}
+
+.promo-input {
+  flex: 1;
+  padding: 14px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 16px;
+  font-size: 14px;
+  color: #111827;
+  background: #f8fafc;
+}
+
+.promo-apply-btn {
+  min-width: 110px;
+  border: none;
+  background: #4f46e5;
+  color: #fff;
+  border-radius: 16px;
+  padding: 14px 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.promo-message {
+  margin: 0;
+  font-size: 13px;
+}
+
+.promo-message.success {
+  color: #16a34a;
+}
+
+.promo-message.error {
+  color: #dc2626;
+}
+
+.summary-divider {
+  height: 1px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  margin: 4px 0;
+}
+
+.summary-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 18px;
+  font-weight: 800;
+  color: #111827;
+}
+
+.summary-proceed-btn {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #e8a93d 0%, #f6735f 100%);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.summary-proceed-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.summary-proceed-btn:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 30px rgba(231, 115, 95, 0.24);
+}

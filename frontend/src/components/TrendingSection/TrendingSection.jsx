@@ -9,14 +9,14 @@ function TrendingSection() {
   const scrollRef = useRef(null)
 
   useEffect(() => {
-    fetchJson('/products/featured/?limit=12')
+    fetchJson('/products/featured/?page_size=12')
       .then(data => {
         const prods = data.results || data || []
         setProducts(prods.slice(0, 12))
         setLoading(false)
       })
       .catch(() => {
-        fetchJson('/products/?limit=12').then(d => {
+        fetchJson('/products/?page_size=12').then(d => {
           setProducts((d.results || d || []).slice(0, 12))
           setLoading(false)
         })
@@ -32,7 +32,7 @@ function TrendingSection() {
   if (loading) return (
     <section className="trending-section">
       <div className="section-header">
-        <h2 className="section-title">✨ Featured Products</h2>
+        <h2 className="section-title">Featured Products</h2>
       </div>
       <div className="trending-skeleton">
         {Array(4).fill(0).map((_, i) => (
