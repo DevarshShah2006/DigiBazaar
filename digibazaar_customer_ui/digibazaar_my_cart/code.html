@@ -1,0 +1,444 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>DigiBazaar | Your Cart</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary": "#502c12",
+                    "surface": "#fbf9f5",
+                    "inverse-primary": "#f4ba96",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed-dim": "#accfb8",
+                    "secondary": "#934b00",
+                    "on-primary-container": "#e9b08c",
+                    "secondary-fixed-dim": "#ffb781",
+                    "surface-container": "#efeeea",
+                    "surface-bright": "#fbf9f5",
+                    "surface-container-low": "#f5f3ef",
+                    "background": "#fbf9f5",
+                    "inverse-on-surface": "#f2f0ed",
+                    "secondary-container": "#fc943b",
+                    "surface-container-lowest": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "inverse-surface": "#30312e",
+                    "surface-variant": "#e4e2de",
+                    "on-surface-variant": "#51443d",
+                    "on-primary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed-variant": "#653d22",
+                    "outline-variant": "#d5c3b9",
+                    "on-tertiary-container": "#a2c4ae",
+                    "surface-container-highest": "#e4e2de",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#2e4d3c",
+                    "surface-tint": "#805437",
+                    "surface-dim": "#dbdad6",
+                    "surface-container-high": "#eae8e4",
+                    "tertiary-container": "#335241",
+                    "primary-container": "#6b4226",
+                    "on-surface": "#1b1c1a",
+                    "outline": "#83746c",
+                    "on-secondary-fixed-variant": "#703800",
+                    "on-primary-fixed": "#311300",
+                    "tertiary-fixed": "#c7ebd4",
+                    "secondary-fixed": "#ffdcc4",
+                    "on-secondary-container": "#683300",
+                    "primary-fixed": "#ffdbc7",
+                    "error": "#ba1a1a",
+                    "primary-fixed-dim": "#f4ba96",
+                    "on-background": "#1b1c1a",
+                    "on-tertiary-fixed": "#012113",
+                    "on-secondary-fixed": "#301400",
+                    "tertiary": "#1c3b2b",
+                    "on-tertiary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-max": "1280px",
+                    "margin-mobile": "16px",
+                    "unit": "8px",
+                    "gutter": "24px",
+                    "margin-desktop": "40px"
+            },
+            "fontFamily": {
+                    "label-md": ["Manrope"],
+                    "headline-lg": ["Manrope"],
+                    "headline-lg-mobile": ["Manrope"],
+                    "label-sm": ["Manrope"],
+                    "body-md": ["Manrope"],
+                    "headline-md": ["Manrope"],
+                    "body-lg": ["Manrope"],
+                    "display-lg": ["Manrope"]
+            },
+            "fontSize": {
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.03em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #fbf9f5;
+            color: #1b1c1a;
+            font-family: 'Manrope', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d5c3b9;
+            border-radius: 10px;
+        }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}[type='text'],input:where(:not([type])),[type='email'],[type='url'],[type='password'],[type='number'],[type='date'],[type='datetime-local'],[type='month'],[type='search'],[type='tel'],[type='time'],[type='week'],[multiple],textarea,select{-webkit-appearance:none;appearance:none;background-color:#fff;border-color:#6b7280;border-width:1px;border-radius:0px;padding-top:0.5rem;padding-right:0.75rem;padding-bottom:0.5rem;padding-left:0.75rem;font-size:1rem;line-height:1.5rem;--tw-shadow:0 0 #0000;}[type='text']:focus, input:where(:not([type])):focus, [type='email']:focus, [type='url']:focus, [type='password']:focus, [type='number']:focus, [type='date']:focus, [type='datetime-local']:focus, [type='month']:focus, [type='search']:focus, [type='tel']:focus, [type='time']:focus, [type='week']:focus, [multiple]:focus, textarea:focus, select:focus{outline:2px solid transparent;outline-offset:2px;--tw-ring-inset:var(--tw-empty,/*!*/ /*!*/);--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:#2563eb;--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);border-color:#2563eb}input::placeholder,textarea::placeholder{color:#6b7280;opacity:1}::-webkit-datetime-edit-fields-wrapper{padding:0}::-webkit-date-and-time-value{min-height:1.5em;text-align:inherit}::-webkit-datetime-edit{display:inline-flex}::-webkit-datetime-edit,::-webkit-datetime-edit-year-field,::-webkit-datetime-edit-month-field,::-webkit-datetime-edit-day-field,::-webkit-datetime-edit-hour-field,::-webkit-datetime-edit-minute-field,::-webkit-datetime-edit-second-field,::-webkit-datetime-edit-millisecond-field,::-webkit-datetime-edit-meridiem-field{padding-top:0;padding-bottom:0}select{background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");background-position:right 0.5rem center;background-repeat:no-repeat;background-size:1.5em 1.5em;padding-right:2.5rem;print-color-adjust:exact}[multiple],[size]:where(select:not([size="1"])){background-image:initial;background-position:initial;background-repeat:unset;background-size:initial;padding-right:0.75rem;print-color-adjust:unset}[type='checkbox'],[type='radio']{-webkit-appearance:none;appearance:none;padding:0;print-color-adjust:exact;display:inline-block;vertical-align:middle;background-origin:border-box;-webkit-user-select:none;user-select:none;flex-shrink:0;height:1rem;width:1rem;color:#2563eb;background-color:#fff;border-color:#6b7280;border-width:1px;--tw-shadow:0 0 #0000}[type='checkbox']{border-radius:0px}[type='radio']{border-radius:100%}[type='checkbox']:focus,[type='radio']:focus{outline:2px solid transparent;outline-offset:2px;--tw-ring-inset:var(--tw-empty,/*!*/ /*!*/);--tw-ring-offset-width:2px;--tw-ring-offset-color:#fff;--tw-ring-color:#2563eb;--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow)}[type='checkbox']:checked,[type='radio']:checked{border-color:transparent;background-color:currentColor;background-size:100% 100%;background-position:center;background-repeat:no-repeat}[type='checkbox']:checked{background-image:url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");}@media (forced-colors: active) {[type='checkbox']:checked{-webkit-appearance:auto;appearance:auto}}[type='radio']:checked{background-image:url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='8' cy='8' r='3'/%3e%3c/svg%3e");}@media (forced-colors: active) {[type='radio']:checked{-webkit-appearance:auto;appearance:auto}}[type='checkbox']:checked:hover,[type='checkbox']:checked:focus,[type='radio']:checked:hover,[type='radio']:checked:focus{border-color:transparent;background-color:currentColor}[type='checkbox']:indeterminate{background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 16 16'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 8h8'/%3e%3c/svg%3e");border-color:transparent;background-color:currentColor;background-size:100% 100%;background-position:center;background-repeat:no-repeat;}@media (forced-colors: active) {[type='checkbox']:indeterminate{-webkit-appearance:auto;appearance:auto}}[type='checkbox']:indeterminate:hover,[type='checkbox']:indeterminate:focus{border-color:transparent;background-color:currentColor}[type='file']{background:unset;border-color:inherit;border-width:0;border-radius:0;padding:0;font-size:unset;line-height:inherit}[type='file']:focus{outline:1px solid ButtonText;outline:1px auto -webkit-focus-ring-color}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.sticky{position:sticky}.right-2{right:0.5rem}.top-0{top:0px}.top-2{top:0.5rem}.top-24{top:6rem}.z-50{z-index:50}.col-span-2{grid-column:span 2 / span 2}.mx-auto{margin-left:auto;margin-right:auto}.mb-2{margin-bottom:0.5rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.mt-1{margin-top:0.25rem}.mt-2{margin-top:0.5rem}.mt-6{margin-top:1.5rem}.block{display:block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-12{height:3rem}.h-24{height:6rem}.h-28{height:7rem}.h-6{height:1.5rem}.h-8{height:2rem}.h-full{height:100%}.w-12{width:3rem}.w-24{width:6rem}.w-40{width:10rem}.w-6{width:1.5rem}.w-8{width:2rem}.w-full{width:100%}.max-w-\[240px\]{max-width:240px}.max-w-container-max{max-width:1280px}.flex-shrink-0{flex-shrink:0}.flex-grow{flex-grow:1}.cursor-pointer{cursor:pointer}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.flex-col{flex-direction:column}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:0.25rem}.gap-2{gap:0.5rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.gap-gutter{gap:24px}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.space-y-6 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem * var(--tw-space-y-reverse))}.space-y-8 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(2rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(2rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-xl{border-radius:0.75rem}.border{border-width:1px}.border-2{border-width:2px}.border-t{border-top-width:1px}.border-outline-variant{--tw-border-opacity:1;border-color:rgb(213 195 185 / var(--tw-border-opacity, 1))}.border-outline-variant\/30{border-color:rgb(213 195 185 / 0.3)}.border-primary{--tw-border-opacity:1;border-color:rgb(80 44 18 / var(--tw-border-opacity, 1))}.border-white\/40{border-color:rgb(255 255 255 / 0.4)}.bg-background{--tw-bg-opacity:1;background-color:rgb(251 249 245 / var(--tw-bg-opacity, 1))}.bg-primary{--tw-bg-opacity:1;background-color:rgb(80 44 18 / var(--tw-bg-opacity, 1))}.bg-primary\/10{background-color:rgb(80 44 18 / 0.1)}.bg-secondary-container{--tw-bg-opacity:1;background-color:rgb(252 148 59 / var(--tw-bg-opacity, 1))}.bg-surface-container{--tw-bg-opacity:1;background-color:rgb(239 238 234 / var(--tw-bg-opacity, 1))}.bg-surface-container-low{--tw-bg-opacity:1;background-color:rgb(245 243 239 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-white\/50{background-color:rgb(255 255 255 / 0.5)}.bg-white\/70{background-color:rgb(255 255 255 / 0.7)}.object-cover{object-fit:cover}.p-1{padding:0.25rem}.p-3{padding:0.75rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-8{padding:2rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.px-margin-mobile{padding-left:16px;padding-right:16px}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-12{padding-top:3rem;padding-bottom:3rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-5{padding-top:1.25rem;padding-bottom:1.25rem}.pb-20{padding-bottom:5rem}.pb-4{padding-bottom:1rem}.pt-24{padding-top:6rem}.pt-4{padding-top:1rem}.font-body-md{font-family:Manrope}.font-headline-lg{font-family:Manrope}.font-headline-md{font-family:Manrope}.font-label-md{font-family:Manrope}.font-label-sm{font-family:Manrope}.text-\[16px\]{font-size:16px}.text-\[18px\]{font-size:18px}.text-body-md{font-size:16px;line-height:24px;font-weight:400}.text-headline-lg-mobile{font-size:28px;line-height:36px;font-weight:700}.text-headline-md{font-size:24px;line-height:32px;font-weight:600}.text-label-md{font-size:14px;line-height:20px;letter-spacing:0.01em;font-weight:600}.text-label-sm{font-size:12px;line-height:16px;letter-spacing:0.03em;font-weight:700}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.uppercase{text-transform:uppercase}.tracking-tight{letter-spacing:-0.025em}.tracking-wider{letter-spacing:0.05em}.text-on-primary{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-on-secondary-container{--tw-text-opacity:1;color:rgb(104 51 0 / var(--tw-text-opacity, 1))}.text-on-surface-variant{--tw-text-opacity:1;color:rgb(81 68 61 / var(--tw-text-opacity, 1))}.text-on-surface-variant\/60{color:rgb(81 68 61 / 0.6)}.text-outline{--tw-text-opacity:1;color:rgb(131 116 108 / var(--tw-text-opacity, 1))}.text-primary{--tw-text-opacity:1;color:rgb(80 44 18 / var(--tw-text-opacity, 1))}.text-secondary{--tw-text-opacity:1;color:rgb(147 75 0 / var(--tw-text-opacity, 1))}.shadow-\[0_20px_25px_-5px_rgba\(0\2c 0\2c 0\2c 0\.04\)\]{--tw-shadow:0 20px 25px -5px rgba(0,0,0,0.04);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[0_32px_64px_-15px_rgba\(80\2c 44\2c 18\2c 0\.12\)\]{--tw-shadow:0 32px 64px -15px rgba(80,44,18,0.12);--tw-shadow-colored:0 32px 64px -15px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.outline-none{outline:2px solid transparent;outline-offset:2px}.backdrop-blur-xl{--tw-backdrop-blur:blur(24px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-colors{transition-property:color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-opacity{transition-property:opacity;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-transform{transition-property:transform;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-200{transition-duration:200ms}.hover\:border-primary:hover{--tw-border-opacity:1;border-color:rgb(80 44 18 / var(--tw-border-opacity, 1))}.hover\:bg-white:hover{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.hover\:text-error:hover{--tw-text-opacity:1;color:rgb(186 26 26 / var(--tw-text-opacity, 1))}.hover\:text-secondary:hover{--tw-text-opacity:1;color:rgb(147 75 0 / var(--tw-text-opacity, 1))}.hover\:opacity-80:hover{opacity:0.8}.hover\:opacity-90:hover{opacity:0.9}.focus\:border-transparent:focus{border-color:transparent}.focus\:ring-2:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.focus\:ring-primary:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(80 44 18 / var(--tw-ring-opacity, 1))}.active\:scale-95:active{--tw-scale-x:.95;--tw-scale-y:.95;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.active\:scale-\[0\.98\]:active{--tw-scale-x:0.98;--tw-scale-y:0.98;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.group:hover .group-hover\:translate-x-1{--tw-translate-x:0.25rem;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.dark\:border-outline:is(.dark *){--tw-border-opacity:1;border-color:rgb(131 116 108 / var(--tw-border-opacity, 1))}.dark\:bg-black\/70:is(.dark *){background-color:rgb(0 0 0 / 0.7)}.dark\:bg-inverse-surface:is(.dark *){--tw-bg-opacity:1;background-color:rgb(48 49 46 / var(--tw-bg-opacity, 1))}.dark\:text-inverse-primary:is(.dark *){--tw-text-opacity:1;color:rgb(244 186 150 / var(--tw-text-opacity, 1))}@media (min-width: 640px){.sm\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}}@media (min-width: 768px){.md\:col-span-1{grid-column:span 1 / span 1}.md\:col-span-4{grid-column:span 4 / span 4}.md\:col-span-6{grid-column:span 6 / span 6}.md\:flex{display:flex}.md\:grid{display:grid}.md\:grid-cols-10{grid-template-columns:repeat(10, minmax(0, 1fr))}.md\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.md\:px-margin-desktop{padding-left:40px;padding-right:40px}.md\:text-headline-lg{font-size:32px;line-height:40px;letter-spacing:-0.01em;font-weight:700}}</style></head>
+<body class="bg-background" data-mode="connect">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-white/70 dark:bg-black/70 backdrop-blur-xl shadow-sm">
+<div class="flex justify-between items-center w-full px-4 md:px-margin-desktop py-3 max-w-container-max mx-auto">
+<div class="flex items-center gap-4">
+<span class="text-headline-md font-headline-md font-extrabold text-primary dark:text-inverse-primary tracking-tight">DigiBazaar</span>
+<div class="hidden md:flex items-center gap-2 px-3 py-1.5 bg-surface-container rounded-full cursor-pointer hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined text-primary text-[18px]">location_on</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Home: Oak Valley, 12...</span>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex items-center gap-1 text-secondary font-bold font-label-md text-label-md">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span>Cart (3)</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant hover:opacity-80 transition-opacity cursor-pointer">mic</span>
+<span class="material-symbols-outlined text-on-surface-variant hover:opacity-80 transition-opacity cursor-pointer">person</span>
+</div>
+</div>
+</div>
+</nav>
+<main class="pt-24 pb-20 max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
+<div class="flex flex-col md:grid md:grid-cols-10 gap-gutter">
+<!-- Left: Item List & Delivery (60%) -->
+<div class="md:col-span-6 space-y-8">
+<header>
+<h1 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary mb-2">Review Your Cart</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">You have 3 items from 2 organic partners.</p>
+</header>
+<!-- Item List -->
+<div class="space-y-4">
+<!-- Item Card 1 -->
+<div class="flex gap-4 p-4 bg-white rounded-xl shadow-[0_20px_25px_-5px_rgba(0,0,0,0.04)] transition-transform active:scale-95 duration-200">
+<div class="w-24 h-24 rounded-lg bg-surface-container overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A top-down professional food photograph of organic sourdough bread with a golden-brown crust and dusting of flour, resting on a textured linen napkin within a minimalist, earthy-toned studio setting. Soft, natural morning light creates gentle shadows, emphasizing the bread's texture and the premium boutique quality of the bakery product." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-7cOyhgYWC0oE-fawHKRfqrC1dhhg8QpxNFSEwHwIf4PbSRDZPckjshd92aTdEbnpaT491Bij6iHtmAIoqqIFtklBWwqrsYfZuKZzaD1lv5jzdkVBlO68O-i8q3g9Lr0wGxxaE4SCgvb-cPt8hc1py5uDFyyn4ZnLj95cUvEooAq3_78OcPzawsHvpYouYrURbF--oTeneBmzX1Rd9Esn0Rl9alEa_EFx4BA1DCWmDZojmV-wGekR">
+</div>
+<div class="flex-grow flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start">
+<h3 class="font-headline-md text-[18px] text-primary">Artisanal Sourdough</h3>
+<span class="font-headline-md text-[18px] text-primary">₹850</span>
+</div>
+<p class="font-label-sm text-label-sm text-secondary uppercase tracking-wider">Earth &amp; Flour Bakery</p>
+</div>
+<div class="flex justify-between items-center mt-2">
+<div class="flex items-center bg-surface-container rounded-full p-1 border border-outline-variant">
+<button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white transition-colors">
+<span class="material-symbols-outlined text-[18px]">remove</span>
+</button>
+<span class="px-4 font-label-md text-label-md">1</span>
+<button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+<button class="text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Item Card 2 -->
+<div class="flex gap-4 p-4 bg-white rounded-xl shadow-[0_20px_25px_-5px_rgba(0,0,0,0.04)] transition-transform active:scale-95 duration-200">
+<div class="w-24 h-24 rounded-lg bg-surface-container overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A macro shot of vibrant, fresh organic strawberries with tiny green leaves, still glistening with water droplets. The berries are placed in a rustic ceramic bowl on a light beige wooden surface. The lighting is bright and airy, reflecting a modern earthy aesthetic with warm, natural tones and clean minimalist composition." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvUT8iZHoWACNhNDedR2lO-lFOxT24U-HgcEPUuuMxh7KPef---lshaGzzkV_gEm8IogNVe3ALlb6wfOF9bCDHADxoKHoQ3IRmEEb7Tw0NErgi6ehqcrY11z8kdI_t6XI0qqxuAl5z5dkA7-LO_Cak8PqkPwtTJx3tD_MI1DCMQHhe_ZonUjVWUxMP8vVSp7UF8fW6Z7g4_A-HUzgsEIhA6RgkLXWVBUa0ZbyDKXWoN1TYPk9D8vcb">
+</div>
+<div class="flex-grow flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start">
+<h3 class="font-headline-md text-[18px] text-primary">Farm Fresh Strawberries</h3>
+<span class="font-headline-md text-[18px] text-primary">₹1200</span>
+</div>
+<p class="font-label-sm text-label-sm text-secondary uppercase tracking-wider">Green Roots Farms</p>
+</div>
+<div class="flex justify-between items-center mt-2">
+<div class="flex items-center bg-surface-container rounded-full p-1 border border-outline-variant">
+<button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white transition-colors">
+<span class="material-symbols-outlined text-[18px]">remove</span>
+</button>
+<span class="px-4 font-label-md text-label-md">2</span>
+<button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+<button class="text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Delivery Selector -->
+<section class="space-y-4">
+<h2 class="font-headline-md text-headline-md text-primary">Delivery Method</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<label class="relative flex flex-col p-4 bg-white border-2 border-primary rounded-xl cursor-pointer">
+<input checked="" class="hidden" name="delivery" type="radio">
+<span class="material-symbols-outlined text-secondary mb-2" style="font-variation-settings: 'FILL' 1;">local_shipping</span>
+<span class="font-label-md text-label-md text-primary">Home Delivery</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Today, 5-7 PM</span>
+<span class="mt-2 font-bold text-primary">FREE</span>
+<div class="absolute top-2 right-2">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+</div>
+</label>
+<label class="relative flex flex-col p-4 bg-white border border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
+<input class="hidden" name="delivery" type="radio">
+<span class="material-symbols-outlined text-outline mb-2">store</span>
+<span class="font-label-md text-label-md text-primary">Pickup</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Ready in 20m</span>
+<span class="mt-2 font-bold text-primary">FREE</span>
+</label>
+</div>
+</section>
+<!-- Address Preview -->
+<div class="p-5 bg-surface-container-low rounded-xl flex items-center justify-between border border-outline-variant">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">home</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-primary">Delivery Address</p>
+<p class="font-body-md text-body-md text-on-surface-variant">42 Oak Valley, Apt 12B, Central Square</p>
+</div>
+</div>
+<button class="px-4 py-2 text-primary font-bold font-label-md hover:bg-white rounded-lg transition-colors">Change</button>
+</div>
+<!-- Recommendations -->
+<section class="space-y-4 overflow-hidden">
+<h2 class="font-headline-md text-headline-md text-primary">Before you go...</h2>
+<div class="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
+<div class="flex-shrink-0 w-40 p-3 bg-white rounded-xl shadow-sm border border-outline-variant/30">
+<div class="h-28 rounded-lg mb-2 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A studio photograph of a premium, small artisanal chocolate bar wrapped in textured craft paper with a minimalist gold foil logo. The setting is clean with soft ambient lighting on a light beige surface, reflecting a high-end earthy luxury aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBzyvl_m-hnmRF8e9tl9tFsqxPDbUIZW0Oj56Bq2Qac4yDTFXdrRi8P3eArhmiX079i7irSXN9tMaAcSpv5jejq14ikw9x2-JwJeXSg-nL-lZKAK5JceUPbG17n5DplyNtlSRnYpUn7Tt6Zb5vmMQM1eMTFFLSKWAd3lzpx8JceW4RM-iboOuzN-Aa1ydqfPEitJRbuOPxSVwzbqmWIl11xAIaYRsVkCg6zSuP5aRZQz4ZeiQXnZcZ">
+</div>
+<p class="font-label-md text-label-md text-primary truncate">Dark Chocolate</p>
+<div class="flex justify-between items-center mt-1">
+<span class="font-bold text-primary">₹320</span>
+<button class="w-6 h-6 bg-secondary-container text-on-secondary-container rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+</div>
+</div>
+<div class="flex-shrink-0 w-40 p-3 bg-white rounded-xl shadow-sm border border-outline-variant/30">
+<div class="h-28 rounded-lg mb-2 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A bunch of fresh organic mint leaves with vibrant green color and visible droplets of water. Photographed in a bright, minimalist style with soft shadows on a warm, paper-textured background, fitting a premium digital e-commerce aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBEvpIK8MEKV2Vl1d6VDww406wyDnwlTIvzzuTOUHK0NGl0m11PNI0zVsAXlJyPwQdPnJqLlNtspybPb1UJtujo3BCMO8_0GJ7C46YfQFUXeWEnmFrz-ACWUdE-xrooUKN39M-coimD7CHeHTItYzFOuKF5eyZU0rndKZ71KyVQLtxATVVbPpWsWW3wHYXvkcmct9zpCG8ICB6n_qycYL0Ud7Kt7PVtTzs6sNKAxEY8W5QtXhzSo-6I">
+</div>
+<p class="font-label-md text-label-md text-primary truncate">Fresh Mint Bunch</p>
+<div class="flex justify-between items-center mt-1">
+<span class="font-bold text-primary">₹150</span>
+<button class="w-6 h-6 bg-secondary-container text-on-secondary-container rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+</div>
+</div>
+<div class="flex-shrink-0 w-40 p-3 bg-white rounded-xl shadow-sm border border-outline-variant/30">
+<div class="h-28 rounded-lg mb-2 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A single, elegantly packaged glass bottle of organic cold-pressed apple juice. The label is minimal and modern. The bottle stands on a clean surface with a soft-focus background of an organic garden, illuminated by warm afternoon light." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-AIN0g4IpRBq3qTvWmYwYBCk-0xnjbijEHjC_JTsTOOaq8h1mdT1QExS_TqCG0kNSvERMNKBb7ZNyDfEmGOAntLjQ3SyjmQfaeq2jd2XBFaEGt3Lfp3Tffnt3D6_Y09Hpt_GC07aRqFbHV_5vTAM6A-W8WmwUHFymccSeGLfkyp6HOUsH7qNjyQLdcnBd_JmoROCXV-MfvtV1wysMUMnWbhWcKQYQt1tt_Kq2FsgzvZy7FlVrvzs7">
+</div>
+<p class="font-label-md text-label-md text-primary truncate">Pressed Juice</p>
+<div class="flex justify-between items-center mt-1">
+<span class="font-bold text-primary">₹450</span>
+<button class="w-6 h-6 bg-secondary-container text-on-secondary-container rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+</div>
+</div>
+<div class="flex-shrink-0 w-40 p-3 bg-white rounded-xl shadow-sm border border-outline-variant/30">
+<div class="h-28 rounded-lg mb-2 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A close-up of premium roasted almonds in a small minimalist ceramic bowl. The lighting is soft and focused, highlighting the texture of the nuts against a neutral, warm-toned background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9pMJsxdCNfs94Br5M6BEBnMhlD0Ul0jTdS1Ph4aJ02piZjjexkowjMFWoN1DasHDzIaCCOAS37Nai4ILNpAn-XLL7sxB4H_2HbH_KP9dBUJuMvpvKO2XQfWfKZWMNuG7N290Gc_BSx-Q7-BleJ4nZ5pizIls8S6NtY156O7RTnFwSIA8KZFGa6dKx06VRWo9B-eLKSBDBTd-B8S1NpnE6xFEgAT-dDkJOLSf9IdPomHGmU4lseUpH">
+</div>
+<p class="font-label-md text-label-md text-primary truncate">Roasted Almonds</p>
+<div class="flex justify-between items-center mt-1">
+<span class="font-bold text-primary">₹500</span>
+<button class="w-6 h-6 bg-secondary-container text-on-secondary-container rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right: Order Summary (40%) -->
+<div class="md:col-span-4">
+<div class="sticky top-24 space-y-6">
+<div class="glass-card border border-white/40 p-8 rounded-3xl shadow-[0_32px_64px_-15px_rgba(80,44,18,0.12)]">
+<h2 class="font-headline-md text-headline-md text-primary mb-6">Order Summary</h2>
+<div class="space-y-4 mb-6">
+<div class="flex justify-between font-body-md text-body-md text-on-surface-variant">
+<span>Items Total</span>
+<span>₹3250</span>
+</div>
+<div class="flex justify-between font-body-md text-body-md text-on-surface-variant">
+<span>Delivery Fee</span>
+<span class="text-secondary">FREE</span>
+</div>
+<div class="flex justify-between font-body-md text-body-md text-on-surface-variant">
+<span>Small Order Surcharge</span>
+<span>₹0</span>
+</div>
+<div class="pt-4 border-t border-outline-variant flex justify-between font-headline-md text-headline-md text-primary">
+<span>Total Payable</span>
+<span>₹3250</span>
+</div>
+</div>
+<!-- Discount Code -->
+<div class="mb-8">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase mb-2 block">Discount Code</label>
+<div class="flex gap-2">
+<input class="flex-grow bg-surface-container border border-outline-variant rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent outline-none font-body-md transition-all" placeholder="FRESH2024" type="text">
+<button class="px-6 py-3 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 transition-opacity">Apply</button>
+</div>
+</div>
+<!-- CTA Button -->
+<button class="w-full py-5 bg-secondary-container text-on-secondary-container font-headline-md rounded-2xl flex items-center justify-center gap-3 shadow-lg active:scale-[0.98] transition-all group">
+<span>Proceed to Payment</span>
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+<div class="mt-6 flex items-center justify-center gap-2 text-on-surface-variant/60 font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]">verified_user</span>
+<span>Secure Checkout by DigiBank</span>
+</div>
+</div>
+<!-- Trust Indicators -->
+<div class="grid grid-cols-2 gap-4">
+<div class="p-4 bg-white/50 rounded-2xl flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">eco</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Plastic-Free Packaging</span>
+</div>
+<div class="p-4 bg-white/50 rounded-2xl flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">support_agent</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">24/7 Live Support</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 bg-surface-container dark:bg-inverse-surface border-t border-outline-variant dark:border-outline">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-gutter px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
+<div class="col-span-2 md:col-span-1 space-y-4">
+<span class="font-headline-md text-headline-md text-primary dark:text-inverse-primary">DigiBazaar</span>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-[240px]">© 2024 DigiBazaar. Modern Earthy Retail.</p>
+</div>
+<div class="space-y-4">
+<p class="font-label-md text-label-md text-primary dark:text-inverse-primary font-bold">About</p>
+<ul class="space-y-2">
+<li><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Our Story</a></li>
+<li><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Sustainable Sourcing</a></li>
+</ul>
+</div>
+<div class="space-y-4">
+<p class="font-label-md text-label-md text-primary dark:text-inverse-primary font-bold">Support</p>
+<ul class="space-y-2">
+<li><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Customer Support</a></li>
+<li><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Delivery Partners</a></li>
+</ul>
+</div>
+<div class="space-y-4">
+<p class="font-label-md text-label-md text-primary dark:text-inverse-primary font-bold">Legal</p>
+<ul class="space-y-2">
+<li><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Privacy Policy</a></li>
+</ul>
+</div>
+</div>
+</footer>
+<script>
+        // Micro-interactions for quantity controls
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('mousedown', function() {
+                this.classList.add('scale-95');
+            });
+            button.addEventListener('mouseup', function() {
+                this.classList.remove('scale-95');
+            });
+            button.addEventListener('mouseleave', function() {
+                this.classList.remove('scale-95');
+            });
+        });
+
+        // Delivery option selector logic
+        const deliveryRadios = document.querySelectorAll('input[name="delivery"]');
+        deliveryRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                // Remove active styling from all labels
+                document.querySelectorAll('input[name="delivery"]').forEach(r => {
+                    const label = r.closest('label');
+                    label.classList.remove('border-primary', 'border-2');
+                    label.classList.add('border-outline-variant', 'border');
+                    const check = label.querySelector('.absolute');
+                    if (check) check.remove();
+                    const icon = label.querySelector('.material-symbols-outlined');
+                    icon.classList.remove('text-secondary');
+                    icon.classList.add('text-outline');
+                    icon.style.fontVariationSettings = "'FILL' 0";
+                });
+
+                // Add active styling to selected label
+                if (this.checked) {
+                    const label = this.closest('label');
+                    label.classList.add('border-primary', 'border-2');
+                    label.classList.remove('border-outline-variant', 'border');
+                    
+                    const checkIcon = document.createElement('div');
+                    checkIcon.className = 'absolute top-2 right-2';
+                    checkIcon.innerHTML = '<span class="material-symbols-outlined text-primary">check_circle</span>';
+                    label.appendChild(checkIcon);
+
+                    const icon = label.querySelector('.material-symbols-outlined');
+                    icon.classList.add('text-secondary');
+                    icon.classList.remove('text-outline');
+                    icon.style.fontVariationSettings = "'FILL' 1";
+                }
+            });
+        });
+    </script>
+</body></html>

@@ -237,18 +237,77 @@
   cursor: pointer;
 }
 
-.cart-page__sidebar {
-  position: sticky;
-  top: 32px;
-  align-self: start;
+.address-picker-panel {
+  margin-top: 24px;
+  padding: 24px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
-.recommended-section {
-  margin-top: 40px;
+.saved-addresses-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.recommended-header {
-  margin-bottom: 24px;
+.address-label-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+}
+
+.address-label-card input {
+  margin: 0;
+}
+
+.address-label-card span {
+  color: #334155;
+  font-size: 14px;
+}
+
+.add-new-address-form {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.add-new-address-form input {
+  flex: 1;
+  min-width: 220px;
+  padding: 14px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 16px;
+  background: white;
+}
+
+.add-new-address-form button,
+.detect-location-btn {
+  border: none;
+  background: #2563eb;
+  color: white;
+  padding: 14px 20px;
+  border-radius: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.detect-location-btn {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.detect-location-btn:disabled {
+  opacity: 0.65;
+  cursor: progress;
 }
 
 .recommended-grid {
