@@ -1,0 +1,336 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/routes/AppRoutes.jsx");import __vite__cjsImport0_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=aecce053"; const jsxDEV = __vite__cjsImport0_react_jsxDevRuntime["jsxDEV"];
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
+let prevRefreshReg;
+let prevRefreshSig;
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+var _s = $RefreshSig$(), _s2 = $RefreshSig$(), _s3 = $RefreshSig$(), _s4 = $RefreshSig$(), _s5 = $RefreshSig$(), _s6 = $RefreshSig$();
+import { Routes, Route, Navigate, useLocation } from "/node_modules/.vite/deps/react-router-dom.js?v=aecce053";
+import { useAuth } from "/src/context/AuthContext.jsx";
+import Home from "/src/pages/Home/Home.jsx";
+import Login from "/src/pages/Login/Login.jsx";
+import Signup from "/src/pages/Signup/Signup.jsx";
+import ShopDashboard from "/src/pages/ShopDashboard/ShopDashBoard.jsx";
+import Products from "/src/pages/Products/Products.jsx";
+import ProductDetail from "/src/pages/ProductDetail/ProductDetail.jsx";
+import MyOrders from "/src/pages/MyOrders/MyOrders.jsx";
+import OrderConfirmation from "/src/pages/OrderConfirmation/OrderConfirmation.jsx";
+import RiderPortal from "/src/pages/RiderPortal/RiderPortal.jsx?t=1785783408631";
+import Checkout from "/src/pages/Checkout/Checkout.jsx";
+import AdminDashboard from "/src/pages/AdminDashboard/AdminDashboard.jsx";
+function GuestRoute({ children }) {
+  _s();
+  const { user } = useAuth();
+  if (!user) return children;
+  if (user.role === "admin") return /* @__PURE__ */ jsxDEV(Navigate, { to: "/admin", replace: true }, void 0, false, {
+    fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+    lineNumber: 39,
+    columnNumber: 37
+  }, this);
+  if (user.role === "shopowner") return /* @__PURE__ */ jsxDEV(Navigate, { to: "/dashboard", replace: true }, void 0, false, {
+    fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+    lineNumber: 40,
+    columnNumber: 41
+  }, this);
+  if (user.role === "rider") return /* @__PURE__ */ jsxDEV(Navigate, { to: "/rider", replace: true }, void 0, false, {
+    fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+    lineNumber: 41,
+    columnNumber: 37
+  }, this);
+  return /* @__PURE__ */ jsxDEV(Navigate, { to: "/", replace: true }, void 0, false, {
+    fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+    lineNumber: 42,
+    columnNumber: 10
+  }, this);
+}
+_s(GuestRoute, "9ep4vdl3mBfipxjmc+tQCDhw6Ik=", false, function() {
+  return [useAuth];
+});
+_c = GuestRoute;
+function ProtectedRoute({ children }) {
+  _s2();
+  const { user } = useAuth();
+  const location = useLocation();
+  if (!user) return /* @__PURE__ */ jsxDEV(Navigate, { to: "/login", state: { from: location }, replace: true }, void 0, false, {
+    fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+    lineNumber: 49,
+    columnNumber: 21
+  }, this);
+  return children;
+}
+_s2(ProtectedRoute, "cTflZxqU4RCGHztF80S0D55o9CQ=", false, function() {
+  return [useAuth, useLocation];
+});
+_c2 = ProtectedRoute;
+function AdminRoute({ children }) {
+  _s3();
+  const { user } = useAuth();
+  const location = useLocation();
+  if (!user) return /* @__PURE__ */ jsxDEV(Navigate, { to: "/login", state: { from: location }, replace: true }, void 0, false, {
+    fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+    lineNumber: 57,
+    columnNumber: 21
+  }, this);
+  if (user.role !== "admin") return /* @__PURE__ */ jsxDEV(Navigate, { to: "/", replace: true }, void 0, false, {
+    fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+    lineNumber: 58,
+    columnNumber: 37
+  }, this);
+  return children;
+}
+_s3(AdminRoute, "cTflZxqU4RCGHztF80S0D55o9CQ=", false, function() {
+  return [useAuth, useLocation];
+});
+_c3 = AdminRoute;
+function ShopOwnerRoute({ children }) {
+  _s4();
+  const { user } = useAuth();
+  const location = useLocation();
+  if (!user) return /* @__PURE__ */ jsxDEV(Navigate, { to: "/login", state: { from: location }, replace: true }, void 0, false, {
+    fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+    lineNumber: 66,
+    columnNumber: 21
+  }, this);
+  if (user.role !== "shopowner" && user.role !== "admin") return /* @__PURE__ */ jsxDEV(Navigate, { to: "/", replace: true }, void 0, false, {
+    fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+    lineNumber: 67,
+    columnNumber: 66
+  }, this);
+  return children;
+}
+_s4(ShopOwnerRoute, "cTflZxqU4RCGHztF80S0D55o9CQ=", false, function() {
+  return [useAuth, useLocation];
+});
+_c4 = ShopOwnerRoute;
+function RiderRoute({ children }) {
+  _s5();
+  const { user } = useAuth();
+  const location = useLocation();
+  if (!user) return /* @__PURE__ */ jsxDEV(Navigate, { to: "/login", state: { from: location }, replace: true }, void 0, false, {
+    fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+    lineNumber: 75,
+    columnNumber: 21
+  }, this);
+  if (user.role !== "rider" && user.role !== "admin") return /* @__PURE__ */ jsxDEV(Navigate, { to: "/", replace: true }, void 0, false, {
+    fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+    lineNumber: 76,
+    columnNumber: 62
+  }, this);
+  return children;
+}
+_s5(RiderRoute, "cTflZxqU4RCGHztF80S0D55o9CQ=", false, function() {
+  return [useAuth, useLocation];
+});
+_c5 = RiderRoute;
+function HomeOrPortal() {
+  _s6();
+  const { user } = useAuth();
+  if (user?.role === "admin") return /* @__PURE__ */ jsxDEV(Navigate, { to: "/admin", replace: true }, void 0, false, {
+    fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+    lineNumber: 83,
+    columnNumber: 38
+  }, this);
+  if (user?.role === "shopowner") return /* @__PURE__ */ jsxDEV(Navigate, { to: "/dashboard", replace: true }, void 0, false, {
+    fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+    lineNumber: 84,
+    columnNumber: 42
+  }, this);
+  if (user?.role === "rider") return /* @__PURE__ */ jsxDEV(Navigate, { to: "/rider", replace: true }, void 0, false, {
+    fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+    lineNumber: 85,
+    columnNumber: 38
+  }, this);
+  return /* @__PURE__ */ jsxDEV(Home, {}, void 0, false, {
+    fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+    lineNumber: 86,
+    columnNumber: 10
+  }, this);
+}
+_s6(HomeOrPortal, "9ep4vdl3mBfipxjmc+tQCDhw6Ik=", false, function() {
+  return [useAuth];
+});
+_c6 = HomeOrPortal;
+function AppRoutes() {
+  return /* @__PURE__ */ jsxDEV(Routes, { children: [
+    /* @__PURE__ */ jsxDEV(Route, { path: "/", element: /* @__PURE__ */ jsxDEV(HomeOrPortal, {}, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 92,
+      columnNumber: 32
+    }, this) }, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 92,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/products", element: /* @__PURE__ */ jsxDEV(Products, {}, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 93,
+      columnNumber: 40
+    }, this) }, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 93,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/products/:id", element: /* @__PURE__ */ jsxDEV(ProductDetail, {}, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 94,
+      columnNumber: 44
+    }, this) }, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 94,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/login", element: /* @__PURE__ */ jsxDEV(GuestRoute, { children: /* @__PURE__ */ jsxDEV(Login, {}, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 96,
+      columnNumber: 49
+    }, this) }, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 96,
+      columnNumber: 37
+    }, this) }, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 96,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/signup", element: /* @__PURE__ */ jsxDEV(GuestRoute, { children: /* @__PURE__ */ jsxDEV(Signup, {}, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 97,
+      columnNumber: 50
+    }, this) }, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 97,
+      columnNumber: 38
+    }, this) }, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 97,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/dashboard", element: /* @__PURE__ */ jsxDEV(ShopOwnerRoute, { children: /* @__PURE__ */ jsxDEV(ShopDashboard, {}, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 99,
+      columnNumber: 57
+    }, this) }, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 99,
+      columnNumber: 41
+    }, this) }, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 99,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/rider", element: /* @__PURE__ */ jsxDEV(RiderRoute, { children: /* @__PURE__ */ jsxDEV(RiderPortal, {}, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 100,
+      columnNumber: 49
+    }, this) }, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 100,
+      columnNumber: 37
+    }, this) }, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 100,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/admin", element: /* @__PURE__ */ jsxDEV(AdminRoute, { children: /* @__PURE__ */ jsxDEV(AdminDashboard, {}, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 101,
+      columnNumber: 49
+    }, this) }, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 101,
+      columnNumber: 37
+    }, this) }, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 101,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/checkout", element: /* @__PURE__ */ jsxDEV(ProtectedRoute, { children: /* @__PURE__ */ jsxDEV(Checkout, {}, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 103,
+      columnNumber: 56
+    }, this) }, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 103,
+      columnNumber: 40
+    }, this) }, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 103,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/my-orders", element: /* @__PURE__ */ jsxDEV(ProtectedRoute, { children: /* @__PURE__ */ jsxDEV(MyOrders, {}, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 104,
+      columnNumber: 57
+    }, this) }, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 104,
+      columnNumber: 41
+    }, this) }, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 104,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/order-confirmation/:orderId", element: /* @__PURE__ */ jsxDEV(ProtectedRoute, { children: /* @__PURE__ */ jsxDEV(OrderConfirmation, {}, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 105,
+      columnNumber: 75
+    }, this) }, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 105,
+      columnNumber: 59
+    }, this) }, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 105,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "*", element: /* @__PURE__ */ jsxDEV(Navigate, { to: "/", replace: true }, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 108,
+      columnNumber: 32
+    }, this) }, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+      lineNumber: 108,
+      columnNumber: 7
+    }, this)
+  ] }, void 0, true, {
+    fileName: "D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx",
+    lineNumber: 91,
+    columnNumber: 5
+  }, this);
+}
+_c7 = AppRoutes;
+export default AppRoutes;
+var _c, _c2, _c3, _c4, _c5, _c6, _c7;
+$RefreshReg$(_c, "GuestRoute");
+$RefreshReg$(_c2, "ProtectedRoute");
+$RefreshReg$(_c3, "AdminRoute");
+$RefreshReg$(_c4, "ShopOwnerRoute");
+$RefreshReg$(_c5, "RiderRoute");
+$RefreshReg$(_c6, "HomeOrPortal");
+$RefreshReg$(_c7, "AppRoutes");
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("D:/DigiBazaar/frontend/src/routes/AppRoutes.jsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,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QUFDLElBQUE7QUFBQSxhQUFBQyxLQUFBO0FBQUEsYUFBQUMsS0FBQTtBQUFBLGFBQUFDLEtBQUE7QUFBQSxhQUFBQyxLQUFBO0FBQUEsYUFBQUMsS0FBQTtBQUFBLGFBQUFOLEtBQUEiLCJuYW1lcyI6WyJSb3V0ZXMiLCJSb3V0ZSIsIk5hdmlnYXRlIiwidXNlTG9jYXRpb24iLCJ1c2VBdXRoIiwiSG9tZSIsIkxvZ2luIiwiU2lnbnVwIiwiU2hvcERhc2hib2FyZCIsIlByb2R1Y3RzIiwiUHJvZHVjdERldGFpbCIsIk15T3JkZXJzIiwiT3JkZXJDb25maXJtYXRpb24iLCJSaWRlclBvcnRhbCIsIkNoZWNrb3V0IiwiQWRtaW5EYXNoYm9hcmQiLCJHdWVzdFJvdXRlIiwiY2hpbGRyZW4iLCJfcyIsInVzZXIiLCJyb2xlIiwiUHJvdGVjdGVkUm91dGUiLCJfczIiLCJsb2NhdGlvbiIsImZyb20iLCJBZG1pblJvdXRlIiwiX3MzIiwiU2hvcE93bmVyUm91dGUiLCJfczQiLCJSaWRlclJvdXRlIiwiX3M1IiwiSG9tZU9yUG9ydGFsIiwiX3M2IiwiQXBwUm91dGVzIiwiX2M3IiwiX2MiLCJfYzIiLCJfYzMiLCJfYzQiLCJfYzUiLCJfYzYiXSwiaWdub3JlTGlzdCI6W10sInNvdXJjZXMiOlsiQXBwUm91dGVzLmpzeCJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyBSb3V0ZXMsIFJvdXRlLCBOYXZpZ2F0ZSwgdXNlTG9jYXRpb24gfSBmcm9tICdyZWFjdC1yb3V0ZXItZG9tJ1xyXG5pbXBvcnQgeyB1c2VBdXRoIH0gZnJvbSAnLi4vY29udGV4dC9BdXRoQ29udGV4dCdcclxuaW1wb3J0IEhvbWUgZnJvbSAnLi4vcGFnZXMvSG9tZS9Ib21lJ1xyXG5pbXBvcnQgTG9naW4gZnJvbSAnLi4vcGFnZXMvTG9naW4vTG9naW4nXHJcbmltcG9ydCBTaWdudXAgZnJvbSAnLi4vcGFnZXMvU2lnbnVwL1NpZ251cCdcclxuaW1wb3J0IFNob3BEYXNoYm9hcmQgZnJvbSAnLi4vcGFnZXMvU2hvcERhc2hib2FyZC9TaG9wRGFzaEJvYXJkJ1xyXG5pbXBvcnQgUHJvZHVjdHMgZnJvbSAnLi4vcGFnZXMvUHJvZHVjdHMvUHJvZHVjdHMnXHJcbmltcG9ydCBQcm9kdWN0RGV0YWlsIGZyb20gJy4uL3BhZ2VzL1Byb2R1Y3REZXRhaWwvUHJvZHVjdERldGFpbCdcclxuaW1wb3J0IE15T3JkZXJzIGZyb20gJy4uL3BhZ2VzL015T3JkZXJzL015T3JkZXJzJ1xyXG5pbXBvcnQgT3JkZXJDb25maXJtYXRpb24gZnJvbSAnLi4vcGFnZXMvT3JkZXJDb25maXJtYXRpb24vT3JkZXJDb25maXJtYXRpb24nXHJcbmltcG9ydCBSaWRlclBvcnRhbCBmcm9tICcuLi9wYWdlcy9SaWRlclBvcnRhbC9SaWRlclBvcnRhbCdcclxuaW1wb3J0IENoZWNrb3V0IGZyb20gJy4uL3BhZ2VzL0NoZWNrb3V0L0NoZWNrb3V0J1xyXG5pbXBvcnQgQWRtaW5EYXNoYm9hcmQgZnJvbSAnLi4vcGFnZXMvQWRtaW5EYXNoYm9hcmQvQWRtaW5EYXNoYm9hcmQnXHJcblxyXG4vLyBSZWRpcmVjdHMgbG9nZ2VkLWluIHVzZXJzIGF3YXkgZnJvbSBsb2dpbi9zaWdudXAgcGFnZXMgdG8gdGhlaXIgZGFzaGJvYXJkXHJcbmZ1bmN0aW9uIEd1ZXN0Um91dGUoeyBjaGlsZHJlbiB9KSB7XHJcbiAgY29uc3QgeyB1c2VyIH0gPSB1c2VBdXRoKClcclxuICBpZiAoIXVzZXIpIHJldHVybiBjaGlsZHJlblxyXG5cclxuICBpZiAodXNlci5yb2xlID09PSAnYWRtaW4nKSByZXR1cm4gPE5hdmlnYXRlIHRvPVwiL2FkbWluXCIgcmVwbGFjZSAvPlxyXG4gIGlmICh1c2VyLnJvbGUgPT09ICdzaG9wb3duZXInKSByZXR1cm4gPE5hdmlnYXRlIHRvPVwiL2Rhc2hib2FyZFwiIHJlcGxhY2UgLz5cclxuICBpZiAodXNlci5yb2xlID09PSAncmlkZXInKSByZXR1cm4gPE5hdmlnYXRlIHRvPVwiL3JpZGVyXCIgcmVwbGFjZSAvPlxyXG4gIHJldHVybiA8TmF2aWdhdGUgdG89XCIvXCIgcmVwbGFjZSAvPlxyXG59XHJcblxyXG4vLyBSZXF1aXJlcyBhbnkgYXV0aGVudGljYXRlZCB1c2VyXHJcbmZ1bmN0aW9uIFByb3RlY3RlZFJvdXRlKHsgY2hpbGRyZW4gfSkge1xyXG4gIGNvbnN0IHsgdXNlciB9ID0gdXNlQXV0aCgpXHJcbiAgY29uc3QgbG9jYXRpb24gPSB1c2VMb2NhdGlvbigpXHJcbiAgaWYgKCF1c2VyKSByZXR1cm4gPE5hdmlnYXRlIHRvPVwiL2xvZ2luXCIgc3RhdGU9e3sgZnJvbTogbG9jYXRpb24gfX0gcmVwbGFjZSAvPlxyXG4gIHJldHVybiBjaGlsZHJlblxyXG59XHJcblxyXG4vLyBSZXF1aXJlcyBhZG1pbiByb2xlXHJcbmZ1bmN0aW9uIEFkbWluUm91dGUoeyBjaGlsZHJlbiB9KSB7XHJcbiAgY29uc3QgeyB1c2VyIH0gPSB1c2VBdXRoKClcclxuICBjb25zdCBsb2NhdGlvbiA9IHVzZUxvY2F0aW9uKClcclxuICBpZiAoIXVzZXIpIHJldHVybiA8TmF2aWdhdGUgdG89XCIvbG9naW5cIiBzdGF0ZT17eyBmcm9tOiBsb2NhdGlvbiB9fSByZXBsYWNlIC8+XHJcbiAgaWYgKHVzZXIucm9sZSAhPT0gJ2FkbWluJykgcmV0dXJuIDxOYXZpZ2F0ZSB0bz1cIi9cIiByZXBsYWNlIC8+XHJcbiAgcmV0dXJuIGNoaWxkcmVuXHJcbn1cclxuXHJcbi8vIFJlcXVpcmVzIHNob3Bvd25lciBvciBhZG1pbiByb2xlXHJcbmZ1bmN0aW9uIFNob3BPd25lclJvdXRlKHsgY2hpbGRyZW4gfSkge1xyXG4gIGNvbnN0IHsgdXNlciB9ID0gdXNlQXV0aCgpXHJcbiAgY29uc3QgbG9jYXRpb24gPSB1c2VMb2NhdGlvbigpXHJcbiAgaWYgKCF1c2VyKSByZXR1cm4gPE5hdmlnYXRlIHRvPVwiL2xvZ2luXCIgc3RhdGU9e3sgZnJvbTogbG9jYXRpb24gfX0gcmVwbGFjZSAvPlxyXG4gIGlmICh1c2VyLnJvbGUgIT09ICdzaG9wb3duZXInICYmIHVzZXIucm9sZSAhPT0gJ2FkbWluJykgcmV0dXJuIDxOYXZpZ2F0ZSB0bz1cIi9cIiByZXBsYWNlIC8+XHJcbiAgcmV0dXJuIGNoaWxkcmVuXHJcbn1cclxuXHJcbi8vIFJlcXVpcmVzIHJpZGVyIHJvbGVcclxuZnVuY3Rpb24gUmlkZXJSb3V0ZSh7IGNoaWxkcmVuIH0pIHtcclxuICBjb25zdCB7IHVzZXIgfSA9IHVzZUF1dGgoKVxyXG4gIGNvbnN0IGxvY2F0aW9uID0gdXNlTG9jYXRpb24oKVxyXG4gIGlmICghdXNlcikgcmV0dXJuIDxOYXZpZ2F0ZSB0bz1cIi9sb2dpblwiIHN0YXRlPXt7IGZyb206IGxvY2F0aW9uIH19IHJlcGxhY2UgLz5cclxuICBpZiAodXNlci5yb2xlICE9PSAncmlkZXInICYmIHVzZXIucm9sZSAhPT0gJ2FkbWluJykgcmV0dXJuIDxOYXZpZ2F0ZSB0bz1cIi9cIiByZXBsYWNlIC8+XHJcbiAgcmV0dXJuIGNoaWxkcmVuXHJcbn1cclxuXHJcbi8vIFNtYXJ0IGhvbWUgcmVkaXJlY3Q6IGlmIGxvZ2dlZCBpbiBhcyBhIHNwZWNpYWwgcm9sZSwgZ28gdG8gdGhlaXIgcG9ydGFsXHJcbmZ1bmN0aW9uIEhvbWVPclBvcnRhbCgpIHtcclxuICBjb25zdCB7IHVzZXIgfSA9IHVzZUF1dGgoKVxyXG4gIGlmICh1c2VyPy5yb2xlID09PSAnYWRtaW4nKSByZXR1cm4gPE5hdmlnYXRlIHRvPVwiL2FkbWluXCIgcmVwbGFjZSAvPlxyXG4gIGlmICh1c2VyPy5yb2xlID09PSAnc2hvcG93bmVyJykgcmV0dXJuIDxOYXZpZ2F0ZSB0bz1cIi9kYXNoYm9hcmRcIiByZXBsYWNlIC8+XHJcbiAgaWYgKHVzZXI/LnJvbGUgPT09ICdyaWRlcicpIHJldHVybiA8TmF2aWdhdGUgdG89XCIvcmlkZXJcIiByZXBsYWNlIC8+XHJcbiAgcmV0dXJuIDxIb21lIC8+XHJcbn1cclxuXHJcbmZ1bmN0aW9uIEFwcFJvdXRlcygpIHtcclxuICByZXR1cm4gKFxyXG4gICAgPFJvdXRlcz5cclxuICAgICAgPFJvdXRlIHBhdGg9Jy8nIGVsZW1lbnQ9ezxIb21lT3JQb3J0YWwgLz59IC8+XHJcbiAgICAgIDxSb3V0ZSBwYXRoPScvcHJvZHVjdHMnIGVsZW1lbnQ9ezxQcm9kdWN0cyAvPn0gLz5cclxuICAgICAgPFJvdXRlIHBhdGg9Jy9wcm9kdWN0cy86aWQnIGVsZW1lbnQ9ezxQcm9kdWN0RGV0YWlsIC8+fSAvPlxyXG5cclxuICAgICAgPFJvdXRlIHBhdGg9Jy9sb2dpbicgZWxlbWVudD17PEd1ZXN0Um91dGU+PExvZ2luIC8+PC9HdWVzdFJvdXRlPn0gLz5cclxuICAgICAgPFJvdXRlIHBhdGg9Jy9zaWdudXAnIGVsZW1lbnQ9ezxHdWVzdFJvdXRlPjxTaWdudXAgLz48L0d1ZXN0Um91dGU+fSAvPlxyXG5cclxuICAgICAgPFJvdXRlIHBhdGg9Jy9kYXNoYm9hcmQnIGVsZW1lbnQ9ezxTaG9wT3duZXJSb3V0ZT48U2hvcERhc2hib2FyZCAvPjwvU2hvcE93bmVyUm91dGU+fSAvPlxyXG4gICAgICA8Um91dGUgcGF0aD0nL3JpZGVyJyBlbGVtZW50PXs8UmlkZXJSb3V0ZT48UmlkZXJQb3J0YWwgLz48L1JpZGVyUm91dGU+fSAvPlxyXG4gICAgICA8Um91dGUgcGF0aD0nL2FkbWluJyBlbGVtZW50PXs8QWRtaW5Sb3V0ZT48QWRtaW5EYXNoYm9hcmQgLz48L0FkbWluUm91dGU+fSAvPlxyXG5cclxuICAgICAgPFJvdXRlIHBhdGg9Jy9jaGVja291dCcgZWxlbWVudD17PFByb3RlY3RlZFJvdXRlPjxDaGVja291dCAvPjwvUHJvdGVjdGVkUm91dGU+fSAvPlxyXG4gICAgICA8Um91dGUgcGF0aD0nL215LW9yZGVycycgZWxlbWVudD17PFByb3RlY3RlZFJvdXRlPjxNeU9yZGVycyAvPjwvUHJvdGVjdGVkUm91dGU+fSAvPlxyXG4gICAgICA8Um91dGUgcGF0aD0nL29yZGVyLWNvbmZpcm1hdGlvbi86b3JkZXJJZCcgZWxlbWVudD17PFByb3RlY3RlZFJvdXRlPjxPcmRlckNvbmZpcm1hdGlvbiAvPjwvUHJvdGVjdGVkUm91dGU+fSAvPlxyXG5cclxuICAgICAgey8qIENhdGNoIGFsbCAqL31cclxuICAgICAgPFJvdXRlIHBhdGg9JyonIGVsZW1lbnQ9ezxOYXZpZ2F0ZSB0bz1cIi9cIiByZXBsYWNlIC8+fSAvPlxyXG4gICAgPC9Sb3V0ZXM+XHJcbiAgKVxyXG59XHJcblxyXG5leHBvcnQgZGVmYXVsdCBBcHBSb3V0ZXNcclxuIl0sImZpbGUiOiJEOi9EaWdpQmF6YWFyL2Zyb250ZW5kL3NyYy9yb3V0ZXMvQXBwUm91dGVzLmpzeCJ9

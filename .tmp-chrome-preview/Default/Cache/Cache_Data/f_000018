@@ -1,0 +1,316 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/Auth/SignupForm.jsx");import __vite__cjsImport0_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=aecce053"; const jsxDEV = __vite__cjsImport0_react_jsxDevRuntime["jsxDEV"];
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
+let prevRefreshReg;
+let prevRefreshSig;
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+var _s = $RefreshSig$();
+import __vite__cjsImport3_react from "/node_modules/.vite/deps/react.js?v=aecce053"; const useState = __vite__cjsImport3_react["useState"]; const useEffect = __vite__cjsImport3_react["useEffect"];
+import { useAuth } from "/src/context/AuthContext.jsx";
+import { useNavigate, useLocation, Link } from "/node_modules/.vite/deps/react-router-dom.js?v=aecce053";
+import { UserPlus, ArrowRight } from "/node_modules/.vite/deps/lucide-react.js?v=aecce053";
+import "/src/components/Auth/Auth.css";
+const SignupForm = () => {
+  _s();
+  const { signup } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const initialRole = location.state?.role || "customer";
+  const initialPhone = location.state?.phone || "";
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: initialPhone,
+    role: initialRole
+  });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const handleChange = (e) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setError("");
+  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (formData.phone.length !== 10) {
+      setError("Please provide a valid 10-digit mobile number.");
+      return;
+    }
+    setLoading(true);
+    const result = await signup({
+      phone: formData.phone,
+      email: formData.email,
+      role: formData.role,
+      name: formData.name
+    });
+    setLoading(false);
+    if (result.success) {
+      setSuccess(true);
+      setTimeout(() => {
+        if (formData.role === "shopowner") {
+          navigate("/dashboard");
+        } else if (formData.role === "rider") {
+          navigate("/rider");
+        } else {
+          navigate("/");
+        }
+      }, 1e3);
+    } else {
+      setError(result.error || "Signup failed. Please try again.");
+    }
+  };
+  return /* @__PURE__ */ jsxDEV("div", { className: `auth-page portal-${formData.role}`, children: /* @__PURE__ */ jsxDEV("div", { className: "auth-card glass-card fade-in", children: [
+    /* @__PURE__ */ jsxDEV("div", { className: "auth-header", children: [
+      /* @__PURE__ */ jsxDEV("span", { className: "auth-logo", children: "🛒 DigiBazaar" }, void 0, false, {
+        fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+        lineNumber: 87,
+        columnNumber: 11
+      }, this),
+      /* @__PURE__ */ jsxDEV("h2", { children: "Create Account" }, void 0, false, {
+        fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+        lineNumber: 88,
+        columnNumber: 11
+      }, this),
+      /* @__PURE__ */ jsxDEV("p", { children: "Register using your phone number" }, void 0, false, {
+        fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+        lineNumber: 89,
+        columnNumber: 11
+      }, this)
+    ] }, void 0, true, {
+      fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+      lineNumber: 86,
+      columnNumber: 9
+    }, this),
+    error && /* @__PURE__ */ jsxDEV("div", { className: "auth-error-msg", children: error }, void 0, false, {
+      fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+      lineNumber: 92,
+      columnNumber: 19
+    }, this),
+    success ? /* @__PURE__ */ jsxDEV("div", { className: "auth-success-box text-center", children: [
+      /* @__PURE__ */ jsxDEV("div", { className: "success-icon-check", children: "✓" }, void 0, false, {
+        fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+        lineNumber: 96,
+        columnNumber: 13
+      }, this),
+      /* @__PURE__ */ jsxDEV("h3", { children: "Account Created!" }, void 0, false, {
+        fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+        lineNumber: 97,
+        columnNumber: 13
+      }, this),
+      /* @__PURE__ */ jsxDEV("p", { children: "Welcome to DigiBazaar" }, void 0, false, {
+        fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+        lineNumber: 98,
+        columnNumber: 13
+      }, this)
+    ] }, void 0, true, {
+      fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+      lineNumber: 95,
+      columnNumber: 9
+    }, this) : /* @__PURE__ */ jsxDEV("form", { onSubmit: handleSubmit, className: "auth-step-box", children: [
+      /* @__PURE__ */ jsxDEV("div", { className: "auth-field", children: [
+        /* @__PURE__ */ jsxDEV("label", { className: "auth-field-label", children: "Full Name" }, void 0, false, {
+          fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+          lineNumber: 103,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV(
+          "input",
+          {
+            type: "text",
+            name: "name",
+            placeholder: "e.g. John Doe",
+            value: formData.name,
+            onChange: handleChange,
+            required: true,
+            autoFocus: true
+          },
+          void 0,
+          false,
+          {
+            fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+            lineNumber: 104,
+            columnNumber: 15
+          },
+          this
+        )
+      ] }, void 0, true, {
+        fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+        lineNumber: 102,
+        columnNumber: 13
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { className: "auth-field", children: [
+        /* @__PURE__ */ jsxDEV("label", { className: "auth-field-label", children: "Mobile Number" }, void 0, false, {
+          fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+          lineNumber: 116,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: "phone-input-group", children: [
+          /* @__PURE__ */ jsxDEV("span", { className: "phone-country", children: "+91" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+            lineNumber: 118,
+            columnNumber: 17
+          }, this),
+          /* @__PURE__ */ jsxDEV(
+            "input",
+            {
+              type: "tel",
+              name: "phone",
+              maxLength: 10,
+              placeholder: "98765 43210",
+              value: formData.phone,
+              onChange: (e) => setFormData((prev) => ({ ...prev, phone: e.target.value.replace(/\D/g, "") })),
+              required: true
+            },
+            void 0,
+            false,
+            {
+              fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+              lineNumber: 119,
+              columnNumber: 17
+            },
+            this
+          )
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+          lineNumber: 117,
+          columnNumber: 15
+        }, this)
+      ] }, void 0, true, {
+        fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+        lineNumber: 115,
+        columnNumber: 13
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { className: "auth-field", children: [
+        /* @__PURE__ */ jsxDEV("label", { className: "auth-field-label", children: "Email Address (Optional)" }, void 0, false, {
+          fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+          lineNumber: 132,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV(
+          "input",
+          {
+            type: "email",
+            name: "email",
+            placeholder: "john@example.com",
+            value: formData.email,
+            onChange: handleChange
+          },
+          void 0,
+          false,
+          {
+            fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+            lineNumber: 133,
+            columnNumber: 15
+          },
+          this
+        )
+      ] }, void 0, true, {
+        fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+        lineNumber: 131,
+        columnNumber: 13
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { className: "auth-field", children: [
+        /* @__PURE__ */ jsxDEV("label", { className: "auth-field-label", children: "Register As" }, void 0, false, {
+          fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+          lineNumber: 143,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV("select", { name: "role", value: formData.role, onChange: handleChange, className: "auth-select", children: [
+          /* @__PURE__ */ jsxDEV("option", { value: "customer", children: "Customer" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+            lineNumber: 145,
+            columnNumber: 17
+          }, this),
+          /* @__PURE__ */ jsxDEV("option", { value: "shopowner", children: "Shop Owner" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+            lineNumber: 146,
+            columnNumber: 17
+          }, this),
+          /* @__PURE__ */ jsxDEV("option", { value: "rider", children: "Delivery Partner" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+            lineNumber: 147,
+            columnNumber: 17
+          }, this)
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+          lineNumber: 144,
+          columnNumber: 15
+        }, this)
+      ] }, void 0, true, {
+        fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+        lineNumber: 142,
+        columnNumber: 13
+      }, this),
+      /* @__PURE__ */ jsxDEV("button", { type: "submit", className: "auth-primary-btn", disabled: loading, children: [
+        loading ? "Creating Account..." : "Sign Up",
+        " ",
+        /* @__PURE__ */ jsxDEV(ArrowRight, { size: 16 }, void 0, false, {
+          fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+          lineNumber: 152,
+          columnNumber: 61
+        }, this)
+      ] }, void 0, true, {
+        fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+        lineNumber: 151,
+        columnNumber: 13
+      }, this)
+    ] }, void 0, true, {
+      fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+      lineNumber: 101,
+      columnNumber: 9
+    }, this),
+    !success && /* @__PURE__ */ jsxDEV("p", { className: "auth-redirect", children: [
+      "Already have an account? ",
+      /* @__PURE__ */ jsxDEV(Link, { to: "/login", children: "Sign In" }, void 0, false, {
+        fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+        lineNumber: 159,
+        columnNumber: 38
+      }, this)
+    ] }, void 0, true, {
+      fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+      lineNumber: 158,
+      columnNumber: 9
+    }, this)
+  ] }, void 0, true, {
+    fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+    lineNumber: 85,
+    columnNumber: 7
+  }, this) }, void 0, false, {
+    fileName: "D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx",
+    lineNumber: 84,
+    columnNumber: 5
+  }, this);
+};
+_s(SignupForm, "/Rxf//+v6MnqOgTcYBtKHxmO1Gs=", false, function() {
+  return [useAuth, useNavigate, useLocation];
+});
+_c = SignupForm;
+export default SignupForm;
+var _c;
+$RefreshReg$(_c, "SignupForm");
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("D:/DigiBazaar/frontend/src/components/Auth/SignupForm.jsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,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QUFLLFVBQVMsV0FBVSxvQkFBbUIsVUFBVUosU0FDMURBO0FBQUFBLGtCQUFVLHdCQUF3QjtBQUFBLFFBQVU7QUFBQSxRQUFDLHVCQUFDLGNBQVcsTUFBTSxNQUFsQjtBQUFBO0FBQUE7QUFBQTtBQUFBLGVBQXFCO0FBQUEsV0FEckU7QUFBQTtBQUFBO0FBQUE7QUFBQSxhQUVBO0FBQUEsU0FwREY7QUFBQTtBQUFBO0FBQUE7QUFBQSxXQXFEQTtBQUFBLElBR0QsQ0FBQ0UsV0FDQSx1QkFBQyxPQUFFLFdBQVUsaUJBQWdCO0FBQUE7QUFBQSxNQUNGLHVCQUFDLFFBQUssSUFBRyxVQUFTLHVCQUFsQjtBQUFBO0FBQUE7QUFBQTtBQUFBLGFBQXlCO0FBQUEsU0FEcEQ7QUFBQTtBQUFBO0FBQUE7QUFBQSxXQUVBO0FBQUEsT0EzRUo7QUFBQTtBQUFBO0FBQUE7QUFBQSxTQTZFQSxLQTlFRjtBQUFBO0FBQUE7QUFBQTtBQUFBLFNBK0VBO0FBRUo7QUFBQ2pCLEdBM0lLRCxZQUFVO0FBQUEsVUFDS04sU0FDRkMsYUFDQUMsV0FBVztBQUFBO0FBQUEsS0FIeEJJO0FBNklOLGVBQWVBO0FBQVUsSUFBQStCO0FBQUEsYUFBQUEsSUFBQSIsIm5hbWVzIjpbInVzZVN0YXRlIiwidXNlRWZmZWN0IiwidXNlQXV0aCIsInVzZU5hdmlnYXRlIiwidXNlTG9jYXRpb24iLCJMaW5rIiwiVXNlclBsdXMiLCJBcnJvd1JpZ2h0IiwiU2lnbnVwRm9ybSIsIl9zIiwic2lnbnVwIiwibmF2aWdhdGUiLCJsb2NhdGlvbiIsImluaXRpYWxSb2xlIiwic3RhdGUiLCJyb2xlIiwiaW5pdGlhbFBob25lIiwicGhvbmUiLCJmb3JtRGF0YSIsInNldEZvcm1EYXRhIiwibmFtZSIsImVtYWlsIiwiZXJyb3IiLCJzZXRFcnJvciIsImxvYWRpbmciLCJzZXRMb2FkaW5nIiwic3VjY2VzcyIsInNldFN1Y2Nlc3MiLCJoYW5kbGVDaGFuZ2UiLCJlIiwicHJldiIsInRhcmdldCIsInZhbHVlIiwiaGFuZGxlU3VibWl0IiwicHJldmVudERlZmF1bHQiLCJsZW5ndGgiLCJyZXN1bHQiLCJzZXRUaW1lb3V0IiwicmVwbGFjZSIsIl9jIl0sImlnbm9yZUxpc3QiOltdLCJzb3VyY2VzIjpbIlNpZ251cEZvcm0uanN4Il0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IHVzZVN0YXRlLCB1c2VFZmZlY3QgfSBmcm9tICdyZWFjdCdcclxuaW1wb3J0IHsgdXNlQXV0aCB9IGZyb20gJy4uLy4uL2NvbnRleHQvQXV0aENvbnRleHQnXHJcbmltcG9ydCB7IHVzZU5hdmlnYXRlLCB1c2VMb2NhdGlvbiwgTGluayB9IGZyb20gJ3JlYWN0LXJvdXRlci1kb20nXHJcbmltcG9ydCB7IFVzZXJQbHVzLCBBcnJvd1JpZ2h0IH0gZnJvbSAnbHVjaWRlLXJlYWN0J1xyXG5pbXBvcnQgJy4vQXV0aC5jc3MnXHJcblxyXG5jb25zdCBTaWdudXBGb3JtID0gKCkgPT4ge1xyXG4gIGNvbnN0IHsgc2lnbnVwIH0gPSB1c2VBdXRoKClcclxuICBjb25zdCBuYXZpZ2F0ZSA9IHVzZU5hdmlnYXRlKClcclxuICBjb25zdCBsb2NhdGlvbiA9IHVzZUxvY2F0aW9uKClcclxuICBcclxuICAvLyBSZXRyaWV2ZSBwYXNzZWQgc3RhdGUgaWYgYW55IGZyb20gbG9naW4gcGFnZSByZWRpcmVjdFxyXG4gIGNvbnN0IGluaXRpYWxSb2xlID0gbG9jYXRpb24uc3RhdGU/LnJvbGUgfHwgJ2N1c3RvbWVyJ1xyXG4gIGNvbnN0IGluaXRpYWxQaG9uZSA9IGxvY2F0aW9uLnN0YXRlPy5waG9uZSB8fCAnJ1xyXG5cclxuICBjb25zdCBbZm9ybURhdGEsIHNldEZvcm1EYXRhXSA9IHVzZVN0YXRlKHtcclxuICAgIG5hbWU6ICcnLFxyXG4gICAgZW1haWw6ICcnLFxyXG4gICAgcGhvbmU6IGluaXRpYWxQaG9uZSxcclxuICAgIHJvbGU6IGluaXRpYWxSb2xlXHJcbiAgfSlcclxuICBjb25zdCBbZXJyb3IsIHNldEVycm9yXSA9IHVzZVN0YXRlKCcnKVxyXG4gIGNvbnN0IFtsb2FkaW5nLCBzZXRMb2FkaW5nXSA9IHVzZVN0YXRlKGZhbHNlKVxyXG4gIGNvbnN0IFtzdWNjZXNzLCBzZXRTdWNjZXNzXSA9IHVzZVN0YXRlKGZhbHNlKVxyXG5cclxuICBjb25zdCBoYW5kbGVDaGFuZ2UgPSAoZSkgPT4ge1xyXG4gICAgc2V0Rm9ybURhdGEocHJldiA9PiAoeyAuLi5wcmV2LCBbZS50YXJnZXQubmFtZV06IGUudGFyZ2V0LnZhbHVlIH0pKVxyXG4gICAgc2V0RXJyb3IoJycpXHJcbiAgfVxyXG5cclxuICBjb25zdCBoYW5kbGVTdWJtaXQgPSBhc3luYyAoZSkgPT4ge1xyXG4gICAgZS5wcmV2ZW50RGVmYXVsdCgpXHJcbiAgICBpZiAoZm9ybURhdGEucGhvbmUubGVuZ3RoICE9PSAxMCkge1xyXG4gICAgICBzZXRFcnJvcignUGxlYXNlIHByb3ZpZGUgYSB2YWxpZCAxMC1kaWdpdCBtb2JpbGUgbnVtYmVyLicpXHJcbiAgICAgIHJldHVyblxyXG4gICAgfVxyXG4gICAgc2V0TG9hZGluZyh0cnVlKVxyXG4gICAgXHJcbiAgICAvLyBNYXAgJ25hbWUnIHRvIHRoZSB1c2VybmFtZSBwYXlsb2FkIGluIHNpZ251cFxyXG4gICAgY29uc3QgcmVzdWx0ID0gYXdhaXQgc2lnbnVwKHtcclxuICAgICAgcGhvbmU6IGZvcm1EYXRhLnBob25lLFxyXG4gICAgICBlbWFpbDogZm9ybURhdGEuZW1haWwsXHJcbiAgICAgIHJvbGU6IGZvcm1EYXRhLnJvbGUsXHJcbiAgICAgIG5hbWU6IGZvcm1EYXRhLm5hbWVcclxuICAgIH0pXHJcbiAgICBcclxuICAgIHNldExvYWRpbmcoZmFsc2UpXHJcbiAgICBpZiAocmVzdWx0LnN1Y2Nlc3MpIHtcclxuICAgICAgc2V0U3VjY2Vzcyh0cnVlKVxyXG4gICAgICBzZXRUaW1lb3V0KCgpID0+IHtcclxuICAgICAgICBpZiAoZm9ybURhdGEucm9sZSA9PT0gJ3Nob3Bvd25lcicpIHtcclxuICAgICAgICAgIG5hdmlnYXRlKCcvZGFzaGJvYXJkJylcclxuICAgICAgICB9IGVsc2UgaWYgKGZvcm1EYXRhLnJvbGUgPT09ICdyaWRlcicpIHtcclxuICAgICAgICAgIG5hdmlnYXRlKCcvcmlkZXInKVxyXG4gICAgICAgIH0gZWxzZSB7XHJcbiAgICAgICAgICBuYXZpZ2F0ZSgnLycpXHJcbiAgICAgICAgfVxyXG4gICAgICB9LCAxMDAwKVxyXG4gICAgfSBlbHNlIHtcclxuICAgICAgc2V0RXJyb3IocmVzdWx0LmVycm9yIHx8ICdTaWdudXAgZmFpbGVkLiBQbGVhc2UgdHJ5IGFnYWluLicpXHJcbiAgICB9XHJcbiAgfVxyXG5cclxuICByZXR1cm4gKFxyXG4gICAgPGRpdiBjbGFzc05hbWU9e2BhdXRoLXBhZ2UgcG9ydGFsLSR7Zm9ybURhdGEucm9sZX1gfT5cclxuICAgICAgPGRpdiBjbGFzc05hbWU9XCJhdXRoLWNhcmQgZ2xhc3MtY2FyZCBmYWRlLWluXCI+XHJcbiAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJhdXRoLWhlYWRlclwiPlxyXG4gICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwiYXV0aC1sb2dvXCI+8J+bkiBEaWdpQmF6YWFyPC9zcGFuPlxyXG4gICAgICAgICAgPGgyPkNyZWF0ZSBBY2NvdW50PC9oMj5cclxuICAgICAgICAgIDxwPlJlZ2lzdGVyIHVzaW5nIHlvdXIgcGhvbmUgbnVtYmVyPC9wPlxyXG4gICAgICAgIDwvZGl2PlxyXG5cclxuICAgICAgICB7ZXJyb3IgJiYgPGRpdiBjbGFzc05hbWU9XCJhdXRoLWVycm9yLW1zZ1wiPntlcnJvcn08L2Rpdj59XHJcblxyXG4gICAgICAgIHtzdWNjZXNzID8gKFxyXG4gICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJhdXRoLXN1Y2Nlc3MtYm94IHRleHQtY2VudGVyXCI+XHJcbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwic3VjY2Vzcy1pY29uLWNoZWNrXCI+4pyTPC9kaXY+XHJcbiAgICAgICAgICAgIDxoMz5BY2NvdW50IENyZWF0ZWQhPC9oMz5cclxuICAgICAgICAgICAgPHA+V2VsY29tZSB0byBEaWdpQmF6YWFyPC9wPlxyXG4gICAgICAgICAgPC9kaXY+XHJcbiAgICAgICAgKSA6IChcclxuICAgICAgICAgIDxmb3JtIG9uU3VibWl0PXtoYW5kbGVTdWJtaXR9IGNsYXNzTmFtZT1cImF1dGgtc3RlcC1ib3hcIj5cclxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJhdXRoLWZpZWxkXCI+XHJcbiAgICAgICAgICAgICAgPGxhYmVsIGNsYXNzTmFtZT1cImF1dGgtZmllbGQtbGFiZWxcIj5GdWxsIE5hbWU8L2xhYmVsPlxyXG4gICAgICAgICAgICAgIDxpbnB1dFxyXG4gICAgICAgICAgICAgICAgdHlwZT1cInRleHRcIlxyXG4gICAgICAgICAgICAgICAgbmFtZT1cIm5hbWVcIlxyXG4gICAgICAgICAgICAgICAgcGxhY2Vob2xkZXI9XCJlLmcuIEpvaG4gRG9lXCJcclxuICAgICAgICAgICAgICAgIHZhbHVlPXtmb3JtRGF0YS5uYW1lfVxyXG4gICAgICAgICAgICAgICAgb25DaGFuZ2U9e2hhbmRsZUNoYW5nZX1cclxuICAgICAgICAgICAgICAgIHJlcXVpcmVkXHJcbiAgICAgICAgICAgICAgICBhdXRvRm9jdXNcclxuICAgICAgICAgICAgICAvPlxyXG4gICAgICAgICAgICA8L2Rpdj5cclxuXHJcbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiYXV0aC1maWVsZFwiPlxyXG4gICAgICAgICAgICAgIDxsYWJlbCBjbGFzc05hbWU9XCJhdXRoLWZpZWxkLWxhYmVsXCI+TW9iaWxlIE51bWJlcjwvbGFiZWw+XHJcbiAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJwaG9uZS1pbnB1dC1ncm91cFwiPlxyXG4gICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwicGhvbmUtY291bnRyeVwiPis5MTwvc3Bhbj5cclxuICAgICAgICAgICAgICAgIDxpbnB1dFxyXG4gICAgICAgICAgICAgICAgICB0eXBlPVwidGVsXCJcclxuICAgICAgICAgICAgICAgICAgbmFtZT1cInBob25lXCJcclxuICAgICAgICAgICAgICAgICAgbWF4TGVuZ3RoPXsxMH1cclxuICAgICAgICAgICAgICAgICAgcGxhY2Vob2xkZXI9XCI5ODc2NSA0MzIxMFwiXHJcbiAgICAgICAgICAgICAgICAgIHZhbHVlPXtmb3JtRGF0YS5waG9uZX1cclxuICAgICAgICAgICAgICAgICAgb25DaGFuZ2U9e2UgPT4gc2V0Rm9ybURhdGEocHJldiA9PiAoeyAuLi5wcmV2LCBwaG9uZTogZS50YXJnZXQudmFsdWUucmVwbGFjZSgvXFxEL2csICcnKSB9KSl9XHJcbiAgICAgICAgICAgICAgICAgIHJlcXVpcmVkXHJcbiAgICAgICAgICAgICAgICAvPlxyXG4gICAgICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgICAgICA8L2Rpdj5cclxuXHJcbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiYXV0aC1maWVsZFwiPlxyXG4gICAgICAgICAgICAgIDxsYWJlbCBjbGFzc05hbWU9XCJhdXRoLWZpZWxkLWxhYmVsXCI+RW1haWwgQWRkcmVzcyAoT3B0aW9uYWwpPC9sYWJlbD5cclxuICAgICAgICAgICAgICA8aW5wdXRcclxuICAgICAgICAgICAgICAgIHR5cGU9XCJlbWFpbFwiXHJcbiAgICAgICAgICAgICAgICBuYW1lPVwiZW1haWxcIlxyXG4gICAgICAgICAgICAgICAgcGxhY2Vob2xkZXI9XCJqb2huQGV4YW1wbGUuY29tXCJcclxuICAgICAgICAgICAgICAgIHZhbHVlPXtmb3JtRGF0YS5lbWFpbH1cclxuICAgICAgICAgICAgICAgIG9uQ2hhbmdlPXtoYW5kbGVDaGFuZ2V9XHJcbiAgICAgICAgICAgICAgLz5cclxuICAgICAgICAgICAgPC9kaXY+XHJcblxyXG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImF1dGgtZmllbGRcIj5cclxuICAgICAgICAgICAgICA8bGFiZWwgY2xhc3NOYW1lPVwiYXV0aC1maWVsZC1sYWJlbFwiPlJlZ2lzdGVyIEFzPC9sYWJlbD5cclxuICAgICAgICAgICAgICA8c2VsZWN0IG5hbWU9XCJyb2xlXCIgdmFsdWU9e2Zvcm1EYXRhLnJvbGV9IG9uQ2hhbmdlPXtoYW5kbGVDaGFuZ2V9IGNsYXNzTmFtZT1cImF1dGgtc2VsZWN0XCI+XHJcbiAgICAgICAgICAgICAgICA8b3B0aW9uIHZhbHVlPVwiY3VzdG9tZXJcIj5DdXN0b21lcjwvb3B0aW9uPlxyXG4gICAgICAgICAgICAgICAgPG9wdGlvbiB2YWx1ZT1cInNob3Bvd25lclwiPlNob3AgT3duZXI8L29wdGlvbj5cclxuICAgICAgICAgICAgICAgIDxvcHRpb24gdmFsdWU9XCJyaWRlclwiPkRlbGl2ZXJ5IFBhcnRuZXI8L29wdGlvbj5cclxuICAgICAgICAgICAgICA8L3NlbGVjdD5cclxuICAgICAgICAgICAgPC9kaXY+XHJcblxyXG4gICAgICAgICAgICA8YnV0dG9uIHR5cGU9XCJzdWJtaXRcIiBjbGFzc05hbWU9XCJhdXRoLXByaW1hcnktYnRuXCIgZGlzYWJsZWQ9e2xvYWRpbmd9PlxyXG4gICAgICAgICAgICAgIHtsb2FkaW5nID8gJ0NyZWF0aW5nIEFjY291bnQuLi4nIDogJ1NpZ24gVXAnfSA8QXJyb3dSaWdodCBzaXplPXsxNn0gLz5cclxuICAgICAgICAgICAgPC9idXR0b24+XHJcbiAgICAgICAgICA8L2Zvcm0+XHJcbiAgICAgICAgKX1cclxuXHJcbiAgICAgICAgeyFzdWNjZXNzICYmIChcclxuICAgICAgICAgIDxwIGNsYXNzTmFtZT1cImF1dGgtcmVkaXJlY3RcIj5cclxuICAgICAgICAgICAgQWxyZWFkeSBoYXZlIGFuIGFjY291bnQ/IDxMaW5rIHRvPVwiL2xvZ2luXCI+U2lnbiBJbjwvTGluaz5cclxuICAgICAgICAgIDwvcD5cclxuICAgICAgICApfVxyXG4gICAgICA8L2Rpdj5cclxuICAgIDwvZGl2PlxyXG4gIClcclxufVxyXG5cclxuZXhwb3J0IGRlZmF1bHQgU2lnbnVwRm9ybSJdLCJmaWxlIjoiRDovRGlnaUJhemFhci9mcm9udGVuZC9zcmMvY29tcG9uZW50cy9BdXRoL1NpZ251cEZvcm0uanN4In0=

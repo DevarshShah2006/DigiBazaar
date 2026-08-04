@@ -1,0 +1,1172 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/pages/RiderPortal/RiderPortal.jsx");import __vite__cjsImport0_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=aecce053"; const Fragment = __vite__cjsImport0_react_jsxDevRuntime["Fragment"]; const jsxDEV = __vite__cjsImport0_react_jsxDevRuntime["jsxDEV"];
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
+let prevRefreshReg;
+let prevRefreshSig;
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+var _s = $RefreshSig$();
+import __vite__cjsImport3_react from "/node_modules/.vite/deps/react.js?v=aecce053"; const useState = __vite__cjsImport3_react["useState"]; const useEffect = __vite__cjsImport3_react["useEffect"];
+import { useNavigate } from "/node_modules/.vite/deps/react-router-dom.js?v=aecce053";
+import { useAuth } from "/src/context/AuthContext.jsx";
+import { fetchJson } from "/src/api/api.js";
+import "/src/pages/RiderPortal/RiderPortal.css?t=1785783408631";
+export default function RiderPortal() {
+  _s();
+  const { isLoggedIn, user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState(
+    localStorage.getItem("active_rider_tab") || "home"
+  );
+  useEffect(() => {
+    const handleTabChange = () => {
+      const tab = localStorage.getItem("active_rider_tab") || "home";
+      setActiveTab(tab);
+    };
+    window.addEventListener("riderTabChanged", handleTabChange);
+    return () => window.removeEventListener("riderTabChanged", handleTabChange);
+  }, []);
+  const [data, setData] = useState({
+    is_online: false,
+    rating: 5,
+    completed_deliveries: 0,
+    total_earnings: 0,
+    vehicle_type: "Bicycle",
+    vehicle_number: "BIKE-123",
+    active_assignments: []
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    document.body.classList.add("portal-rider");
+    return () => {
+      document.body.classList.remove("portal-rider");
+    };
+  }, []);
+  const loadDashboard = () => {
+    setLoading(true);
+    fetchJson("/riders/dashboard/").then((res) => {
+      if (res.detail) {
+        setError(res.detail);
+      } else {
+        setData(res);
+        localStorage.setItem("rider_online_status", res.is_online.toString());
+        window.dispatchEvent(new Event("riderStatusUpdated"));
+        setError("");
+      }
+    }).catch(() => setError("Failed to connect to Rider Portal API")).finally(() => setLoading(false));
+  };
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate("/login");
+      return;
+    }
+    loadDashboard();
+  }, [isLoggedIn, navigate]);
+  const toggleOnline = () => {
+    fetchJson("/riders/toggle-online/", { method: "POST" }).then(() => {
+      loadDashboard();
+    }).catch(() => setError("Failed to update status"));
+  };
+  const updateStatus = (assignmentId, status) => {
+    fetchJson("/riders/assignments/update/", {
+      method: "POST",
+      body: JSON.stringify({ assignment_id: assignmentId, status })
+    }).then(() => loadDashboard()).catch(() => setError("Failed to update status"));
+  };
+  if (loading) {
+    return /* @__PURE__ */ jsxDEV("div", { className: "rider-loading-screen", children: [
+      /* @__PURE__ */ jsxDEV("div", { className: "spinner" }, void 0, false, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 109,
+        columnNumber: 9
+      }, this),
+      /* @__PURE__ */ jsxDEV("p", { children: "Loading Rider Dashboard..." }, void 0, false, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 110,
+        columnNumber: 9
+      }, this)
+    ] }, void 0, true, {
+      fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+      lineNumber: 108,
+      columnNumber: 7
+    }, this);
+  }
+  const active = data.active_assignments && data.active_assignments[0];
+  return /* @__PURE__ */ jsxDEV("div", { className: "rider-portal fade-in", children: [
+    activeTab === "home" && /* @__PURE__ */ jsxDEV("div", { className: "rider-tab-content", children: [
+      /* @__PURE__ */ jsxDEV("div", { className: "rider-header-card", children: /* @__PURE__ */ jsxDEV("div", { className: "rider-header-profile", children: [
+        /* @__PURE__ */ jsxDEV("div", { className: "rider-avatar", children: "Rider" }, void 0, false, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 125,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { children: [
+          /* @__PURE__ */ jsxDEV("h2", { children: [
+            "Hello, ",
+            user?.username || "Partner",
+            "!"
+          ] }, void 0, true, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 127,
+            columnNumber: 17
+          }, this),
+          /* @__PURE__ */ jsxDEV("p", { children: [
+            data.vehicle_type,
+            " · ",
+            data.vehicle_number
+          ] }, void 0, true, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 128,
+            columnNumber: 17
+          }, this)
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 126,
+          columnNumber: 15
+        }, this)
+      ] }, void 0, true, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 124,
+        columnNumber: 13
+      }, this) }, void 0, false, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 123,
+        columnNumber: 11
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { className: `rider-online-toggle-box ${data.is_online ? "online" : "offline"}`, children: data.is_online ? /* @__PURE__ */ jsxDEV(Fragment, { children: [
+        /* @__PURE__ */ jsxDEV("h3", { children: "You're ONLINE" }, void 0, false, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 137,
+          columnNumber: 17
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { children: "Receiving orders automatically near Paldi, Ahmedabad." }, void 0, false, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 138,
+          columnNumber: 17
+        }, this),
+        /* @__PURE__ */ jsxDEV("button", { className: "toggle-btn go-offline", onClick: toggleOnline, children: "GO OFFLINE" }, void 0, false, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 139,
+          columnNumber: 17
+        }, this)
+      ] }, void 0, true, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 136,
+        columnNumber: 11
+      }, this) : /* @__PURE__ */ jsxDEV(Fragment, { children: [
+        /* @__PURE__ */ jsxDEV("h3", { children: "You're OFFLINE" }, void 0, false, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 145,
+          columnNumber: 17
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { children: "Go online to start receiving auto-assigned delivery jobs." }, void 0, false, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 146,
+          columnNumber: 17
+        }, this),
+        /* @__PURE__ */ jsxDEV("button", { className: "toggle-btn go-online", onClick: toggleOnline, children: "GO ONLINE" }, void 0, false, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 147,
+          columnNumber: 17
+        }, this)
+      ] }, void 0, true, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 144,
+        columnNumber: 11
+      }, this) }, void 0, false, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 134,
+        columnNumber: 11
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { className: "rider-stats-grid", children: [
+        /* @__PURE__ */ jsxDEV("div", { className: "rider-stat-card", children: [
+          /* @__PURE__ */ jsxDEV("h4", { children: "Today's Payout" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 157,
+            columnNumber: 15
+          }, this),
+          /* @__PURE__ */ jsxDEV("h3", { children: [
+            "₹",
+            parseFloat(data.total_earnings).toFixed(2)
+          ] }, void 0, true, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 158,
+            columnNumber: 15
+          }, this)
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 156,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: "rider-stat-card", children: [
+          /* @__PURE__ */ jsxDEV("h4", { children: "Deliveries" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 161,
+            columnNumber: 15
+          }, this),
+          /* @__PURE__ */ jsxDEV("h3", { children: [
+            data.completed_deliveries,
+            " drops"
+          ] }, void 0, true, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 162,
+            columnNumber: 15
+          }, this)
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 160,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: "rider-stat-card", children: [
+          /* @__PURE__ */ jsxDEV("h4", { children: "Rider Rating" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 165,
+            columnNumber: 15
+          }, this),
+          /* @__PURE__ */ jsxDEV("h3", { children: [
+            parseFloat(data.rating).toFixed(1),
+            " / 5"
+          ] }, void 0, true, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 166,
+            columnNumber: 15
+          }, this)
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 164,
+          columnNumber: 13
+        }, this)
+      ] }, void 0, true, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 155,
+        columnNumber: 11
+      }, this),
+      active ? /* @__PURE__ */ jsxDEV("div", { className: "rider-active-job-card", children: [
+        /* @__PURE__ */ jsxDEV("div", { className: "job-card-header", children: [
+          /* @__PURE__ */ jsxDEV("h3", { children: [
+            "Active Assignment (Order #",
+            active.order_details.id,
+            ")"
+          ] }, void 0, true, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 174,
+            columnNumber: 17
+          }, this),
+          /* @__PURE__ */ jsxDEV("span", { className: "job-status-pill", children: active.status.replace("_", " ").toUpperCase() }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 175,
+            columnNumber: 17
+          }, this)
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 173,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: "job-addresses", children: [
+          /* @__PURE__ */ jsxDEV("div", { className: "address-row", children: [
+            /* @__PURE__ */ jsxDEV("span", { className: "circle-dot shop" }, void 0, false, {
+              fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+              lineNumber: 180,
+              columnNumber: 19
+            }, this),
+            /* @__PURE__ */ jsxDEV("div", { children: [
+              /* @__PURE__ */ jsxDEV("strong", { children: [
+                "Pickup: ",
+                active.order_details.shop_name
+              ] }, void 0, true, {
+                fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+                lineNumber: 182,
+                columnNumber: 21
+              }, this),
+              /* @__PURE__ */ jsxDEV("p", { children: active.order_details.shop_address || "Paldi Fresh Mart, Ground Floor, Ahmedabad" }, void 0, false, {
+                fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+                lineNumber: 183,
+                columnNumber: 21
+              }, this)
+            ] }, void 0, true, {
+              fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+              lineNumber: 181,
+              columnNumber: 19
+            }, this)
+          ] }, void 0, true, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 179,
+            columnNumber: 17
+          }, this),
+          /* @__PURE__ */ jsxDEV("div", { className: "address-row", children: [
+            /* @__PURE__ */ jsxDEV("span", { className: "circle-dot cust" }, void 0, false, {
+              fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+              lineNumber: 187,
+              columnNumber: 19
+            }, this),
+            /* @__PURE__ */ jsxDEV("div", { children: [
+              /* @__PURE__ */ jsxDEV("strong", { children: [
+                "Drop: ",
+                active.order_details.user_name
+              ] }, void 0, true, {
+                fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+                lineNumber: 189,
+                columnNumber: 21
+              }, this),
+              /* @__PURE__ */ jsxDEV("p", { children: active.order_details.delivery_address }, void 0, false, {
+                fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+                lineNumber: 190,
+                columnNumber: 21
+              }, this)
+            ] }, void 0, true, {
+              fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+              lineNumber: 188,
+              columnNumber: 19
+            }, this)
+          ] }, void 0, true, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 186,
+            columnNumber: 17
+          }, this)
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 178,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV("section", { className: "delivery-proof-card", "aria-label": "Delivery payload and confirmation", children: [
+          /* @__PURE__ */ jsxDEV("div", { className: "proof-card-heading", children: [
+            /* @__PURE__ */ jsxDEV("div", { children: [
+              /* @__PURE__ */ jsxDEV("span", { className: "proof-eyebrow", children: "Delivery payload" }, void 0, false, {
+                fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+                lineNumber: 198,
+                columnNumber: 21
+              }, this),
+              /* @__PURE__ */ jsxDEV("h4", { children: "Package & handover record" }, void 0, false, {
+                fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+                lineNumber: 199,
+                columnNumber: 21
+              }, this)
+            ] }, void 0, true, {
+              fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+              lineNumber: 197,
+              columnNumber: 19
+            }, this),
+            /* @__PURE__ */ jsxDEV("span", { className: "proof-code", children: [
+              "#",
+              active.order_details.id
+            ] }, void 0, true, {
+              fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+              lineNumber: 201,
+              columnNumber: 19
+            }, this)
+          ] }, void 0, true, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 196,
+            columnNumber: 17
+          }, this),
+          /* @__PURE__ */ jsxDEV("div", { className: "proof-details", children: [
+            /* @__PURE__ */ jsxDEV("span", { children: [
+              /* @__PURE__ */ jsxDEV("strong", { children: "Contents" }, void 0, false, {
+                fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+                lineNumber: 204,
+                columnNumber: 25
+              }, this),
+              " Sealed order package"
+            ] }, void 0, true, {
+              fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+              lineNumber: 204,
+              columnNumber: 19
+            }, this),
+            /* @__PURE__ */ jsxDEV("span", { children: [
+              /* @__PURE__ */ jsxDEV("strong", { children: "Recipient" }, void 0, false, {
+                fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+                lineNumber: 205,
+                columnNumber: 25
+              }, this),
+              " ",
+              active.order_details.user_name
+            ] }, void 0, true, {
+              fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+              lineNumber: 205,
+              columnNumber: 19
+            }, this),
+            /* @__PURE__ */ jsxDEV("span", { children: [
+              /* @__PURE__ */ jsxDEV("strong", { children: "Verification" }, void 0, false, {
+                fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+                lineNumber: 206,
+                columnNumber: 25
+              }, this),
+              " OTP at doorstep"
+            ] }, void 0, true, {
+              fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+              lineNumber: 206,
+              columnNumber: 19
+            }, this)
+          ] }, void 0, true, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 203,
+            columnNumber: 17
+          }, this),
+          /* @__PURE__ */ jsxDEV("div", { className: "signature-row", children: [
+            /* @__PURE__ */ jsxDEV("div", { className: "signature-line", children: /* @__PURE__ */ jsxDEV("span", { children: "Recipient signature / confirmation" }, void 0, false, {
+              fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+              lineNumber: 209,
+              columnNumber: 51
+            }, this) }, void 0, false, {
+              fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+              lineNumber: 209,
+              columnNumber: 19
+            }, this),
+            /* @__PURE__ */ jsxDEV("span", { className: "signature-state", children: active.status === "delivered" ? "Confirmed" : "Awaiting delivery" }, void 0, false, {
+              fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+              lineNumber: 210,
+              columnNumber: 19
+            }, this)
+          ] }, void 0, true, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 208,
+            columnNumber: 17
+          }, this)
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 195,
+          columnNumber: 15
+        }, this),
+        active.status === "assigned" && /* @__PURE__ */ jsxDEV(
+          "button",
+          {
+            className: "job-action-btn pickup",
+            onClick: () => updateStatus(active.id, "picked_up"),
+            children: "Confirm Arrived & Picked Up"
+          },
+          void 0,
+          false,
+          {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 216,
+            columnNumber: 11
+          },
+          this
+        ),
+        active.status === "picked_up" && /* @__PURE__ */ jsxDEV(
+          "button",
+          {
+            className: "job-action-btn deliver",
+            onClick: () => updateStatus(active.id, "delivered"),
+            children: "Confirm Delivered"
+          },
+          void 0,
+          false,
+          {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 225,
+            columnNumber: 11
+          },
+          this
+        ),
+        /* @__PURE__ */ jsxDEV(
+          "button",
+          {
+            className: "rider-nav-button",
+            onClick: () => {
+              localStorage.setItem("active_rider_tab", "map");
+              window.dispatchEvent(new Event("riderTabChanged"));
+            },
+            children: "Open Navigation Map"
+          },
+          void 0,
+          false,
+          {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 233,
+            columnNumber: 15
+          },
+          this
+        )
+      ] }, void 0, true, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 172,
+        columnNumber: 9
+      }, this) : /* @__PURE__ */ jsxDEV("div", { className: "rider-no-jobs-card", children: /* @__PURE__ */ jsxDEV("p", { children: "Waiting for automatic order assignment..." }, void 0, false, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 245,
+        columnNumber: 15
+      }, this) }, void 0, false, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 244,
+        columnNumber: 9
+      }, this)
+    ] }, void 0, true, {
+      fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+      lineNumber: 121,
+      columnNumber: 7
+    }, this),
+    activeTab === "deliveries" && /* @__PURE__ */ jsxDEV("div", { className: "rider-tab-content", children: [
+      /* @__PURE__ */ jsxDEV("h3", { children: "My Delivery Tasks" }, void 0, false, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 254,
+        columnNumber: 11
+      }, this),
+      active ? /* @__PURE__ */ jsxDEV("div", { className: "deliveries-list", children: /* @__PURE__ */ jsxDEV("div", { className: "delivery-task-item active", children: [
+        /* @__PURE__ */ jsxDEV("div", { className: "task-badge active", children: "ACTIVE JOB" }, void 0, false, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 258,
+          columnNumber: 17
+        }, this),
+        /* @__PURE__ */ jsxDEV("h4", { children: [
+          "Order #",
+          active.order_details.id
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 259,
+          columnNumber: 17
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { children: [
+          /* @__PURE__ */ jsxDEV("strong", { children: "Shop:" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 260,
+            columnNumber: 20
+          }, this),
+          " ",
+          active.order_details.shop_name
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 260,
+          columnNumber: 17
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { children: [
+          /* @__PURE__ */ jsxDEV("strong", { children: "Fulfillment Status:" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 261,
+            columnNumber: 20
+          }, this),
+          " ",
+          active.status.toUpperCase()
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 261,
+          columnNumber: 17
+        }, this),
+        /* @__PURE__ */ jsxDEV(
+          "button",
+          {
+            className: "task-manage-btn",
+            onClick: () => {
+              localStorage.setItem("active_rider_tab", "home");
+              window.dispatchEvent(new Event("riderTabChanged"));
+            },
+            children: "Manage Status"
+          },
+          void 0,
+          false,
+          {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 262,
+            columnNumber: 17
+          },
+          this
+        )
+      ] }, void 0, true, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 257,
+        columnNumber: 15
+      }, this) }, void 0, false, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 256,
+        columnNumber: 9
+      }, this) : /* @__PURE__ */ jsxDEV("div", { className: "rider-empty-state", children: /* @__PURE__ */ jsxDEV("p", { children: "No active delivery assignments found at this moment." }, void 0, false, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 275,
+        columnNumber: 15
+      }, this) }, void 0, false, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 274,
+        columnNumber: 9
+      }, this)
+    ] }, void 0, true, {
+      fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+      lineNumber: 253,
+      columnNumber: 7
+    }, this),
+    activeTab === "map" && /* @__PURE__ */ jsxDEV("div", { className: "rider-tab-content full-map-tab", children: [
+      /* @__PURE__ */ jsxDEV("h3", { children: "Simulated Route Navigation Map" }, void 0, false, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 284,
+        columnNumber: 11
+      }, this),
+      active ? /* @__PURE__ */ jsxDEV("div", { className: "full-map-card", children: [
+        /* @__PURE__ */ jsxDEV("div", { className: "map-meta-row", children: [
+          /* @__PURE__ */ jsxDEV("span", { children: "Paldi, Ahmedabad Map (Simulated Live)" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 288,
+            columnNumber: 17
+          }, this),
+          /* @__PURE__ */ jsxDEV("span", { className: "eta-badge", children: [
+            "ETA: ",
+            active.eta || 15,
+            " mins"
+          ] }, void 0, true, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 289,
+            columnNumber: 17
+          }, this)
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 287,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV("svg", { viewBox: "0 0 400 240", className: "rider-map-svg", children: [
+          /* @__PURE__ */ jsxDEV("path", { d: "M 50 120 Q 200 40 350 120", fill: "none", stroke: "#334155", strokeWidth: "12", strokeLinecap: "round" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 293,
+            columnNumber: 17
+          }, this),
+          /* @__PURE__ */ jsxDEV("path", { d: "M 50 120 Q 200 40 350 120", fill: "none", stroke: "#6366f1", strokeWidth: "4", strokeDasharray: "8,8", strokeLinecap: "round" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 294,
+            columnNumber: 17
+          }, this),
+          /* @__PURE__ */ jsxDEV("circle", { cx: "50", cy: "120", r: "14", fill: "#1e293b", stroke: "#0891b2", strokeWidth: "3" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 297,
+            columnNumber: 17
+          }, this),
+          /* @__PURE__ */ jsxDEV("text", { x: "50", y: "100", fill: "#f8fafc", fontSize: "10", fontWeight: "bold", textAnchor: "middle", children: "Paldi Store" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 298,
+            columnNumber: 17
+          }, this),
+          /* @__PURE__ */ jsxDEV("circle", { cx: "350", cy: "120", r: "14", fill: "#1e293b", stroke: "#10b981", strokeWidth: "3" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 301,
+            columnNumber: 17
+          }, this),
+          /* @__PURE__ */ jsxDEV("text", { x: "350", y: "100", fill: "#f8fafc", fontSize: "10", fontWeight: "bold", textAnchor: "middle", children: "Customer" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 302,
+            columnNumber: 17
+          }, this),
+          /* @__PURE__ */ jsxDEV("circle", { cx: "200", cy: "80", r: "10", fill: "#6366f1" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 305,
+            columnNumber: 17
+          }, this),
+          /* @__PURE__ */ jsxDEV("text", { x: "200", y: "65", fill: "#6366f1", fontSize: "11", fontWeight: "bold", textAnchor: "middle", children: "Rider (You)" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 306,
+            columnNumber: 17
+          }, this)
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 291,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: "map-instructions", children: [
+          /* @__PURE__ */ jsxDEV("p", { children: /* @__PURE__ */ jsxDEV("strong", { children: "Turn right on Paldi Cross Roads" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 309,
+            columnNumber: 20
+          }, this) }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 309,
+            columnNumber: 17
+          }, this),
+          /* @__PURE__ */ jsxDEV("p", { className: "sub", children: "Remaining distance: 1.2 km" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 310,
+            columnNumber: 17
+          }, this)
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 308,
+          columnNumber: 15
+        }, this)
+      ] }, void 0, true, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 286,
+        columnNumber: 9
+      }, this) : /* @__PURE__ */ jsxDEV("div", { className: "rider-empty-state", children: /* @__PURE__ */ jsxDEV("p", { children: "No active route map available. Go online and wait for a delivery assignment." }, void 0, false, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 315,
+        columnNumber: 15
+      }, this) }, void 0, false, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 314,
+        columnNumber: 9
+      }, this)
+    ] }, void 0, true, {
+      fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+      lineNumber: 283,
+      columnNumber: 7
+    }, this),
+    activeTab === "history" && /* @__PURE__ */ jsxDEV("div", { className: "rider-tab-content", children: [
+      /* @__PURE__ */ jsxDEV("h3", { children: "Completed Deliveries Log" }, void 0, false, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 324,
+        columnNumber: 11
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { className: "rider-history-summary-card", children: [
+        /* @__PURE__ */ jsxDEV("div", { className: "summary-col", children: [
+          /* @__PURE__ */ jsxDEV("span", { className: "lbl", children: "Total Drops" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 328,
+            columnNumber: 15
+          }, this),
+          /* @__PURE__ */ jsxDEV("span", { className: "val", children: data.completed_deliveries || 0 }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 329,
+            columnNumber: 15
+          }, this)
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 327,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: "summary-divider" }, void 0, false, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 331,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: "summary-col", children: [
+          /* @__PURE__ */ jsxDEV("span", { className: "lbl", children: "Total Earnings" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 333,
+            columnNumber: 15
+          }, this),
+          /* @__PURE__ */ jsxDEV("span", { className: "val", children: [
+            "₹",
+            parseFloat(data.total_earnings || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })
+          ] }, void 0, true, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 334,
+            columnNumber: 15
+          }, this)
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 332,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: "summary-divider" }, void 0, false, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 336,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: "summary-col", children: [
+          /* @__PURE__ */ jsxDEV("span", { className: "lbl", children: "Rating" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 338,
+            columnNumber: 15
+          }, this),
+          /* @__PURE__ */ jsxDEV("span", { className: "val", children: [
+            "⭐ ",
+            parseFloat(data.rating || 5).toFixed(1)
+          ] }, void 0, true, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 339,
+            columnNumber: 15
+          }, this)
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 337,
+          columnNumber: 13
+        }, this)
+      ] }, void 0, true, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 326,
+        columnNumber: 11
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { className: "rider-history-list", children: data.completed_history && data.completed_history.length > 0 ? data.completed_history.map(
+        (item) => /* @__PURE__ */ jsxDEV("div", { className: "history-item", children: [
+          /* @__PURE__ */ jsxDEV("div", { children: [
+            /* @__PURE__ */ jsxDEV("h4", { children: [
+              "Order #",
+              item.order_id
+            ] }, void 0, true, {
+              fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+              lineNumber: 348,
+              columnNumber: 21
+            }, this),
+            /* @__PURE__ */ jsxDEV("p", { children: [
+              item.shop_name,
+              " · ",
+              item.delivery_address
+            ] }, void 0, true, {
+              fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+              lineNumber: 349,
+              columnNumber: 21
+            }, this),
+            /* @__PURE__ */ jsxDEV("span", { className: "history-time-txt", children: item.completed_at }, void 0, false, {
+              fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+              lineNumber: 350,
+              columnNumber: 21
+            }, this)
+          ] }, void 0, true, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 347,
+            columnNumber: 19
+          }, this),
+          /* @__PURE__ */ jsxDEV("div", { className: "history-right", children: [
+            /* @__PURE__ */ jsxDEV("span", { className: "pay-amount", children: [
+              "+ ₹",
+              item.earning.toFixed(2)
+            ] }, void 0, true, {
+              fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+              lineNumber: 353,
+              columnNumber: 21
+            }, this),
+            /* @__PURE__ */ jsxDEV("span", { className: "rating-tag", children: "5.0 / 5" }, void 0, false, {
+              fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+              lineNumber: 354,
+              columnNumber: 21
+            }, this)
+          ] }, void 0, true, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 352,
+            columnNumber: 19
+          }, this)
+        ] }, item.id, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 346,
+          columnNumber: 11
+        }, this)
+      ) : /* @__PURE__ */ jsxDEV("div", { className: "history-item", children: [
+        /* @__PURE__ */ jsxDEV("div", { children: [
+          /* @__PURE__ */ jsxDEV("h4", { children: "Lifetime Deliveries Record" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 361,
+            columnNumber: 19
+          }, this),
+          /* @__PURE__ */ jsxDEV("p", { children: [
+            "Total Drops: ",
+            data.completed_deliveries,
+            " | Standard Earnings: ₹",
+            parseFloat(data.total_earnings || 0).toFixed(2)
+          ] }, void 0, true, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 362,
+            columnNumber: 19
+          }, this),
+          /* @__PURE__ */ jsxDEV("span", { className: "history-time-txt", children: "Historical Seeded Record" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 363,
+            columnNumber: 19
+          }, this)
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 360,
+          columnNumber: 17
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: "history-right", children: [
+          /* @__PURE__ */ jsxDEV("span", { className: "pay-amount", children: [
+            "+ ₹",
+            parseFloat(data.total_earnings || 0).toFixed(2)
+          ] }, void 0, true, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 366,
+            columnNumber: 19
+          }, this),
+          /* @__PURE__ */ jsxDEV("span", { className: "rating-tag", children: "5.0 / 5" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 367,
+            columnNumber: 19
+          }, this)
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 365,
+          columnNumber: 17
+        }, this)
+      ] }, void 0, true, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 359,
+        columnNumber: 11
+      }, this) }, void 0, false, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 343,
+        columnNumber: 11
+      }, this)
+    ] }, void 0, true, {
+      fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+      lineNumber: 323,
+      columnNumber: 7
+    }, this),
+    activeTab === "profile" && /* @__PURE__ */ jsxDEV("div", { className: "rider-tab-content", children: [
+      /* @__PURE__ */ jsxDEV("h3", { children: "Partner Profile Details" }, void 0, false, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 378,
+        columnNumber: 11
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { className: "profile-details-card", children: [
+        /* @__PURE__ */ jsxDEV("h4", { children: "Personal Info" }, void 0, false, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 381,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { children: [
+          /* @__PURE__ */ jsxDEV("strong", { children: "Name:" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 382,
+            columnNumber: 16
+          }, this),
+          " ",
+          data.full_name || user?.username || "Rider Partner"
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 382,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { children: [
+          /* @__PURE__ */ jsxDEV("strong", { children: "Phone:" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 383,
+            columnNumber: 16
+          }, this),
+          " ",
+          data.phone || user?.username?.replace("rider_", "") || "9876500013"
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 383,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { children: [
+          /* @__PURE__ */ jsxDEV("strong", { children: "Email:" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 384,
+            columnNumber: 16
+          }, this),
+          " ",
+          user?.email || "rider@digibazaar.in"
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 384,
+          columnNumber: 13
+        }, this)
+      ] }, void 0, true, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 380,
+        columnNumber: 11
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { className: "profile-details-card", children: [
+        /* @__PURE__ */ jsxDEV("h4", { children: "Performance Stats" }, void 0, false, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 388,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { children: [
+          /* @__PURE__ */ jsxDEV("strong", { children: "Total Completed Deliveries:" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 389,
+            columnNumber: 16
+          }, this),
+          " ",
+          data.completed_deliveries,
+          " drops"
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 389,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { children: [
+          /* @__PURE__ */ jsxDEV("strong", { children: "Total Earnings:" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 390,
+            columnNumber: 16
+          }, this),
+          " ₹",
+          parseFloat(data.total_earnings || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 390,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { children: [
+          /* @__PURE__ */ jsxDEV("strong", { children: "Overall Rating:" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 391,
+            columnNumber: 16
+          }, this),
+          " ⭐ ",
+          parseFloat(data.rating || 5).toFixed(2),
+          " / 5.0"
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 391,
+          columnNumber: 13
+        }, this)
+      ] }, void 0, true, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 387,
+        columnNumber: 11
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { className: "profile-details-card", children: [
+        /* @__PURE__ */ jsxDEV("h4", { children: "Vehicle Info" }, void 0, false, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 395,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { children: [
+          /* @__PURE__ */ jsxDEV("strong", { children: "Vehicle Type:" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 396,
+            columnNumber: 16
+          }, this),
+          " ",
+          data.vehicle_type
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 396,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { children: [
+          /* @__PURE__ */ jsxDEV("strong", { children: "Vehicle Number:" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 397,
+            columnNumber: 16
+          }, this),
+          " ",
+          data.vehicle_number
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 397,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { children: [
+          /* @__PURE__ */ jsxDEV("strong", { children: "Driving License Status:" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 398,
+            columnNumber: 16
+          }, this),
+          " Verified"
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 398,
+          columnNumber: 13
+        }, this)
+      ] }, void 0, true, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 394,
+        columnNumber: 11
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { className: "profile-details-card", children: [
+        /* @__PURE__ */ jsxDEV("h4", { children: "Bank Payout Details" }, void 0, false, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 402,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { children: [
+          /* @__PURE__ */ jsxDEV("strong", { children: "Bank Name:" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 403,
+            columnNumber: 16
+          }, this),
+          " HDFC Bank Ltd"
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 403,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { children: [
+          /* @__PURE__ */ jsxDEV("strong", { children: "Account Number:" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 404,
+            columnNumber: 16
+          }, this),
+          " *******5432"
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 404,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { children: [
+          /* @__PURE__ */ jsxDEV("strong", { children: "UPI ID:" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 405,
+            columnNumber: 16
+          }, this),
+          " ",
+          data.phone || "9876500013",
+          "@okhdfcbank"
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 405,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { children: [
+          /* @__PURE__ */ jsxDEV("strong", { children: "Weekly Payout Status:" }, void 0, false, {
+            fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+            lineNumber: 406,
+            columnNumber: 16
+          }, this),
+          " PENDING (Settled every Monday)"
+        ] }, void 0, true, {
+          fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+          lineNumber: 406,
+          columnNumber: 13
+        }, this)
+      ] }, void 0, true, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 401,
+        columnNumber: 11
+      }, this),
+      /* @__PURE__ */ jsxDEV("button", { className: "rider-logout-btn-card", onClick: logout, children: "LOG OUT FROM PORTAL" }, void 0, false, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 409,
+        columnNumber: 11
+      }, this)
+    ] }, void 0, true, {
+      fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+      lineNumber: 377,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV("footer", { className: "rider-portal-footer", children: [
+      /* @__PURE__ */ jsxDEV("span", { children: [
+        "© ",
+        (/* @__PURE__ */ new Date()).getFullYear(),
+        " DigiBazaar Rider Partner"
+      ] }, void 0, true, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 416,
+        columnNumber: 9
+      }, this),
+      /* @__PURE__ */ jsxDEV("span", { children: "Safe deliveries, trusted local commerce." }, void 0, false, {
+        fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+        lineNumber: 417,
+        columnNumber: 9
+      }, this)
+    ] }, void 0, true, {
+      fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+      lineNumber: 415,
+      columnNumber: 7
+    }, this)
+  ] }, void 0, true, {
+    fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
+    lineNumber: 118,
+    columnNumber: 5
+  }, this);
+}
+_s(RiderPortal, "ZtU+63BiyUaHRyAlW2TlaBVoZRM=", false, function() {
+  return [useAuth, useNavigate];
+});
+_c = RiderPortal;
+var _c;
+$RefreshReg$(_c, "RiderPortal");
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,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VSx5QkFBd0IsU0FBU3RFLFFBQVEsbUNBQTNEO0FBQUE7QUFBQTtBQUFBO0FBQUEsYUFFQTtBQUFBLFNBbENGO0FBQUE7QUFBQTtBQUFBO0FBQUEsV0FtQ0E7QUFBQSxJQUdGLHVCQUFDLFlBQU8sV0FBVSx1QkFDaEI7QUFBQSw2QkFBQyxVQUFLO0FBQUE7QUFBQSxTQUFHLG9CQUFJd0UsS0FBSyxHQUFFQyxZQUFZO0FBQUEsUUFBRTtBQUFBLFdBQWxDO0FBQUE7QUFBQTtBQUFBO0FBQUEsYUFBMkQ7QUFBQSxNQUMzRCx1QkFBQyxVQUFLLHdEQUFOO0FBQUE7QUFBQTtBQUFBO0FBQUEsYUFBOEM7QUFBQSxTQUZoRDtBQUFBO0FBQUE7QUFBQTtBQUFBLFdBR0E7QUFBQSxPQTVTRjtBQUFBO0FBQUE7QUFBQTtBQUFBLFNBNlNBO0FBRUo7QUFBQzVFLEdBM1l1QkQsYUFBVztBQUFBLFVBQ0lGLFNBQ3BCRCxXQUFXO0FBQUE7QUFBQSxLQUZORztBQUFXLElBQUE4RTtBQUFBLGFBQUFBLElBQUEiLCJuYW1lcyI6WyJ1c2VTdGF0ZSIsInVzZUVmZmVjdCIsInVzZU5hdmlnYXRlIiwidXNlQXV0aCIsImZldGNoSnNvbiIsIlJpZGVyUG9ydGFsIiwiX3MiLCJpc0xvZ2dlZEluIiwidXNlciIsImxvZ291dCIsIm5hdmlnYXRlIiwiYWN0aXZlVGFiIiwic2V0QWN0aXZlVGFiIiwibG9jYWxTdG9yYWdlIiwiZ2V0SXRlbSIsImhhbmRsZVRhYkNoYW5nZSIsInRhYiIsIndpbmRvdyIsImFkZEV2ZW50TGlzdGVuZXIiLCJyZW1vdmVFdmVudExpc3RlbmVyIiwiZGF0YSIsInNldERhdGEiLCJpc19vbmxpbmUiLCJyYXRpbmciLCJjb21wbGV0ZWRfZGVsaXZlcmllcyIsInRvdGFsX2Vhcm5pbmdzIiwidmVoaWNsZV90eXBlIiwidmVoaWNsZV9udW1iZXIiLCJhY3RpdmVfYXNzaWdubWVudHMiLCJsb2FkaW5nIiwic2V0TG9hZGluZyIsImVycm9yIiwic2V0RXJyb3IiLCJkb2N1bWVudCIsImJvZHkiLCJjbGFzc0xpc3QiLCJhZGQiLCJyZW1vdmUiLCJsb2FkRGFzaGJvYXJkIiwidGhlbiIsInJlcyIsImRldGFpbCIsInNldEl0ZW0iLCJ0b1N0cmluZyIsImRpc3BhdGNoRXZlbnQiLCJFdmVudCIsImNhdGNoIiwiZmluYWxseSIsInRvZ2dsZU9ubGluZSIsIm1ldGhvZCIsInVwZGF0ZVN0YXR1cyIsImFzc2lnbm1lbnRJZCIsInN0YXR1cyIsIkpTT04iLCJzdHJpbmdpZnkiLCJhc3NpZ25tZW50X2lkIiwiYWN0aXZlIiwidXNlcm5hbWUiLCJwYXJzZUZsb2F0IiwidG9GaXhlZCIsIm9yZGVyX2RldGFpbHMiLCJpZCIsInJlcGxhY2UiLCJ0b1VwcGVyQ2FzZSIsInNob3BfbmFtZSIsInNob3BfYWRkcmVzcyIsInVzZXJfbmFtZSIsImRlbGl2ZXJ5X2FkZHJlc3MiLCJldGEiLCJ0b0xvY2FsZVN0cmluZyIsIm1pbmltdW1GcmFjdGlvbkRpZ2l0cyIsImNvbXBsZXRlZF9oaXN0b3J5IiwibGVuZ3RoIiwibWFwIiwiaXRlbSIsIm9yZGVyX2lkIiwiY29tcGxldGVkX2F0IiwiZWFybmluZyIsImZ1bGxfbmFtZSIsInBob25lIiwiZW1haWwiLCJEYXRlIiwiZ2V0RnVsbFllYXIiLCJfYyJdLCJpZ25vcmVMaXN0IjpbXSwic291cmNlcyI6WyJSaWRlclBvcnRhbC5qc3giXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgdXNlU3RhdGUsIHVzZUVmZmVjdCB9IGZyb20gJ3JlYWN0J1xyXG5pbXBvcnQgeyB1c2VOYXZpZ2F0ZSB9IGZyb20gJ3JlYWN0LXJvdXRlci1kb20nXHJcbmltcG9ydCB7IHVzZUF1dGggfSBmcm9tICcuLi8uLi9jb250ZXh0L0F1dGhDb250ZXh0J1xyXG5pbXBvcnQgeyBmZXRjaEpzb24gfSBmcm9tICcuLi8uLi9hcGkvYXBpJ1xyXG5pbXBvcnQgJy4vUmlkZXJQb3J0YWwuY3NzJ1xyXG5cclxuZXhwb3J0IGRlZmF1bHQgZnVuY3Rpb24gUmlkZXJQb3J0YWwoKSB7XHJcbiAgY29uc3QgeyBpc0xvZ2dlZEluLCB1c2VyLCBsb2dvdXQgfSA9IHVzZUF1dGgoKVxyXG4gIGNvbnN0IG5hdmlnYXRlID0gdXNlTmF2aWdhdGUoKVxyXG4gIFxyXG4gIC8vIFRhYiBTdGF0ZVxyXG4gIGNvbnN0IFthY3RpdmVUYWIsIHNldEFjdGl2ZVRhYl0gPSB1c2VTdGF0ZShcclxuICAgIGxvY2FsU3RvcmFnZS5nZXRJdGVtKCdhY3RpdmVfcmlkZXJfdGFiJykgfHwgJ2hvbWUnXHJcbiAgKVxyXG5cclxuICB1c2VFZmZlY3QoKCkgPT4ge1xyXG4gICAgY29uc3QgaGFuZGxlVGFiQ2hhbmdlID0gKCkgPT4ge1xyXG4gICAgICBjb25zdCB0YWIgPSBsb2NhbFN0b3JhZ2UuZ2V0SXRlbSgnYWN0aXZlX3JpZGVyX3RhYicpIHx8ICdob21lJ1xyXG4gICAgICBzZXRBY3RpdmVUYWIodGFiKVxyXG4gICAgfVxyXG4gICAgd2luZG93LmFkZEV2ZW50TGlzdGVuZXIoJ3JpZGVyVGFiQ2hhbmdlZCcsIGhhbmRsZVRhYkNoYW5nZSlcclxuICAgIHJldHVybiAoKSA9PiB3aW5kb3cucmVtb3ZlRXZlbnRMaXN0ZW5lcigncmlkZXJUYWJDaGFuZ2VkJywgaGFuZGxlVGFiQ2hhbmdlKVxyXG4gIH0sIFtdKVxyXG5cclxuICAvLyBQb3J0YWwgU3RhdGVzXHJcbiAgY29uc3QgW2RhdGEsIHNldERhdGFdID0gdXNlU3RhdGUoe1xyXG4gICAgaXNfb25saW5lOiBmYWxzZSxcclxuICAgIHJhdGluZzogNS4wLFxyXG4gICAgY29tcGxldGVkX2RlbGl2ZXJpZXM6IDAsXHJcbiAgICB0b3RhbF9lYXJuaW5nczogMC4wLFxyXG4gICAgdmVoaWNsZV90eXBlOiAnQmljeWNsZScsXHJcbiAgICB2ZWhpY2xlX251bWJlcjogJ0JJS0UtMTIzJyxcclxuICAgIGFjdGl2ZV9hc3NpZ25tZW50czogW11cclxuICB9KVxyXG4gIGNvbnN0IFtsb2FkaW5nLCBzZXRMb2FkaW5nXSA9IHVzZVN0YXRlKHRydWUpXHJcbiAgY29uc3QgW2Vycm9yLCBzZXRFcnJvcl0gPSB1c2VTdGF0ZSgnJylcclxuXHJcbiAgdXNlRWZmZWN0KCgpID0+IHtcclxuICAgIGRvY3VtZW50LmJvZHkuY2xhc3NMaXN0LmFkZCgncG9ydGFsLXJpZGVyJylcclxuICAgIHJldHVybiAoKSA9PiB7XHJcbiAgICAgIGRvY3VtZW50LmJvZHkuY2xhc3NMaXN0LnJlbW92ZSgncG9ydGFsLXJpZGVyJylcclxuICAgIH1cclxuICB9LCBbXSlcclxuXHJcbiAgY29uc3QgbG9hZERhc2hib2FyZCA9ICgpID0+IHtcclxuICAgIHNldExvYWRpbmcodHJ1ZSlcclxuICAgIGZldGNoSnNvbignL3JpZGVycy9kYXNoYm9hcmQvJylcclxuICAgICAgLnRoZW4ocmVzID0+IHtcclxuICAgICAgICBpZiAocmVzLmRldGFpbCkge1xyXG4gICAgICAgICAgc2V0RXJyb3IocmVzLmRldGFpbClcclxuICAgICAgICB9IGVsc2Uge1xyXG4gICAgICAgICAgc2V0RGF0YShyZXMpXHJcbiAgICAgICAgICBsb2NhbFN0b3JhZ2Uuc2V0SXRlbSgncmlkZXJfb25saW5lX3N0YXR1cycsIHJlcy5pc19vbmxpbmUudG9TdHJpbmcoKSlcclxuICAgICAgICAgIHdpbmRvdy5kaXNwYXRjaEV2ZW50KG5ldyBFdmVudCgncmlkZXJTdGF0dXNVcGRhdGVkJykpXHJcbiAgICAgICAgICBzZXRFcnJvcignJylcclxuICAgICAgICB9XHJcbiAgICAgIH0pXHJcbiAgICAgIC5jYXRjaCgoKSA9PiBzZXRFcnJvcignRmFpbGVkIHRvIGNvbm5lY3QgdG8gUmlkZXIgUG9ydGFsIEFQSScpKVxyXG4gICAgICAuZmluYWxseSgoKSA9PiBzZXRMb2FkaW5nKGZhbHNlKSlcclxuICB9XHJcblxyXG4gIHVzZUVmZmVjdCgoKSA9PiB7XHJcbiAgICBpZiAoIWlzTG9nZ2VkSW4pIHtcclxuICAgICAgbmF2aWdhdGUoJy9sb2dpbicpXHJcbiAgICAgIHJldHVyblxyXG4gICAgfVxyXG4gICAgbG9hZERhc2hib2FyZCgpXHJcbiAgfSwgW2lzTG9nZ2VkSW4sIG5hdmlnYXRlXSlcclxuXHJcbiAgY29uc3QgdG9nZ2xlT25saW5lID0gKCkgPT4ge1xyXG4gICAgZmV0Y2hKc29uKCcvcmlkZXJzL3RvZ2dsZS1vbmxpbmUvJywgeyBtZXRob2Q6ICdQT1NUJyB9KVxyXG4gICAgICAudGhlbigoKSA9PiB7XHJcbiAgICAgICAgbG9hZERhc2hib2FyZCgpXHJcbiAgICAgIH0pXHJcbiAgICAgIC5jYXRjaCgoKSA9PiBzZXRFcnJvcignRmFpbGVkIHRvIHVwZGF0ZSBzdGF0dXMnKSlcclxuICB9XHJcblxyXG4gIGNvbnN0IHVwZGF0ZVN0YXR1cyA9IChhc3NpZ25tZW50SWQsIHN0YXR1cykgPT4ge1xyXG4gICAgZmV0Y2hKc29uKCcvcmlkZXJzL2Fzc2lnbm1lbnRzL3VwZGF0ZS8nLCB7XHJcbiAgICAgIG1ldGhvZDogJ1BPU1QnLFxyXG4gICAgICBib2R5OiBKU09OLnN0cmluZ2lmeSh7IGFzc2lnbm1lbnRfaWQ6IGFzc2lnbm1lbnRJZCwgc3RhdHVzIH0pXHJcbiAgICB9KVxyXG4gICAgICAudGhlbigoKSA9PiBsb2FkRGFzaGJvYXJkKCkpXHJcbiAgICAgIC5jYXRjaCgoKSA9PiBzZXRFcnJvcignRmFpbGVkIHRvIHVwZGF0ZSBzdGF0dXMnKSlcclxuICB9XHJcblxyXG4gIGlmIChsb2FkaW5nKSB7XHJcbiAgICByZXR1cm4gKFxyXG4gICAgICA8ZGl2IGNsYXNzTmFtZT1cInJpZGVyLWxvYWRpbmctc2NyZWVuXCI+XHJcbiAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJzcGlubmVyXCI+PC9kaXY+XHJcbiAgICAgICAgPHA+TG9hZGluZyBSaWRlciBEYXNoYm9hcmQuLi48L3A+XHJcbiAgICAgIDwvZGl2PlxyXG4gICAgKVxyXG4gIH1cclxuXHJcbiAgY29uc3QgYWN0aXZlID0gZGF0YS5hY3RpdmVfYXNzaWdubWVudHMgJiYgZGF0YS5hY3RpdmVfYXNzaWdubWVudHNbMF1cclxuXHJcbiAgcmV0dXJuIChcclxuICAgIDxkaXYgY2xhc3NOYW1lPVwicmlkZXItcG9ydGFsIGZhZGUtaW5cIj5cclxuICAgICAgey8qIOKUgOKUgCBUQUIgMTogSE9NRSBXT1JLU1BBQ0Ug4pSA4pSAICovfVxyXG4gICAgICB7YWN0aXZlVGFiID09PSAnaG9tZScgJiYgKFxyXG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwicmlkZXItdGFiLWNvbnRlbnRcIj5cclxuICAgICAgICAgIHsvKiBIZWFkZXIgcHJvZmlsZSBzdW1tYXJ5IGNhcmQgKi99XHJcbiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInJpZGVyLWhlYWRlci1jYXJkXCI+XHJcbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwicmlkZXItaGVhZGVyLXByb2ZpbGVcIj5cclxuICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInJpZGVyLWF2YXRhclwiPlJpZGVyPC9kaXY+XHJcbiAgICAgICAgICAgICAgPGRpdj5cclxuICAgICAgICAgICAgICAgIDxoMj5IZWxsbywge3VzZXI/LnVzZXJuYW1lIHx8ICdQYXJ0bmVyJ30hPC9oMj5cclxuICAgICAgICAgICAgICAgIDxwPntkYXRhLnZlaGljbGVfdHlwZX0gwrcge2RhdGEudmVoaWNsZV9udW1iZXJ9PC9wPlxyXG4gICAgICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgICAgICA8L2Rpdj5cclxuICAgICAgICAgIDwvZGl2PlxyXG5cclxuICAgICAgICAgIHsvKiBCaWcgT25saW5lL09mZmxpbmUgVG9nZ2xlIEJveCAqL31cclxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPXtgcmlkZXItb25saW5lLXRvZ2dsZS1ib3ggJHtkYXRhLmlzX29ubGluZSA/ICdvbmxpbmUnIDogJ29mZmxpbmUnfWB9PlxyXG4gICAgICAgICAgICB7ZGF0YS5pc19vbmxpbmUgPyAoXHJcbiAgICAgICAgICAgICAgPD5cclxuICAgICAgICAgICAgICAgIDxoMz5Zb3UncmUgT05MSU5FPC9oMz5cclxuICAgICAgICAgICAgICAgIDxwPlJlY2VpdmluZyBvcmRlcnMgYXV0b21hdGljYWxseSBuZWFyIFBhbGRpLCBBaG1lZGFiYWQuPC9wPlxyXG4gICAgICAgICAgICAgICAgPGJ1dHRvbiBjbGFzc05hbWU9XCJ0b2dnbGUtYnRuIGdvLW9mZmxpbmVcIiBvbkNsaWNrPXt0b2dnbGVPbmxpbmV9PlxyXG4gICAgICAgICAgICAgICAgICBHTyBPRkZMSU5FXHJcbiAgICAgICAgICAgICAgICA8L2J1dHRvbj5cclxuICAgICAgICAgICAgICA8Lz5cclxuICAgICAgICAgICAgKSA6IChcclxuICAgICAgICAgICAgICA8PlxyXG4gICAgICAgICAgICAgICAgPGgzPllvdSdyZSBPRkZMSU5FPC9oMz5cclxuICAgICAgICAgICAgICAgIDxwPkdvIG9ubGluZSB0byBzdGFydCByZWNlaXZpbmcgYXV0by1hc3NpZ25lZCBkZWxpdmVyeSBqb2JzLjwvcD5cclxuICAgICAgICAgICAgICAgIDxidXR0b24gY2xhc3NOYW1lPVwidG9nZ2xlLWJ0biBnby1vbmxpbmVcIiBvbkNsaWNrPXt0b2dnbGVPbmxpbmV9PlxyXG4gICAgICAgICAgICAgICAgICBHTyBPTkxJTkVcclxuICAgICAgICAgICAgICAgIDwvYnV0dG9uPlxyXG4gICAgICAgICAgICAgIDwvPlxyXG4gICAgICAgICAgICApfVxyXG4gICAgICAgICAgPC9kaXY+XHJcblxyXG4gICAgICAgICAgey8qIFBlcmZvcm1hbmNlIFN1bW1hcnkgQ2FyZHMgKi99XHJcbiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInJpZGVyLXN0YXRzLWdyaWRcIj5cclxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJyaWRlci1zdGF0LWNhcmRcIj5cclxuICAgICAgICAgICAgICA8aDQ+VG9kYXkncyBQYXlvdXQ8L2g0PlxyXG4gICAgICAgICAgICAgIDxoMz7igrl7cGFyc2VGbG9hdChkYXRhLnRvdGFsX2Vhcm5pbmdzKS50b0ZpeGVkKDIpfTwvaDM+XHJcbiAgICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInJpZGVyLXN0YXQtY2FyZFwiPlxyXG4gICAgICAgICAgICAgIDxoND5EZWxpdmVyaWVzPC9oND5cclxuICAgICAgICAgICAgICA8aDM+e2RhdGEuY29tcGxldGVkX2RlbGl2ZXJpZXN9IGRyb3BzPC9oMz5cclxuICAgICAgICAgICAgPC9kaXY+XHJcbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwicmlkZXItc3RhdC1jYXJkXCI+XHJcbiAgICAgICAgICAgICAgPGg0PlJpZGVyIFJhdGluZzwvaDQ+XHJcbiAgICAgICAgICAgICAgPGgzPntwYXJzZUZsb2F0KGRhdGEucmF0aW5nKS50b0ZpeGVkKDEpfSAvIDU8L2gzPlxyXG4gICAgICAgICAgICA8L2Rpdj5cclxuICAgICAgICAgIDwvZGl2PlxyXG5cclxuICAgICAgICAgIHsvKiBBY3RpdmUgSm9iIEFzc2lnbm1lbnQgU2VjdGlvbiAqL31cclxuICAgICAgICAgIHthY3RpdmUgPyAoXHJcbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwicmlkZXItYWN0aXZlLWpvYi1jYXJkXCI+XHJcbiAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJqb2ItY2FyZC1oZWFkZXJcIj5cclxuICAgICAgICAgICAgICAgIDxoMz5BY3RpdmUgQXNzaWdubWVudCAoT3JkZXIgI3thY3RpdmUub3JkZXJfZGV0YWlscy5pZH0pPC9oMz5cclxuICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cImpvYi1zdGF0dXMtcGlsbFwiPnthY3RpdmUuc3RhdHVzLnJlcGxhY2UoJ18nLCAnICcpLnRvVXBwZXJDYXNlKCl9PC9zcGFuPlxyXG4gICAgICAgICAgICAgIDwvZGl2PlxyXG5cclxuICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImpvYi1hZGRyZXNzZXNcIj5cbiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImFkZHJlc3Mtcm93XCI+XHJcbiAgICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cImNpcmNsZS1kb3Qgc2hvcFwiPjwvc3Bhbj5cclxuICAgICAgICAgICAgICAgICAgPGRpdj5cclxuICAgICAgICAgICAgICAgICAgICA8c3Ryb25nPlBpY2t1cDoge2FjdGl2ZS5vcmRlcl9kZXRhaWxzLnNob3BfbmFtZX08L3N0cm9uZz5cclxuICAgICAgICAgICAgICAgICAgICA8cD57YWN0aXZlLm9yZGVyX2RldGFpbHMuc2hvcF9hZGRyZXNzIHx8ICdQYWxkaSBGcmVzaCBNYXJ0LCBHcm91bmQgRmxvb3IsIEFobWVkYWJhZCd9PC9wPlxyXG4gICAgICAgICAgICAgICAgICA8L2Rpdj5cclxuICAgICAgICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJhZGRyZXNzLXJvd1wiPlxyXG4gICAgICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJjaXJjbGUtZG90IGN1c3RcIj48L3NwYW4+XHJcbiAgICAgICAgICAgICAgICAgIDxkaXY+XHJcbiAgICAgICAgICAgICAgICAgICAgPHN0cm9uZz5Ecm9wOiB7YWN0aXZlLm9yZGVyX2RldGFpbHMudXNlcl9uYW1lfTwvc3Ryb25nPlxyXG4gICAgICAgICAgICAgICAgICAgIDxwPnthY3RpdmUub3JkZXJfZGV0YWlscy5kZWxpdmVyeV9hZGRyZXNzfTwvcD5cclxuICAgICAgICAgICAgICAgICAgPC9kaXY+XHJcbiAgICAgICAgICAgICAgICA8L2Rpdj5cclxuICAgICAgICAgICAgICA8L2Rpdj5cblxuICAgICAgICAgICAgICA8c2VjdGlvbiBjbGFzc05hbWU9XCJkZWxpdmVyeS1wcm9vZi1jYXJkXCIgYXJpYS1sYWJlbD1cIkRlbGl2ZXJ5IHBheWxvYWQgYW5kIGNvbmZpcm1hdGlvblwiPlxuICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwicHJvb2YtY2FyZC1oZWFkaW5nXCI+XG4gICAgICAgICAgICAgICAgICA8ZGl2PlxuICAgICAgICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJwcm9vZi1leWVicm93XCI+RGVsaXZlcnkgcGF5bG9hZDwvc3Bhbj5cbiAgICAgICAgICAgICAgICAgICAgPGg0PlBhY2thZ2UgJiBoYW5kb3ZlciByZWNvcmQ8L2g0PlxuICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJwcm9vZi1jb2RlXCI+I3thY3RpdmUub3JkZXJfZGV0YWlscy5pZH08L3NwYW4+XG4gICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJwcm9vZi1kZXRhaWxzXCI+XG4gICAgICAgICAgICAgICAgICA8c3Bhbj48c3Ryb25nPkNvbnRlbnRzPC9zdHJvbmc+IFNlYWxlZCBvcmRlciBwYWNrYWdlPC9zcGFuPlxuICAgICAgICAgICAgICAgICAgPHNwYW4+PHN0cm9uZz5SZWNpcGllbnQ8L3N0cm9uZz4ge2FjdGl2ZS5vcmRlcl9kZXRhaWxzLnVzZXJfbmFtZX08L3NwYW4+XG4gICAgICAgICAgICAgICAgICA8c3Bhbj48c3Ryb25nPlZlcmlmaWNhdGlvbjwvc3Ryb25nPiBPVFAgYXQgZG9vcnN0ZXA8L3NwYW4+XG4gICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJzaWduYXR1cmUtcm93XCI+XG4gICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInNpZ25hdHVyZS1saW5lXCI+PHNwYW4+UmVjaXBpZW50IHNpZ25hdHVyZSAvIGNvbmZpcm1hdGlvbjwvc3Bhbj48L2Rpdj5cbiAgICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cInNpZ25hdHVyZS1zdGF0ZVwiPnthY3RpdmUuc3RhdHVzID09PSAnZGVsaXZlcmVkJyA/ICdDb25maXJtZWQnIDogJ0F3YWl0aW5nIGRlbGl2ZXJ5J308L3NwYW4+XG4gICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgIDwvc2VjdGlvbj5cblxyXG4gICAgICAgICAgICAgIHsvKiBEeW5hbWljIEFjdGlvbiBCdXR0b25zICovfVxyXG4gICAgICAgICAgICAgIHthY3RpdmUuc3RhdHVzID09PSAnYXNzaWduZWQnICYmIChcclxuICAgICAgICAgICAgICAgIDxidXR0b24gXHJcbiAgICAgICAgICAgICAgICAgIGNsYXNzTmFtZT1cImpvYi1hY3Rpb24tYnRuIHBpY2t1cFwiXHJcbiAgICAgICAgICAgICAgICAgIG9uQ2xpY2s9eygpID0+IHVwZGF0ZVN0YXR1cyhhY3RpdmUuaWQsICdwaWNrZWRfdXAnKX1cclxuICAgICAgICAgICAgICAgID5cclxuICAgICAgICAgICAgICAgICAgQ29uZmlybSBBcnJpdmVkICYgUGlja2VkIFVwXHJcbiAgICAgICAgICAgICAgICA8L2J1dHRvbj5cclxuICAgICAgICAgICAgICApfVxyXG5cclxuICAgICAgICAgICAgICB7YWN0aXZlLnN0YXR1cyA9PT0gJ3BpY2tlZF91cCcgJiYgKFxyXG4gICAgICAgICAgICAgICAgPGJ1dHRvbiBcclxuICAgICAgICAgICAgICAgICAgY2xhc3NOYW1lPVwiam9iLWFjdGlvbi1idG4gZGVsaXZlclwiXHJcbiAgICAgICAgICAgICAgICAgIG9uQ2xpY2s9eygpID0+IHVwZGF0ZVN0YXR1cyhhY3RpdmUuaWQsICdkZWxpdmVyZWQnKX1cclxuICAgICAgICAgICAgICAgID5cclxuICAgICAgICAgICAgICAgICAgQ29uZmlybSBEZWxpdmVyZWRcclxuICAgICAgICAgICAgICAgIDwvYnV0dG9uPlxyXG4gICAgICAgICAgICAgICl9XHJcblxyXG4gICAgICAgICAgICAgIDxidXR0b24gXHJcbiAgICAgICAgICAgICAgICBjbGFzc05hbWU9XCJyaWRlci1uYXYtYnV0dG9uXCJcclxuICAgICAgICAgICAgICAgIG9uQ2xpY2s9eygpID0+IHtcclxuICAgICAgICAgICAgICAgICAgbG9jYWxTdG9yYWdlLnNldEl0ZW0oJ2FjdGl2ZV9yaWRlcl90YWInLCAnbWFwJylcclxuICAgICAgICAgICAgICAgICAgd2luZG93LmRpc3BhdGNoRXZlbnQobmV3IEV2ZW50KCdyaWRlclRhYkNoYW5nZWQnKSlcclxuICAgICAgICAgICAgICAgIH19XHJcbiAgICAgICAgICAgICAgPlxyXG4gICAgICAgICAgICAgICAgT3BlbiBOYXZpZ2F0aW9uIE1hcFxyXG4gICAgICAgICAgICAgIDwvYnV0dG9uPlxyXG4gICAgICAgICAgICA8L2Rpdj5cclxuICAgICAgICAgICkgOiAoXHJcbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwicmlkZXItbm8tam9icy1jYXJkXCI+XHJcbiAgICAgICAgICAgICAgPHA+V2FpdGluZyBmb3IgYXV0b21hdGljIG9yZGVyIGFzc2lnbm1lbnQuLi48L3A+XHJcbiAgICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgICAgKX1cclxuICAgICAgICA8L2Rpdj5cclxuICAgICAgKX1cclxuXHJcbiAgICAgIHsvKiDilIDilIAgVEFCIDI6IERFTElWRVJJRVMgQ0hFQ0tMSVNUIOKUgOKUgCAqL31cclxuICAgICAge2FjdGl2ZVRhYiA9PT0gJ2RlbGl2ZXJpZXMnICYmIChcclxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInJpZGVyLXRhYi1jb250ZW50XCI+XHJcbiAgICAgICAgICA8aDM+TXkgRGVsaXZlcnkgVGFza3M8L2gzPlxyXG4gICAgICAgICAge2FjdGl2ZSA/IChcclxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJkZWxpdmVyaWVzLWxpc3RcIj5cclxuICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImRlbGl2ZXJ5LXRhc2staXRlbSBhY3RpdmVcIj5cclxuICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwidGFzay1iYWRnZSBhY3RpdmVcIj5BQ1RJVkUgSk9CPC9kaXY+XHJcbiAgICAgICAgICAgICAgICA8aDQ+T3JkZXIgI3thY3RpdmUub3JkZXJfZGV0YWlscy5pZH08L2g0PlxyXG4gICAgICAgICAgICAgICAgPHA+PHN0cm9uZz5TaG9wOjwvc3Ryb25nPiB7YWN0aXZlLm9yZGVyX2RldGFpbHMuc2hvcF9uYW1lfTwvcD5cclxuICAgICAgICAgICAgICAgIDxwPjxzdHJvbmc+RnVsZmlsbG1lbnQgU3RhdHVzOjwvc3Ryb25nPiB7YWN0aXZlLnN0YXR1cy50b1VwcGVyQ2FzZSgpfTwvcD5cclxuICAgICAgICAgICAgICAgIDxidXR0b24gXHJcbiAgICAgICAgICAgICAgICAgIGNsYXNzTmFtZT1cInRhc2stbWFuYWdlLWJ0blwiXHJcbiAgICAgICAgICAgICAgICAgIG9uQ2xpY2s9eygpID0+IHtcclxuICAgICAgICAgICAgICAgICAgICBsb2NhbFN0b3JhZ2Uuc2V0SXRlbSgnYWN0aXZlX3JpZGVyX3RhYicsICdob21lJylcclxuICAgICAgICAgICAgICAgICAgICB3aW5kb3cuZGlzcGF0Y2hFdmVudChuZXcgRXZlbnQoJ3JpZGVyVGFiQ2hhbmdlZCcpKVxyXG4gICAgICAgICAgICAgICAgICB9fVxyXG4gICAgICAgICAgICAgICAgPlxyXG4gICAgICAgICAgICAgICAgICBNYW5hZ2UgU3RhdHVzXHJcbiAgICAgICAgICAgICAgICA8L2J1dHRvbj5cclxuICAgICAgICAgICAgICA8L2Rpdj5cclxuICAgICAgICAgICAgPC9kaXY+XHJcbiAgICAgICAgICApIDogKFxyXG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInJpZGVyLWVtcHR5LXN0YXRlXCI+XHJcbiAgICAgICAgICAgICAgPHA+Tm8gYWN0aXZlIGRlbGl2ZXJ5IGFzc2lnbm1lbnRzIGZvdW5kIGF0IHRoaXMgbW9tZW50LjwvcD5cclxuICAgICAgICAgICAgPC9kaXY+XHJcbiAgICAgICAgICApfVxyXG4gICAgICAgIDwvZGl2PlxyXG4gICAgICApfVxyXG5cclxuICAgICAgey8qIOKUgOKUgCBUQUIgMzogRlVMTCBTQ1JFRU4gTkFWSUdBVElPTiBNQVAg4pSA4pSAICovfVxyXG4gICAgICB7YWN0aXZlVGFiID09PSAnbWFwJyAmJiAoXHJcbiAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJyaWRlci10YWItY29udGVudCBmdWxsLW1hcC10YWJcIj5cclxuICAgICAgICAgIDxoMz5TaW11bGF0ZWQgUm91dGUgTmF2aWdhdGlvbiBNYXA8L2gzPlxyXG4gICAgICAgICAge2FjdGl2ZSA/IChcclxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmdWxsLW1hcC1jYXJkXCI+XHJcbiAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJtYXAtbWV0YS1yb3dcIj5cclxuICAgICAgICAgICAgICAgIDxzcGFuPlBhbGRpLCBBaG1lZGFiYWQgTWFwIChTaW11bGF0ZWQgTGl2ZSk8L3NwYW4+XHJcbiAgICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJldGEtYmFkZ2VcIj5FVEE6IHthY3RpdmUuZXRhIHx8IDE1fSBtaW5zPC9zcGFuPlxyXG4gICAgICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgICAgICAgIDxzdmcgdmlld0JveD1cIjAgMCA0MDAgMjQwXCIgY2xhc3NOYW1lPVwicmlkZXItbWFwLXN2Z1wiPlxyXG4gICAgICAgICAgICAgICAgey8qIFJvYWRzICovfVxyXG4gICAgICAgICAgICAgICAgPHBhdGggZD1cIk0gNTAgMTIwIFEgMjAwIDQwIDM1MCAxMjBcIiBmaWxsPVwibm9uZVwiIHN0cm9rZT1cIiMzMzQxNTVcIiBzdHJva2VXaWR0aD1cIjEyXCIgc3Ryb2tlTGluZWNhcD1cInJvdW5kXCIgLz5cclxuICAgICAgICAgICAgICAgIDxwYXRoIGQ9XCJNIDUwIDEyMCBRIDIwMCA0MCAzNTAgMTIwXCIgZmlsbD1cIm5vbmVcIiBzdHJva2U9XCIjNjM2NmYxXCIgc3Ryb2tlV2lkdGg9XCI0XCIgc3Ryb2tlRGFzaGFycmF5PVwiOCw4XCIgc3Ryb2tlTGluZWNhcD1cInJvdW5kXCIgLz5cclxuICAgICAgICAgICAgICAgIFxyXG4gICAgICAgICAgICAgICAgey8qIFNob3AgTm9kZSAqL31cclxuICAgICAgICAgICAgICAgIDxjaXJjbGUgY3g9XCI1MFwiIGN5PVwiMTIwXCIgcj1cIjE0XCIgZmlsbD1cIiMxZTI5M2JcIiBzdHJva2U9XCIjMDg5MWIyXCIgc3Ryb2tlV2lkdGg9XCIzXCIgLz5cclxuICAgICAgICAgICAgICAgIDx0ZXh0IHg9XCI1MFwiIHk9XCIxMDBcIiBmaWxsPVwiI2Y4ZmFmY1wiIGZvbnRTaXplPVwiMTBcIiBmb250V2VpZ2h0PVwiYm9sZFwiIHRleHRBbmNob3I9XCJtaWRkbGVcIj5QYWxkaSBTdG9yZTwvdGV4dD5cclxuICAgICAgICAgICAgICAgIFxyXG4gICAgICAgICAgICAgICAgey8qIEN1c3RvbWVyIE5vZGUgKi99XHJcbiAgICAgICAgICAgICAgICA8Y2lyY2xlIGN4PVwiMzUwXCIgY3k9XCIxMjBcIiByPVwiMTRcIiBmaWxsPVwiIzFlMjkzYlwiIHN0cm9rZT1cIiMxMGI5ODFcIiBzdHJva2VXaWR0aD1cIjNcIiAvPlxyXG4gICAgICAgICAgICAgICAgPHRleHQgeD1cIjM1MFwiIHk9XCIxMDBcIiBmaWxsPVwiI2Y4ZmFmY1wiIGZvbnRTaXplPVwiMTBcIiBmb250V2VpZ2h0PVwiYm9sZFwiIHRleHRBbmNob3I9XCJtaWRkbGVcIj5DdXN0b21lcjwvdGV4dD5cclxuICAgICAgICAgICAgICAgIFxyXG4gICAgICAgICAgICAgICAgey8qIFJpZGVyIE5vZGUgKi99XHJcbiAgICAgICAgICAgICAgICA8Y2lyY2xlIGN4PVwiMjAwXCIgY3k9XCI4MFwiIHI9XCIxMFwiIGZpbGw9XCIjNjM2NmYxXCIgLz5cclxuICAgICAgICAgICAgICAgIDx0ZXh0IHg9XCIyMDBcIiB5PVwiNjVcIiBmaWxsPVwiIzYzNjZmMVwiIGZvbnRTaXplPVwiMTFcIiBmb250V2VpZ2h0PVwiYm9sZFwiIHRleHRBbmNob3I9XCJtaWRkbGVcIj5SaWRlciAoWW91KTwvdGV4dD5cclxuICAgICAgICAgICAgICA8L3N2Zz5cclxuICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cIm1hcC1pbnN0cnVjdGlvbnNcIj5cclxuICAgICAgICAgICAgICAgIDxwPjxzdHJvbmc+VHVybiByaWdodCBvbiBQYWxkaSBDcm9zcyBSb2Fkczwvc3Ryb25nPjwvcD5cclxuICAgICAgICAgICAgICAgIDxwIGNsYXNzTmFtZT1cInN1YlwiPlJlbWFpbmluZyBkaXN0YW5jZTogMS4yIGttPC9wPlxyXG4gICAgICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgICAgICA8L2Rpdj5cclxuICAgICAgICAgICkgOiAoXHJcbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwicmlkZXItZW1wdHktc3RhdGVcIj5cclxuICAgICAgICAgICAgICA8cD5ObyBhY3RpdmUgcm91dGUgbWFwIGF2YWlsYWJsZS4gR28gb25saW5lIGFuZCB3YWl0IGZvciBhIGRlbGl2ZXJ5IGFzc2lnbm1lbnQuPC9wPlxyXG4gICAgICAgICAgICA8L2Rpdj5cclxuICAgICAgICAgICl9XHJcbiAgICAgICAgPC9kaXY+XHJcbiAgICAgICl9XHJcblxyXG4gICAgICB7Lyog4pSA4pSAIFRBQiA0OiBERUxJVkVSSUVTIEhJU1RPUlkgTE9HIOKUgOKUgCAqL31cclxuICAgICAge2FjdGl2ZVRhYiA9PT0gJ2hpc3RvcnknICYmIChcclxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInJpZGVyLXRhYi1jb250ZW50XCI+XHJcbiAgICAgICAgICA8aDM+Q29tcGxldGVkIERlbGl2ZXJpZXMgTG9nPC9oMz5cclxuICAgICAgICAgIFxyXG4gICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJyaWRlci1oaXN0b3J5LXN1bW1hcnktY2FyZFwiPlxyXG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInN1bW1hcnktY29sXCI+XHJcbiAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwibGJsXCI+VG90YWwgRHJvcHM8L3NwYW4+XHJcbiAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidmFsXCI+e2RhdGEuY29tcGxldGVkX2RlbGl2ZXJpZXMgfHwgMH08L3NwYW4+XHJcbiAgICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInN1bW1hcnktZGl2aWRlclwiPjwvZGl2PlxyXG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInN1bW1hcnktY29sXCI+XHJcbiAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwibGJsXCI+VG90YWwgRWFybmluZ3M8L3NwYW4+XHJcbiAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidmFsXCI+4oK5e3BhcnNlRmxvYXQoZGF0YS50b3RhbF9lYXJuaW5ncyB8fCAwKS50b0xvY2FsZVN0cmluZygnZW4tSU4nLCB7IG1pbmltdW1GcmFjdGlvbkRpZ2l0czogMiB9KX08L3NwYW4+XHJcbiAgICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInN1bW1hcnktZGl2aWRlclwiPjwvZGl2PlxyXG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInN1bW1hcnktY29sXCI+XHJcbiAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwibGJsXCI+UmF0aW5nPC9zcGFuPlxyXG4gICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cInZhbFwiPuKtkCB7cGFyc2VGbG9hdChkYXRhLnJhdGluZyB8fCA1LjApLnRvRml4ZWQoMSl9PC9zcGFuPlxyXG4gICAgICAgICAgICA8L2Rpdj5cclxuICAgICAgICAgIDwvZGl2PlxyXG5cclxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwicmlkZXItaGlzdG9yeS1saXN0XCI+XHJcbiAgICAgICAgICAgIHtkYXRhLmNvbXBsZXRlZF9oaXN0b3J5ICYmIGRhdGEuY29tcGxldGVkX2hpc3RvcnkubGVuZ3RoID4gMCA/IChcclxuICAgICAgICAgICAgICBkYXRhLmNvbXBsZXRlZF9oaXN0b3J5Lm1hcChpdGVtID0+IChcclxuICAgICAgICAgICAgICAgIDxkaXYga2V5PXtpdGVtLmlkfSBjbGFzc05hbWU9XCJoaXN0b3J5LWl0ZW1cIj5cclxuICAgICAgICAgICAgICAgICAgPGRpdj5cclxuICAgICAgICAgICAgICAgICAgICA8aDQ+T3JkZXIgI3tpdGVtLm9yZGVyX2lkfTwvaDQ+XHJcbiAgICAgICAgICAgICAgICAgICAgPHA+e2l0ZW0uc2hvcF9uYW1lfSDCtyB7aXRlbS5kZWxpdmVyeV9hZGRyZXNzfTwvcD5cclxuICAgICAgICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJoaXN0b3J5LXRpbWUtdHh0XCI+e2l0ZW0uY29tcGxldGVkX2F0fTwvc3Bhbj5cclxuICAgICAgICAgICAgICAgICAgPC9kaXY+XHJcbiAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiaGlzdG9yeS1yaWdodFwiPlxyXG4gICAgICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cInBheS1hbW91bnRcIj4rIOKCuXtpdGVtLmVhcm5pbmcudG9GaXhlZCgyKX08L3NwYW4+XHJcbiAgICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwicmF0aW5nLXRhZ1wiPjUuMCAvIDU8L3NwYW4+XHJcbiAgICAgICAgICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgICAgICAgICAgPC9kaXY+XHJcbiAgICAgICAgICAgICAgKSlcclxuICAgICAgICAgICAgKSA6IChcclxuICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImhpc3RvcnktaXRlbVwiPlxyXG4gICAgICAgICAgICAgICAgPGRpdj5cclxuICAgICAgICAgICAgICAgICAgPGg0PkxpZmV0aW1lIERlbGl2ZXJpZXMgUmVjb3JkPC9oND5cclxuICAgICAgICAgICAgICAgICAgPHA+VG90YWwgRHJvcHM6IHtkYXRhLmNvbXBsZXRlZF9kZWxpdmVyaWVzfSB8IFN0YW5kYXJkIEVhcm5pbmdzOiDigrl7cGFyc2VGbG9hdChkYXRhLnRvdGFsX2Vhcm5pbmdzIHx8IDApLnRvRml4ZWQoMil9PC9wPlxyXG4gICAgICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJoaXN0b3J5LXRpbWUtdHh0XCI+SGlzdG9yaWNhbCBTZWVkZWQgUmVjb3JkPC9zcGFuPlxyXG4gICAgICAgICAgICAgICAgPC9kaXY+XHJcbiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImhpc3RvcnktcmlnaHRcIj5cclxuICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwicGF5LWFtb3VudFwiPisg4oK5e3BhcnNlRmxvYXQoZGF0YS50b3RhbF9lYXJuaW5ncyB8fCAwKS50b0ZpeGVkKDIpfTwvc3Bhbj5cclxuICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwicmF0aW5nLXRhZ1wiPjUuMCAvIDU8L3NwYW4+XHJcbiAgICAgICAgICAgICAgICA8L2Rpdj5cclxuICAgICAgICAgICAgICA8L2Rpdj5cclxuICAgICAgICAgICAgKX1cclxuICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgIDwvZGl2PlxyXG4gICAgICApfVxyXG5cclxuICAgICAgey8qIOKUgOKUgCBUQUIgNTogUFJPRklMRSDilIDilIAgKi99XHJcbiAgICAgIHthY3RpdmVUYWIgPT09ICdwcm9maWxlJyAmJiAoXG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwicmlkZXItdGFiLWNvbnRlbnRcIj5cclxuICAgICAgICAgIDxoMz5QYXJ0bmVyIFByb2ZpbGUgRGV0YWlsczwvaDM+XHJcbiAgICAgICAgICBcclxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwicHJvZmlsZS1kZXRhaWxzLWNhcmRcIj5cclxuICAgICAgICAgICAgPGg0PlBlcnNvbmFsIEluZm88L2g0PlxyXG4gICAgICAgICAgICA8cD48c3Ryb25nPk5hbWU6PC9zdHJvbmc+IHtkYXRhLmZ1bGxfbmFtZSB8fCB1c2VyPy51c2VybmFtZSB8fCAnUmlkZXIgUGFydG5lcid9PC9wPlxyXG4gICAgICAgICAgICA8cD48c3Ryb25nPlBob25lOjwvc3Ryb25nPiB7ZGF0YS5waG9uZSB8fCB1c2VyPy51c2VybmFtZT8ucmVwbGFjZSgncmlkZXJfJywgJycpIHx8ICc5ODc2NTAwMDEzJ308L3A+XHJcbiAgICAgICAgICAgIDxwPjxzdHJvbmc+RW1haWw6PC9zdHJvbmc+IHt1c2VyPy5lbWFpbCB8fCAncmlkZXJAZGlnaWJhemFhci5pbid9PC9wPlxyXG4gICAgICAgICAgPC9kaXY+XHJcblxyXG4gICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJwcm9maWxlLWRldGFpbHMtY2FyZFwiPlxyXG4gICAgICAgICAgICA8aDQ+UGVyZm9ybWFuY2UgU3RhdHM8L2g0PlxyXG4gICAgICAgICAgICA8cD48c3Ryb25nPlRvdGFsIENvbXBsZXRlZCBEZWxpdmVyaWVzOjwvc3Ryb25nPiB7ZGF0YS5jb21wbGV0ZWRfZGVsaXZlcmllc30gZHJvcHM8L3A+XHJcbiAgICAgICAgICAgIDxwPjxzdHJvbmc+VG90YWwgRWFybmluZ3M6PC9zdHJvbmc+IOKCuXtwYXJzZUZsb2F0KGRhdGEudG90YWxfZWFybmluZ3MgfHwgMCkudG9Mb2NhbGVTdHJpbmcoJ2VuLUlOJywgeyBtaW5pbXVtRnJhY3Rpb25EaWdpdHM6IDIgfSl9PC9wPlxyXG4gICAgICAgICAgICA8cD48c3Ryb25nPk92ZXJhbGwgUmF0aW5nOjwvc3Ryb25nPiDirZAge3BhcnNlRmxvYXQoZGF0YS5yYXRpbmcgfHwgNS4wKS50b0ZpeGVkKDIpfSAvIDUuMDwvcD5cclxuICAgICAgICAgIDwvZGl2PlxyXG5cclxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwicHJvZmlsZS1kZXRhaWxzLWNhcmRcIj5cclxuICAgICAgICAgICAgPGg0PlZlaGljbGUgSW5mbzwvaDQ+XHJcbiAgICAgICAgICAgIDxwPjxzdHJvbmc+VmVoaWNsZSBUeXBlOjwvc3Ryb25nPiB7ZGF0YS52ZWhpY2xlX3R5cGV9PC9wPlxyXG4gICAgICAgICAgICA8cD48c3Ryb25nPlZlaGljbGUgTnVtYmVyOjwvc3Ryb25nPiB7ZGF0YS52ZWhpY2xlX251bWJlcn08L3A+XHJcbiAgICAgICAgICAgIDxwPjxzdHJvbmc+RHJpdmluZyBMaWNlbnNlIFN0YXR1czo8L3N0cm9uZz4gVmVyaWZpZWQ8L3A+XHJcbiAgICAgICAgICA8L2Rpdj5cclxuXHJcbiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInByb2ZpbGUtZGV0YWlscy1jYXJkXCI+XHJcbiAgICAgICAgICAgIDxoND5CYW5rIFBheW91dCBEZXRhaWxzPC9oND5cclxuICAgICAgICAgICAgPHA+PHN0cm9uZz5CYW5rIE5hbWU6PC9zdHJvbmc+IEhERkMgQmFuayBMdGQ8L3A+XHJcbiAgICAgICAgICAgIDxwPjxzdHJvbmc+QWNjb3VudCBOdW1iZXI6PC9zdHJvbmc+ICoqKioqKio1NDMyPC9wPlxyXG4gICAgICAgICAgICA8cD48c3Ryb25nPlVQSSBJRDo8L3N0cm9uZz4geyhkYXRhLnBob25lIHx8ICc5ODc2NTAwMDEzJyl9QG9raGRmY2Jhbms8L3A+XHJcbiAgICAgICAgICAgIDxwPjxzdHJvbmc+V2Vla2x5IFBheW91dCBTdGF0dXM6PC9zdHJvbmc+IFBFTkRJTkcgKFNldHRsZWQgZXZlcnkgTW9uZGF5KTwvcD5cclxuICAgICAgICAgIDwvZGl2PlxyXG5cclxuICAgICAgICAgIDxidXR0b24gY2xhc3NOYW1lPVwicmlkZXItbG9nb3V0LWJ0bi1jYXJkXCIgb25DbGljaz17bG9nb3V0fT5cclxuICAgICAgICAgICAgTE9HIE9VVCBGUk9NIFBPUlRBTFxyXG4gICAgICAgICAgPC9idXR0b24+XHJcbiAgICAgICAgPC9kaXY+XHJcbiAgICAgICl9XG5cbiAgICAgIDxmb290ZXIgY2xhc3NOYW1lPVwicmlkZXItcG9ydGFsLWZvb3RlclwiPlxuICAgICAgICA8c3Bhbj7CqSB7bmV3IERhdGUoKS5nZXRGdWxsWWVhcigpfSBEaWdpQmF6YWFyIFJpZGVyIFBhcnRuZXI8L3NwYW4+XG4gICAgICAgIDxzcGFuPlNhZmUgZGVsaXZlcmllcywgdHJ1c3RlZCBsb2NhbCBjb21tZXJjZS48L3NwYW4+XG4gICAgICA8L2Zvb3Rlcj5cbiAgICA8L2Rpdj5cbiAgKVxyXG59XHJcbiJdLCJmaWxlIjoiRDovRGlnaUJhemFhci9mcm9udGVuZC9zcmMvcGFnZXMvUmlkZXJQb3J0YWwvUmlkZXJQb3J0YWwuanN4In0=

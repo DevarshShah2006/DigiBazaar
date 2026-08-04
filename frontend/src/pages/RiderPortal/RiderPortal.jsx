@@ -94,6 +94,7 @@ export default function RiderPortal() {
   }
 
   const active = data.active_assignments && data.active_assignments[0]
+  const riderName = data.full_name?.trim() || user?.full_name?.trim() || user?.username || 'Partner'
 
   return (
     <div className="rider-portal fade-in">
@@ -103,9 +104,11 @@ export default function RiderPortal() {
           {/* Header profile summary card */}
           <div className="rider-header-card">
             <div className="rider-header-profile">
-              <div className="rider-avatar">Rider</div>
+              <div className="rider-avatar" aria-label="Rider profile avatar">
+                {riderName.charAt(0).toUpperCase()}
+              </div>
               <div>
-                <h2>Hello, {user?.username || 'Partner'}!</h2>
+                <h2>Hello, {riderName}!</h2>
                 <p>{data.vehicle_type} · {data.vehicle_number}</p>
               </div>
             </div>
@@ -172,6 +175,25 @@ export default function RiderPortal() {
                   </div>
                 </div>
               </div>
+
+              <section className="delivery-proof-card" aria-label="Delivery payload and confirmation">
+                <div className="proof-card-heading">
+                  <div>
+                    <span className="proof-eyebrow">Delivery payload</span>
+                    <h4>Package & handover record</h4>
+                  </div>
+                  <span className="proof-code">#{active.order_details.id}</span>
+                </div>
+                <div className="proof-details">
+                  <span><strong>Contents</strong> Sealed order package</span>
+                  <span><strong>Recipient</strong> {active.order_details.user_name}</span>
+                  <span><strong>Verification</strong> OTP at doorstep</span>
+                </div>
+                <div className="signature-row">
+                  <div className="signature-line"><span>Recipient signature / confirmation</span></div>
+                  <span className="signature-state">{active.status === 'delivered' ? 'Confirmed' : 'Awaiting delivery'}</span>
+                </div>
+              </section>
 
               {/* Dynamic Action Buttons */}
               {active.status === 'assigned' && (
@@ -341,7 +363,7 @@ export default function RiderPortal() {
           
           <div className="profile-details-card">
             <h4>Personal Info</h4>
-            <p><strong>Name:</strong> {data.full_name || user?.username || 'Rider Partner'}</p>
+            <p><strong>Name:</strong> {riderName}</p>
             <p><strong>Phone:</strong> {data.phone || user?.username?.replace('rider_', '') || '9876500013'}</p>
             <p><strong>Email:</strong> {user?.email || 'rider@digibazaar.in'}</p>
           </div>
@@ -373,6 +395,11 @@ export default function RiderPortal() {
           </button>
         </div>
       )}
+
+      <footer className="rider-portal-footer">
+        <span>© {new Date().getFullYear()} DigiBazaar Rider Partner</span>
+        <span>Safe deliveries, trusted local commerce.</span>
+      </footer>
     </div>
   )
 }
