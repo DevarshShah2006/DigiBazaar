@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fetchJson } from '../../api/api'
+import { apiFetch, TTL } from '../../api/api'
 import ProductCard from '../ProductCard/ProductCard'
 import { withGroupedVariants } from '../../utils/productVariants'
 import './CategoryWiseProducts.css'
@@ -11,19 +11,24 @@ function CategoryWiseProducts() {
   useEffect(() => {
     let cancelled = false
 
-    fetchJson('/categories/')
-      .then(cats => {
+    Promise.all([
+      apiFetch('/categories/', {}, TTL.STATIC),
+      apiFetch('/products/?page_size=120', {}, TTL.NORMAL),
+    ])
+      .then(([cats, productsData]) => {
         const categories = (cats || []).slice(0, 4)
-        return Promise.all(categories.map(cat => {
-          const categoryFilter = cat.slug || cat.name || cat.id
-          return fetchJson(`/products/?category=${encodeURIComponent(categoryFilter)}&page_size=30`)
-            .then(d => {
-              const rawProds = d.results || d || []
-              const grouped = withGroupedVariants(rawProds).slice(0, 6)
-              return { category: cat, products: grouped }
-            })
-            .catch(() => ({ category: cat, products: [] }))
-        }))
+        const allProducts = withGroupedVariants(productsData?.results || productsData || [])
+
+        return categories.map(cat => {
+          const categoryKey = (cat.slug || cat.name || '').toString().toLowerCase()
+          const categoryProducts = allProducts.filter(prod => {
+            const productCategorySlug = (prod.category_slug || '').toString().toLowerCase()
+            const productCategoryName = (prod.category_name || '').toString().toLowerCase()
+            return productCategorySlug === categoryKey || productCategoryName === categoryKey
+          }).slice(0, 6)
+
+          return { category: cat, products: categoryProducts }
+        })
       })
       .then(results => {
         if (!cancelled) setBlocks(results || [])

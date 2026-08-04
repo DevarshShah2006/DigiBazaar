@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { fetchJson } from '../../api/api'
+import { apiFetch, TTL } from '../../api/api'
+import { getCategories } from '../../api/products'
 import ProductCard from '../../components/ProductCard/ProductCard'
 import { withGroupedVariants } from '../../utils/productVariants'
 import './Products.css'
@@ -33,7 +34,7 @@ function Products() {
 
   // Load categories list on mount
   useEffect(() => {
-    fetchJson('/categories/')
+    getCategories()
       .then(data => {
         setCategories(data || [])
       })
@@ -49,7 +50,7 @@ function Products() {
       
       // Fetch products in that category to extract their subcategories
       // This ensures we always show correct subcategories
-      fetchJson(`/products/?category=${encodeURIComponent(catName)}&page_size=100`)
+      apiFetch(`/products/?category=${encodeURIComponent(catName)}&page_size=100`, {}, TTL.NORMAL)
         .then(data => {
           const prods = data.results || data || []
           const subSet = new Set()
@@ -86,7 +87,7 @@ function Products() {
 
     const qs = new URLSearchParams(params).toString()
     
-    fetchJson(`/products/?${qs}`)
+    apiFetch(`/products/?${qs}`, {}, TTL.SHORT)
       .then(data => {
         const prods = (data.results || []).filter(product => product.image_url)
         setProducts(withGroupedVariants(prods))

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fetchJson } from '../../api/api'
+import { apiFetch, TTL } from '../../api/api'
 import './NearbyShops.css'
 
 function NearbyShops() {
@@ -42,7 +42,7 @@ function NearbyShops() {
   }
 
   useEffect(() => {
-    fetchJson('/shops/')
+    apiFetch('/shops/', {}, TTL.STATIC)
       .then(data => {
         const items = Array.isArray(data) ? data : (data.results || data || [])
         const withDist = items.map(shop => ({

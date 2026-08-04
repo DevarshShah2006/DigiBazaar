@@ -23,7 +23,16 @@ class UserSerializer(serializers.ModelSerializer):
         # Admin check first (highest priority)
         if obj.is_staff or obj.is_superuser or obj.username.startswith('admin_') or '9111111111' in obj.username or '9111111111' in (obj.email or ''):
             return 'admin'
-        # Use try/except for safe reverse FK access
+        # Explicit customer username takes priority
+        if obj.username.startswith('user_'):
+            return 'customer'
+        # Explicit rider check
+        if obj.username.startswith('rider_'):
+            return 'rider'
+        # Explicit shop owner check
+        if obj.username.startswith('owner_'):
+            return 'shopowner'
+
         try:
             obj.shop_owner_profile
             return 'shopowner'
@@ -142,6 +151,30 @@ class ShopSerializer(serializers.ModelSerializer):
         if products is not None:
             shop.products.set(products)
         return shop
+
+
+class ShopListSerializer(serializers.ModelSerializer):
+    category_details = CategorySerializer(many=True, read_only=True, source='categories')
+    product_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Shop
+        fields = (
+            'id',
+            'name',
+            'tier',
+            'rating',
+            'lat',
+            'long',
+            'address',
+            'category_details',
+            'product_count',
+            'live_inventory',
+            'reliability_score',
+            'cancellation_rate',
+            'is_open',
+            'created_at',
+        )
 
 
 class RiderSerializer(serializers.ModelSerializer):
@@ -306,4 +339,3 @@ class DeliveryAssignmentSerializer(serializers.ModelSerializer):
             "updated_at",
             "eta",
         )
-

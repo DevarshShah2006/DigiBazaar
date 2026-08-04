@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fetchJson } from '../../api/api'
+import { apiFetch, TTL } from '../../api/api'
 import { useAuth } from '../../context/AuthContext'
 import ProductCard from '../ProductCard/ProductCard'
 import { withGroupedVariants } from '../../utils/productVariants'
@@ -13,13 +13,13 @@ function RecommendationSection() {
   useEffect(() => {
     let cancelled = false
     const url = user ? `/recommend/${user.id}/` : null
-    const fallback = () => fetchJson('/products/?page_size=30').then(d => (d.results || d || []))
+    const fallback = () => apiFetch('/products/?page_size=30', {}, TTL.SHORT).then(d => (d.results || d || []))
 
     async function load() {
       try {
         let prods = []
         if (url) {
-          const data = await fetchJson(url)
+          const data = await apiFetch(url, {}, TTL.SHORT)
           prods = Array.isArray(data) ? data : (data.results || [])
         }
 

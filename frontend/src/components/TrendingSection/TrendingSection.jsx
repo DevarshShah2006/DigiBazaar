@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { fetchJson } from '../../api/api'
+import { apiFetch, TTL } from '../../api/api'
 import ProductCard from '../ProductCard/ProductCard'
 import { withGroupedVariants } from '../../utils/productVariants'
 import './TrendingSection.css'
@@ -10,14 +10,14 @@ function TrendingSection() {
   const scrollRef = useRef(null)
 
   useEffect(() => {
-    fetchJson('/products/featured/?page_size=30')
+    apiFetch('/products/featured/?page_size=30', {}, TTL.SHORT)
       .then(data => {
         const prods = data.results || data || []
         setProducts(withGroupedVariants(prods).slice(0, 12))
         setLoading(false)
       })
       .catch(() => {
-        fetchJson('/products/?page_size=30').then(d => {
+        apiFetch('/products/?page_size=30', {}, TTL.SHORT).then(d => {
           const prods = d.results || d || []
           setProducts(withGroupedVariants(prods).slice(0, 12))
           setLoading(false)
