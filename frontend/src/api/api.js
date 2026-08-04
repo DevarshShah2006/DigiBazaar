@@ -54,34 +54,26 @@ export async function fetchJson(endpoint, options = {}) {
 
   // Token expired — try to refresh once
   if (response.status === 401) {
+    let newToken = null
     if (!isRefreshing) {
       isRefreshing = true
-      const newToken = await refreshAccessToken()
+      newToken = await refreshAccessToken()
       isRefreshing = false
       if (newToken) {
         onRefreshed(newToken)
-        // Retry original request with new token
-        const retryHeaders = {
-          ...headers,
-          Authorization: `Bearer ${newToken}`,
-        }
-        response = await fetch(`${API_BASE}${endpoint}`, {
-          ...options,
-          headers: retryHeaders,
-        })
       } else {
-        // Refresh failed — clear all auth data and notify app
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
         localStorage.removeItem('user')
         window.dispatchEvent(new Event('auth:logout'))
-        return null
       }
     } else {
-      // Wait for the refresh to complete
-      const newToken = await new Promise(resolve => {
+      newToken = await new Promise(resolve => {
         refreshSubscribers.push(resolve)
       })
+    }
+
+    if (newToken) {
       const retryHeaders = {
         ...headers,
         Authorization: `Bearer ${newToken}`,
@@ -90,6 +82,22 @@ export async function fetchJson(endpoint, options = {}) {
         ...options,
         headers: retryHeaders,
       })
+    } else {
+      // Token refresh failed - retry without Authorization header for public endpoints
+      const unauthHeaders = { ...headers }
+      delete unauthHeaders.Authorization
+      const retryUnauth = await fetch(`${API_BASE}${endpoint}`, {
+        ...options,
+        headers: unauthHeaders,
+      })
+      if (retryUnauth.ok) {
+        try {
+          return await retryUnauth.json()
+        } catch {
+          return null
+        }
+      }
+      return null
     }
   }
 

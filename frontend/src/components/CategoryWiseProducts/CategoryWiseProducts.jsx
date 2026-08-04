@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { fetchJson } from '../../api/api'
 import ProductCard from '../ProductCard/ProductCard'
+import { withGroupedVariants } from '../../utils/productVariants'
 import './CategoryWiseProducts.css'
 
 function CategoryWiseProducts() {
@@ -15,8 +16,12 @@ function CategoryWiseProducts() {
         const categories = (cats || []).slice(0, 4)
         return Promise.all(categories.map(cat => {
           const categoryFilter = cat.slug || cat.name || cat.id
-          return fetchJson(`/products/?category=${encodeURIComponent(categoryFilter)}&page_size=6`)
-            .then(d => ({ category: cat, products: (d.results || d || []).slice(0, 6) }))
+          return fetchJson(`/products/?category=${encodeURIComponent(categoryFilter)}&page_size=30`)
+            .then(d => {
+              const rawProds = d.results || d || []
+              const grouped = withGroupedVariants(rawProds).slice(0, 6)
+              return { category: cat, products: grouped }
+            })
             .catch(() => ({ category: cat, products: [] }))
         }))
       })

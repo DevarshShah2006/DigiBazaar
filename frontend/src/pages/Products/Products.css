@@ -1,20 +1,20 @@
 .products-page {
   min-height: 100vh;
-  background: #0b0f19;
-  color: #f3f4f6;
+  background: var(--background);
+  color: var(--text-main);
   padding-bottom: 60px;
 }
 
 .products-header {
-  background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
-  padding: 40px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: #f8fdf8;
+  padding: 44px 0;
+  border-bottom: 1px solid #e8f5e9;
 }
 
 .products-title {
   font-size: 28px;
   font-weight: 800;
-  color: #fff;
+  color: #1a1a2e;
   margin: 0 0 16px;
 }
 
@@ -28,23 +28,23 @@
 .products-search-input {
   flex: 1;
   padding: 12px 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid #d9eadb;
   border-radius: 30px;
   font-size: 14px;
   outline: none;
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
+  background: #fff;
+  color: #1a1a2e;
   transition: all 0.3s;
 }
 
 .products-search-input:focus {
-  border-color: #10b981;
-  background: rgba(255, 255, 255, 0.1);
+  border-color: #43a047;
+  box-shadow: 0 0 0 4px rgba(67, 160, 71, 0.1);
 }
 
 .products-search-btn {
   padding: 12px 24px;
-  background: #10b981;
+  background: #43a047;
   color: #fff;
   border: none;
   border-radius: 30px;
@@ -55,7 +55,7 @@
 }
 
 .products-search-btn:hover {
-  background: #059669;
+  background: #2e7d32;
 }
 
 /* Active filter pills */
@@ -70,12 +70,12 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
+  background: #e8f5e9;
+  color: #2e7d32;
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 0.8rem;
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  border: 1px solid #c8e6c9;
 }
 
 .filter-pill-clear {
@@ -105,10 +105,11 @@
 
 /* Sidebar filter box */
 .filter-sidebar {
-  background: rgba(17, 24, 39, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: #fff;
+  border: 1px solid #e8f5e9;
   border-radius: 16px;
   padding: 20px;
+  box-shadow: 0 10px 24px rgba(27, 94, 32, 0.06);
   height: fit-content;
   position: sticky;
   top: 90px;
@@ -123,9 +124,9 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #9ca3af;
+  color: #6f7b66;
   margin-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid #edf1e8;
   padding-bottom: 6px;
 }
 
@@ -139,7 +140,7 @@
   text-align: left;
   background: none;
   border: none;
-  color: #cbd5e1;
+  color: #1a1a2e;
   padding: 6px 10px;
   font-size: 0.88rem;
   border-radius: 8px;
@@ -151,27 +152,27 @@
 }
 
 .category-list-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
+  background: #f1fdf4;
+  color: #2e7d32;
 }
 
 .category-list-btn.active {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  background: #e8f5e9;
+  color: #2e7d32;
   font-weight: 600;
 }
 
 .category-count-badge {
   font-size: 0.75rem;
-  background: rgba(255, 255, 255, 0.1);
-  color: #9ca3af;
+  background: #edf1e8;
+  color: #6f7b66;
   padding: 1px 6px;
   border-radius: 10px;
 }
 
 .category-list-btn.active .category-count-badge {
-  background: rgba(16, 185, 129, 0.2);
-  color: #10b981;
+  background: #c8e6c9;
+  color: #2e7d32;
 }
 
 /* Price filter fields */
@@ -184,10 +185,10 @@
 .price-input {
   width: 100%;
   padding: 8px 12px;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #fff;
+  border: 1px solid #d9eadb;
   border-radius: 8px;
-  color: #fff;
+  color: #1a1a2e;
   font-size: 0.85rem;
   outline: none;
 }
@@ -196,7 +197,7 @@
   width: 100%;
   margin-top: 8px;
   padding: 8px;
-  background: #10b981;
+  background: #43a047;
   color: white;
   border: none;
   border-radius: 8px;
@@ -207,7 +208,7 @@
 }
 
 .price-range-btn:hover {
-  background: #059669;
+  background: #2e7d32;
 }
 
 /* Top toolbar controls */
@@ -216,15 +217,16 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-  background: rgba(17, 24, 39, 0.4);
+  background: #fff;
   padding: 12px 20px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  border: 1px solid #e8f5e9;
+  box-shadow: 0 10px 24px rgba(27, 94, 32, 0.05);
 }
 
 .products-count {
   font-size: 0.9rem;
-  color: #9ca3af;
+  color: #6f7b66;
   margin: 0;
 }
 
@@ -233,13 +235,13 @@
   align-items: center;
   gap: 8px;
   font-size: 0.88rem;
-  color: #cbd5e1;
+  color: #1a1a2e;
 }
 
 .sort-dropdown {
-  background: #1f2937;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: #fff;
+  border: 1px solid #d9eadb;
+  color: #1a1a2e;
   padding: 6px 12px;
   border-radius: 8px;
   outline: none;
@@ -250,13 +252,15 @@
 .pagination-container {
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 14px;
   margin-top: 30px;
   padding-top: 20px;
 }
 
 .load-more-btn {
   padding: 12px 36px;
-  background: #10b981;
+  background: #43a047;
   color: #fff;
   border: none;
   border-radius: 30px;
@@ -264,28 +268,34 @@
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+  box-shadow: 0 4px 12px rgba(67, 160, 71, 0.2);
 }
 
 .load-more-btn:hover {
-  background: #059669;
+  background: #2e7d32;
   transform: translateY(-2px);
 }
 
 .load-more-btn:disabled {
-  background: rgba(255, 255, 255, 0.1);
-  color: #666;
+  background: #edf1e8;
+  color: #8a9684;
   cursor: not-allowed;
   box-shadow: none;
   transform: none;
 }
 
+.pagination-status {
+  color: #6f7b66;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
 /* Subcategory select */
 .subcategory-list-select {
   width: 100%;
-  background: #1f2937;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: #fff;
+  border: 1px solid #d9eadb;
+  color: #1a1a2e;
   padding: 8px 12px;
   border-radius: 8px;
   outline: none;
@@ -301,20 +311,20 @@
 .products-empty {
   text-align: center;
   padding: 80px 20px;
-  background: rgba(17, 24, 39, 0.4);
+  background: #fff;
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid #e8f5e9;
 }
 
 .products-empty p {
-  color: #9ca3af;
+  color: #6f7b66;
   font-size: 1.1rem;
   margin-bottom: 15px;
 }
 
 .products-empty button {
   padding: 10px 24px;
-  background: #10b981;
+  background: #43a047;
   color: #fff;
   border: none;
   border-radius: 20px;
@@ -324,5 +334,5 @@
 }
 
 .products-empty button:hover {
-  background: #059669;
+  background: #2e7d32;
 }

@@ -363,7 +363,7 @@ class Command(BaseCommand):
             # Mapping categories from dataset to DB Categories
             CATEGORY_MAPPING = {
                 'Atta, Rice, Oil & Dals': 'Grocery',
-                'Baby Food': 'Baby & Kids',
+                'Baby Food': 'Instant Food',
                 'Bath & Body': 'Bath & Body',
                 'Biscuits': 'Snacks & Biscuits',
                 'Breakfast & Sauces': 'Breakfast & Pantry',
@@ -443,7 +443,7 @@ class Command(BaseCommand):
                 'Tea & Coffee':         (40, 120),
                 'Breakfast & Pantry':   (40, 120),
                 'Frozen Foods':         (20, 60),
-                'Baby & Kids':          (15, 50),
+                'Instant Food':         (15, 50),
                 'Bath & Body':          (20, 70),
                 'Grooming':             (15, 60),
                 'Homegrown':            (20, 80),
@@ -456,7 +456,7 @@ class Command(BaseCommand):
                 {'profile': 'kirana_daily', 'focus': ['Dairy & Bakery', 'Fresh Produce', 'Grocery'], 'weight': 0.6, 'secondary': ['Snacks & Biscuits', 'Beverages', 'Cleaning'], 'product_count': (180, 250)},
                 {'profile': 'kirana_snacks', 'focus': ['Snacks & Biscuits', 'Beverages', 'Sweets & Chocolates'], 'weight': 0.6, 'secondary': ['Grocery', 'Tea & Coffee', 'Breakfast & Pantry'], 'product_count': (150, 200)},
                 {'profile': 'kirana_organic', 'focus': ['Homegrown', 'Fresh Produce', 'Spices & Dry Fruits'], 'weight': 0.6, 'secondary': ['Grocery', 'Tea & Coffee', 'Breakfast & Pantry'], 'product_count': (120, 180)},
-                {'profile': 'kirana_general', 'focus': ['Grocery', 'Spices & Dry Fruits', 'Breakfast & Pantry'], 'weight': 0.4, 'secondary': ['Dairy & Bakery', 'Beverages', 'Snacks & Biscuits', 'Tea & Coffee', 'Frozen Foods', 'Baby & Kids'], 'product_count': (220, 300)}
+                {'profile': 'kirana_general', 'focus': ['Grocery', 'Spices & Dry Fruits', 'Breakfast & Pantry'], 'weight': 0.4, 'secondary': ['Dairy & Bakery', 'Beverages', 'Snacks & Biscuits', 'Tea & Coffee', 'Frozen Foods', 'Instant Food'], 'product_count': (220, 300)}
             ]
 
             # Fetch existing shops

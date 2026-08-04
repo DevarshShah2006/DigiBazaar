@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { fetchJson } from '../../api/api'
 import ProductCard from '../../components/ProductCard/ProductCard'
+import { withGroupedVariants } from '../../utils/productVariants'
 import './Products.css'
 
 function Products() {
@@ -11,21 +12,24 @@ function Products() {
   const qParam = searchParams.get('q') || ''
   const catParam = searchParams.get('category') || ''
   const subcatParam = searchParams.get('subcategory') || ''
+  const pageParam = Number(searchParams.get('page') || 1)
 
   // Product list & pagination states
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
   const [subcategories, setSubcategories] = useState([])
   const [loading, setLoading] = useState(true)
-  const [loadingMore, setLoadingMore] = useState(false)
   const [totalCount, setTotalCount] = useState(0)
   const [nextPageUrl, setNextPageUrl] = useState(null)
+  const [totalPages, setTotalPages] = useState(1)
 
   // Input states
   const [searchInput, setSearchInput] = useState(qParam)
   const [minPrice, setMinPrice] = useState('')
   const [maxPrice, setMaxPrice] = useState('')
-  const [ordering, setOrdering] = useState('name')
+  const [ordering, setOrdering] = useState('-review_count')
+  const activeCategory = categories.find(c => c.slug === catParam || c.name === catParam)
+  const activeCategoryName = activeCategory?.name || catParam
 
   // Load categories list on mount
   useEffect(() => {
@@ -77,13 +81,17 @@ function Products() {
     if (minPrice) params.min_price = minPrice
     if (maxPrice) params.max_price = maxPrice
     if (ordering) params.ordering = ordering
+    params.page_size = 30
+    params.page = pageParam
 
     const qs = new URLSearchParams(params).toString()
     
     fetchJson(`/products/?${qs}`)
       .then(data => {
-        setProducts(data.results || [])
+        const prods = (data.results || []).filter(product => product.image_url)
+        setProducts(withGroupedVariants(prods))
         setTotalCount(data.count || (data.results ? data.results.length : 0))
+        setTotalPages(Math.max(1, Math.ceil((data.count || 0) / 30)))
         // API returns full URL for next page (e.g. http://.../api/products/?page=2)
         // Convert to relative path
         if (data.next) {
@@ -95,7 +103,7 @@ function Products() {
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [qParam, catParam, subcatParam, minPrice, maxPrice, ordering])
+  }, [qParam, catParam, subcatParam, minPrice, maxPrice, ordering, pageParam])
 
   // Handler for primary search form
   const handleSearchSubmit = (e) => {
@@ -106,23 +114,12 @@ function Products() {
     setSearchParams(nextParams)
   }
 
-  // Load next page and append products
-  const handleLoadMore = () => {
-    if (!nextPageUrl || loadingMore) return
-    setLoadingMore(true)
-
-    fetchJson(nextPageUrl)
-      .then(data => {
-        setProducts(prev => [...prev, ...(data.results || [])])
-        if (data.next) {
-          const urlObj = new URL(data.next)
-          setNextPageUrl(urlObj.pathname + urlObj.search)
-        } else {
-          setNextPageUrl(null)
-        }
-        setLoadingMore(false)
-      })
-      .catch(() => setLoadingMore(false))
+  const handlePageChange = (page) => {
+    if (page < 1 || page > totalPages || loading) return
+    const nextParams = { ...Object.fromEntries(searchParams.entries()), page: String(page) }
+    if (page === 1) delete nextParams.page
+    setSearchParams(nextParams)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   // Set category filter
@@ -148,6 +145,13 @@ function Products() {
     // Triggering useEffect by updating minPrice/maxPrice states
   }
 
+  const handleOrderingChange = (value) => {
+    const nextParams = { ...Object.fromEntries(searchParams.entries()) }
+    delete nextParams.page
+    setOrdering(value)
+    setSearchParams(nextParams)
+  }
+
   // Clear single active filter
   const clearFilter = (key) => {
     const nextParams = { ...Object.fromEntries(searchParams.entries()) }
@@ -171,7 +175,7 @@ function Products() {
     setSearchInput('')
     setMinPrice('')
     setMaxPrice('')
-    setOrdering('name')
+    setOrdering('-review_count')
     setSearchParams({})
   }
 
@@ -180,7 +184,7 @@ function Products() {
       <div className="products-header">
         <div className="container">
           <h1 className="products-title">
-            {catParam ? `Explore ${catParam}` : qParam ? `Search: "${qParam}"` : 'All Products'}
+            {catParam ? `Explore ${activeCategoryName}` : qParam ? `Search: "${qParam}"` : 'All Products'}
           </h1>
           
           <form className="products-search" onSubmit={handleSearchSubmit}>
@@ -199,7 +203,7 @@ function Products() {
             <div className="active-filters">
               {catParam && (
                 <span className="filter-pill">
-                  Category: {catParam}
+                  Category: {activeCategoryName}
                   <span className="filter-pill-clear" onClick={() => clearFilter('category')}>✕</span>
                 </span>
               )}
@@ -308,16 +312,15 @@ function Products() {
                 <span>Sort by:</span>
                 <select 
                   value={ordering} 
-                  onChange={e => setOrdering(e.target.value)}
+                  onChange={e => handleOrderingChange(e.target.value)}
                   className="sort-dropdown"
                 >
-                  <option value="name">Name (A-Z)</option>
-                  <option value="-name">Name (Z-A)</option>
-                  <option value="price">Price: Low to High</option>
-                  <option value="-price">Price: High to Low</option>
-                  <option value="-rating">Highest Rated</option>
                   <option value="-review_count">Most Popular</option>
                   <option value="-discount_percent">Biggest Discount</option>
+                  <option value="-rating">Highest Rated</option>
+                  <option value="price">Price: Low to High</option>
+                  <option value="-price">Price: High to Low</option>
+                  <option value="name">Name (A-Z)</option>
                 </select>
               </div>
             </div>
@@ -341,14 +344,24 @@ function Products() {
                   ))}
                 </div>
 
-                {nextPageUrl && (
+                {totalPages > 1 && (
                   <div className="pagination-container">
-                    <button 
-                      className="load-more-btn" 
-                      onClick={handleLoadMore}
-                      disabled={loadingMore}
+                    <button
+                      className="load-more-btn"
+                      onClick={() => handlePageChange(pageParam - 1)}
+                      disabled={pageParam <= 1 || loading}
                     >
-                      {loadingMore ? 'Loading more products...' : 'Load More Products'}
+                      Previous
+                    </button>
+                    <span className="pagination-status">
+                      Page {pageParam} of {totalPages}
+                    </span>
+                    <button
+                      className="load-more-btn"
+                      onClick={() => handlePageChange(pageParam + 1)}
+                      disabled={!nextPageUrl || pageParam >= totalPages || loading}
+                    >
+                      Next 30
                     </button>
                   </div>
                 )}

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { loginUser, signupUser, verifyOTP } from '../api/auth'
 import { fetchJson } from '../api/api'

@@ -15,17 +15,42 @@ function NearbyShops() {
     return null
   }
 
-  const within3km = shop => {
-    const distanceValue = parseDistance(shop?.distance || shop?.distance_km)
-    return distanceValue === null ? false : distanceValue <= 3
+  const USER_LAT = 23.0125
+  const USER_LONG = 72.5575
+
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    if (!lat1 || !lon1 || !lat2 || !lon2) return null
+    const R = 6371 // Radius of Earth in km
+    const dLat = (lat2 - lat1) * (Math.PI / 180)
+    const dLon = (lon2 - lon1) * (Math.PI / 180)
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+    return R * c
+  }
+
+  const getShopDistance = shop => {
+    const raw = parseDistance(shop?.distance || shop?.distance_km)
+    if (raw !== null) return raw
+    if (shop?.lat && shop?.long) {
+      const computed = calculateDistance(USER_LAT, USER_LONG, parseFloat(shop.lat), parseFloat(shop.long))
+      if (computed !== null && !isNaN(computed)) return computed
+    }
+    return 1.8
   }
 
   useEffect(() => {
     fetchJson('/shops/')
       .then(data => {
         const items = Array.isArray(data) ? data : (data.results || data || [])
-        const nearby = items.filter(within3km).slice(0, 2)
-        setShops(nearby)
+        const withDist = items.map(shop => ({
+          ...shop,
+          computed_distance: getShopDistance(shop)
+        }))
+        const nearby = withDist.filter(s => s.computed_distance <= 10).slice(0, 4)
+        setShops(nearby.length ? nearby : withDist.slice(0, 4))
       })
       .catch(() => {})
       .finally(() => setLoading(false))
@@ -57,8 +82,8 @@ function NearbyShops() {
           const ratingNum = Number((shop && shop.rating) || 0)
           const ratingDisplay = Number.isFinite(ratingNum) ? ratingNum.toFixed(1) : '0.0'
           const estTime = shop?.estimated_time || '25 mins'
-          const distanceValue = parseDistance(shop?.distance || shop?.distance_km)
-          const distanceLabel = distanceValue !== null ? `${distanceValue.toFixed(1)} km` : (shop?.distance || '2.4 km')
+          const distVal = shop.computed_distance !== undefined ? shop.computed_distance : getShopDistance(shop)
+          const distanceLabel = distVal ? `${distVal.toFixed(1)} km` : '1.8 km'
           const previewProducts = Array.isArray(shop?.product_details) ? shop.product_details.slice(0, 3) : []
           const nextDelivery = shop?.next_delivery || 'Today, 2PM'
           const badge = shop?.badge || (shop?.is_best_seller ? 'Bestseller' : null)

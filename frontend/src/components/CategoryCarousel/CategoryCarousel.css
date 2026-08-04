@@ -1,54 +1,91 @@
 .category-carousel {
   width: 100%;
-  overflow-x: auto;
-  padding-bottom: 14px;
+}
+
+.category-carousel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.category-carousel__header h2 {
+  color: #1a1a2e;
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0;
 }
 
 .category-carousel__track {
-  display: flex;
-  gap: 20px;
-  padding: 12px 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 18px;
 }
 
 .category-card {
-  flex: 0 0 auto;
-  min-width: 96px;
-  border: none;
-  background: rgba(255,255,255,0.92);
-  border-radius: 999px;
-  box-shadow: 0 14px 25px rgba(15, 13, 10, 0.05);
-  padding: 14px 16px;
+  min-height: 184px;
+  border: 1px solid #edf1e8;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 12px 24px rgba(15, 13, 10, 0.05);
+  padding: 16px 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   text-align: center;
   cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
 .category-card:hover {
   transform: translateY(-3px);
+  border-color: #c8e6c9;
+  box-shadow: 0 16px 30px rgba(27, 94, 32, 0.09);
 }
 
 .category-card__icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 999px;
-  background: #f6f2ec;
+  width: 96px;
+  height: 96px;
+  border-radius: 18px;
+  background: #f6f8f3;
   display: grid;
   place-items: center;
   overflow: hidden;
 }
 
 .category-card__icon img {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.category-card span {
+.category-card__name {
+  color: #26301f;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.category-card__count {
+  color: #6f7b66;
   font-size: 12px;
-  color: #4d361d;
-  font-weight: 700;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .category-carousel__track {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .category-card {
+    min-height: 160px;
+  }
+
+  .category-card__icon {
+    width: 82px;
+    height: 82px;
+  }
 }

@@ -45,7 +45,9 @@
 }
 
 .pd-image-placeholder {
-  font-size: 80px;
+  color: #7a8a72;
+  font-size: 18px;
+  font-weight: 700;
 }
 
 .pd-category {
@@ -96,6 +98,33 @@
   font-size: 15px;
   line-height: 1.65;
   margin-bottom: 20px;
+}
+
+.pd-variants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 22px;
+}
+
+.pd-variant-btn {
+  min-width: 88px;
+  padding: 10px 14px;
+  border: 1px solid #c8e6c9;
+  border-radius: 12px;
+  background: #fff;
+  color: #2e7d32;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pd-variant-btn:hover,
+.pd-variant-btn.active {
+  background: #2e7d32;
+  color: #fff;
+  border-color: #2e7d32;
 }
 
 .pd-meta {
