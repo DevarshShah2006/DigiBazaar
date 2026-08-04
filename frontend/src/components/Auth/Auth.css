@@ -208,9 +208,9 @@
 }
 
 .role-select-card.active.rider {
-  border-color: #6366f1;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(99, 102, 241, 0.05));
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.18);
+  border-color: #047857;
+  background: linear-gradient(135deg, rgba(4, 120, 87, 0.12), rgba(4, 120, 87, 0.05));
+  box-shadow: 0 4px 14px rgba(4, 120, 87, 0.18);
   transform: translateY(-2px);
 }
 
@@ -245,7 +245,7 @@
 }
 
 .role-icon.rider-icon {
-  background: #6366f1;
+  background: #047857;
 }
 
 .role-icon.admin-icon {
