@@ -630,7 +630,7 @@ export default function AdminDashboard() {
                     <button 
                       className="pagination-btn"
                       disabled={orderPage <= 1 || ordersLoading}
-                      onClick={() => fetchOrders(orderPage - 1)}
+                      onClick={() => { fetchOrders(orderPage - 1); window.scrollTo({ top: 0, behavior: 'instant' }); }}
                     >
                       ← Previous Page
                     </button>
@@ -640,7 +640,7 @@ export default function AdminDashboard() {
                     <button 
                       className="pagination-btn"
                       disabled={orderPage >= orderTotalPages || ordersLoading}
-                      onClick={() => fetchOrders(orderPage + 1)}
+                      onClick={() => { fetchOrders(orderPage + 1); window.scrollTo({ top: 0, behavior: 'instant' }); }}
                     >
                       Next Page →
                     </button>

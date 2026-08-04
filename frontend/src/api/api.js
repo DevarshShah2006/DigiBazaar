@@ -1,3 +1,7 @@
+import { cachedFetch, clearCache, TTL } from './cache'
+
+export { clearCache, TTL }
+
 const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost'
 const API_BASE = import.meta.env.VITE_API_BASE || `http://${hostname}:8000/api`
 
@@ -39,6 +43,11 @@ async function refreshAccessToken() {
   }
 }
 
+/**
+ * Core fetch function — handles auth headers and token refresh.
+ * Use fetchJson directly for mutations (POST/PUT/DELETE).
+ * For GETs, prefer apiFetch() which adds caching.
+ */
 export async function fetchJson(endpoint, options = {}) {
   const token = getToken()
   const headers = {
@@ -110,4 +119,17 @@ export async function fetchJson(endpoint, options = {}) {
   } catch {
     return null
   }
+}
+
+/**
+ * Cached version of fetchJson for GET requests.
+ * Pass a TTL from the TTL constant or a custom value in ms.
+ * POST/PUT/DELETE requests bypass cache and invalidate related entries.
+ *
+ * @param {string} endpoint
+ * @param {object} [options]
+ * @param {number} [ttlMs] - override default 60s TTL
+ */
+export function apiFetch(endpoint, options = {}, ttlMs = TTL.NORMAL) {
+  return cachedFetch(endpoint, fetchJson, options, ttlMs)
 }

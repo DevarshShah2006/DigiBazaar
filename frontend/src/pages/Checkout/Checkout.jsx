@@ -240,7 +240,7 @@ export default function Checkout() {
               <h3>Fulfillment Options</h3>
               {mlRecommendation && (
                 <div style={{ fontSize: '13px', color: '#6366f1', background: '#e0e7ff', padding: '4px 10px', borderRadius: '15px', fontWeight: 600 }}>
-                  🤖 ML Recommended: {mlRecommendation.mode.replace('_', ' ')} ({mlRecommendation.confidence}%)
+                  Recommended: {mlRecommendation.mode.replace('_', ' ')} ({mlRecommendation.confidence}%)
                 </div>
               )}
             </div>

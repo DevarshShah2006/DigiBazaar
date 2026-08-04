@@ -84,7 +84,7 @@ function MyOrders() {
                   
                   {order.recommended_delivery_mode && (
                     <div style={{ marginTop: '8px', fontSize: '13px', color: '#6366f1', background: '#e0e7ff', padding: '4px 8px', borderRadius: '4px', display: 'inline-block' }}>
-                      🤖 ML Recommendation: <strong>{order.recommended_delivery_mode.replace('_', ' ')}</strong> ({order.delivery_mode_confidence}%)
+                      Smart Recommendation: <strong>{order.recommended_delivery_mode.replace('_', ' ')}</strong> ({order.delivery_mode_confidence}%)
                     </div>
                   )}
                 </div>
