@@ -42,6 +42,9 @@ const STATUS_CONFIG = {
   delivered: { color: '#10b981', bg: '#ecfdf5', label: 'Delivered' },
   completed: { color: '#22c55e', bg: '#f0fdf4', label: 'Completed' },
   rejected: { color: '#ef4444', bg: '#fef2f2', label: 'Rejected' },
+  cancelled: { color: '#6b7280', bg: '#f3f4f6', label: 'Cancelled' },
+  cancellation_requested: { color: '#f59e0b', bg: '#fffbeb', label: 'Cancel Requested' },
+  failed: { color: '#dc2626', bg: '#fef2f2', label: 'Failed' },
 }
 
 const ADVANCE_CONFIG = {
@@ -1083,9 +1086,11 @@ function ShopDashboard() {
                             <td>{o.items?.length || 1}</td>
                             <td>₹{parseFloat(o.total_price).toFixed(2)}</td>
                             <td>
-                              <span className="table-status-pill" style={{ color: STATUS_CONFIG[o.status].color, background: STATUS_CONFIG[o.status].bg }}>
-                                {STATUS_CONFIG[o.status].label}
-                              </span>
+                              {(() => { const scfg = STATUS_CONFIG[o.status] || { color: '#94a3b8', bg: '#f1f5f9', label: o.status || 'Unknown' }; return (
+                                <span className="table-status-pill" style={{ color: scfg.color, background: scfg.bg }}>
+                                  {scfg.label}
+                                </span>
+                               ); })()}
                             </td>
                           </tr>
                         ))}
