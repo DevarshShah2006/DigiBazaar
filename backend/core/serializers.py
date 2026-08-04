@@ -30,20 +30,49 @@ class UserSerializer(serializers.ModelSerializer):
         if obj.username.startswith('owner_'):
             return 'shopowner'
 
-        # Profile roles take priority over the generic user_ prefix because
-        # phone signup creates usernames as user_<phone> for all selected roles.
-        try:
-            obj.shop_owner_profile
-            return 'shopowner'
-        except Exception:
-            pass
-        try:
-            obj.rider_profile
-            return 'rider'
-        except Exception:
-            pass
+        # For user_ prefixed usernames, check their actual profile to determine role
+        # This handles OTP login where users can select their role
+        # Priority: customer > rider > shopowner (to respect login role selection)
         if obj.username.startswith('user_'):
+            # Check if this user has a customer profile first
+            try:
+                if hasattr(obj, 'profile') and obj.profile:
+                    return 'customer'
+            except Exception:
+                pass
+            # Check if this user has a rider profile
+            try:
+                if hasattr(obj, 'rider_profile') and obj.rider_profile:
+                    return 'rider'
+            except Exception:
+                pass
+            # Check if this user has a shopowner profile (from previous shopowner login)
+            try:
+                if hasattr(obj, 'shop_owner_profile') and obj.shop_owner_profile:
+                    return 'shopowner'
+            except Exception:
+                pass
+            # Default for user_ prefix
             return 'customer'
+        
+        # For non-standard usernames, try to determine from profiles
+        # Priority: customer > rider > shopowner
+        try:
+            if hasattr(obj, 'profile') and obj.profile:
+                return 'customer'
+        except Exception:
+            pass
+        try:
+            if hasattr(obj, 'rider_profile') and obj.rider_profile:
+                return 'rider'
+        except Exception:
+            pass
+        try:
+            if hasattr(obj, 'shop_owner_profile') and obj.shop_owner_profile:
+                return 'shopowner'
+        except Exception:
+            pass
+        
         return 'customer'
 
     def create(self, validated_data):

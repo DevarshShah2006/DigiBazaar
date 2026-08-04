@@ -21,9 +21,10 @@ function getActiveRole() {
 }
 
 function withActiveRole(userData) {
-  if (!userData || userData.role === 'admin') return userData
-  const activeRole = getActiveRole()
-  return activeRole ? { ...userData, role: activeRole } : userData
+  // Trust the backend role - do not override with localStorage
+  // The backend already sets the correct role based on login context
+  if (!userData) return userData
+  return userData
 }
 
 export function AuthProvider({ children }) {
@@ -31,8 +32,7 @@ export function AuthProvider({ children }) {
   const [authChecked, setAuthChecked] = useState(false)
 
   // On mount: verify stored token with backend and refresh user data.
-  // Uses a session-level flag to avoid re-verifying on every HMR / navigation mount.
-  // The server check only needs to happen once per browser session.
+  // Always verify with the server to ensure we have the latest user data and role.
   useEffect(() => {
     const token = localStorage.getItem('access_token')
     if (!token) {
@@ -40,19 +40,11 @@ export function AuthProvider({ children }) {
       return
     }
 
-    // If already verified this session, use the stored user immediately
-    const alreadyVerified = sessionStorage.getItem('auth_verified')
-    if (alreadyVerified && getStoredUser()) {
-      setAuthChecked(true)
-      return
-    }
-
-    // First visit this session — verify token and get fresh user data from server
+    // Always verify token with backend to get fresh user data
     fetchJson('/auth/me/')
       .then(data => {
         if (data && data.user) {
-          // Update stored user with fresh server data while preserving the
-          // role selected for this portal session.
+          // Update stored user with fresh server data
           const userData = withActiveRole(data.user)
           localStorage.setItem('user', JSON.stringify(userData))
           setUser(userData)
@@ -96,8 +88,9 @@ export function AuthProvider({ children }) {
     }
 
     if (data && data.access) {
-      const loginRole = data.user?.role === 'admin' ? 'admin' : (credentials.role || data.user?.role)
-      const userData = loginRole ? { ...data.user, role: loginRole } : data.user
+      // For OTP login, backend already sets correct role. For regular login, use backend role.
+      // If backend role is missing but credentials has role, use that.
+      const userData = withActiveRole(data.user)
       localStorage.setItem('access_token', data.access)
       localStorage.setItem('refresh_token', data.refresh)
       if (userData?.role && userData.role !== 'admin') {
@@ -123,10 +116,15 @@ export function AuthProvider({ children }) {
 
     const data = await signupUser(payload)
     if (data && data.access) {
-      const userData = withActiveRole({ ...data.user, role: payload.role })
+      // Trust the backend role, which should match the requested role
+      const userData = withActiveRole(data.user)
       localStorage.setItem('access_token', data.access)
       localStorage.setItem('refresh_token', data.refresh)
-      localStorage.setItem('active_login_role', userData.role)
+      if (userData?.role && userData.role !== 'admin') {
+        localStorage.setItem('active_login_role', userData.role)
+      } else {
+        localStorage.removeItem('active_login_role')
+      }
       localStorage.setItem('user', JSON.stringify(userData))
       setUser(userData)
       return { success: true, user: userData }

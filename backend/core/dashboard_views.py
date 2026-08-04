@@ -63,6 +63,8 @@ def get_shop_for_owner(user):
         return None
 
     owner = getattr(user, 'shop_owner_profile', None)
+    
+    # For admin users, try to find or create a shop
     if not owner and (getattr(user, 'is_staff', False) or getattr(user, 'is_superuser', False) or getattr(user, 'username', '').startswith('owner_') or getattr(user, 'username', '').startswith('admin_')):
         from core.models import ShopOwner
         try:
@@ -98,9 +100,16 @@ def get_shop_for_owner(user):
             seed_starter_inventory(shop)
             return shop
         except Exception:
-            return Shop.objects.first()
+            # If we can't create a shop, return None instead of first shop
+            return None
 
-    return Shop.objects.first() if getattr(user, 'is_staff', False) else None
+    # Only return a shop if user is admin and has no shop_owner_profile
+    # Otherwise return None to prevent showing wrong shop data
+    if getattr(user, 'is_staff', False) or getattr(user, 'is_superuser', False):
+        # For admin without a shop, don't return first shop - return None
+        return None
+    
+    return None
 
 
 
