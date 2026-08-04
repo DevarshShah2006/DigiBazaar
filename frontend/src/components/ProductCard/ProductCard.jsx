@@ -16,7 +16,11 @@ function ProductCard({ product, showAddToCart = true }) {
   const [imageFailed, setImageFailed] = useState(false)
   const selectedProduct = variants.find(item => String(item.id) === String(selectedId)) || variants[0] || product
 
-  if (!selectedProduct?.image_url || imageFailed) return null
+  // Product data can contain an expired or placeholder image URL.  Do not
+  // remove the entire card when that image fails: every home-page collection
+  // uses this component, so a failed image would otherwise make the whole
+  // collection appear empty.
+  if (!selectedProduct) return null
 
   const colorIndex = selectedProduct.id % PLACEHOLDER_COLORS.length
   const bgColor = PLACEHOLDER_COLORS[colorIndex]
@@ -38,12 +42,18 @@ function ProductCard({ product, showAddToCart = true }) {
   return (
     <div className="product-card" onClick={() => navigate(`/products/${selectedProduct.id}`)}>
       <div className="product-card__image-wrap" style={{ background: bgColor }}>
-        <img
-          src={selectedProduct.image_url}
-          alt={selectedProduct.name}
-          className="product-card__image"
-          onError={() => setImageFailed(true)}
-        />
+        {!imageFailed && selectedProduct.image_url ? (
+          <img
+            src={selectedProduct.image_url}
+            alt={selectedProduct.name}
+            className="product-card__image"
+            onError={() => setImageFailed(true)}
+          />
+        ) : (
+          <span className="product-card__image-fallback" aria-hidden="true">
+            {selectedProduct.name?.trim().charAt(0).toUpperCase() || 'P'}
+          </span>
+        )}
 
         {discountPercent > 0 && (
           <span className="product-card__discount-badge">
