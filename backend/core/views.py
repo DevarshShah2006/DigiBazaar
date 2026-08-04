@@ -51,7 +51,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         queryset = super().get_queryset().filter(
             visibility=True,
             status='active',
-        ).exclude(image_url='')
+        )
         query = self.request.query_params.get('search') or self.request.query_params.get('q')
         category = self.request.query_params.get('category')
         subcategory = self.request.query_params.get('subcategory')
@@ -106,7 +106,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         candidates = list(Product.objects.select_related('category', 'subcategory').filter(
             visibility=True,
             status='active',
-        ).exclude(image_url='').order_by('-review_count', '-rating')[:100])
+        ).order_by('-review_count', '-rating')[:100])
         if not candidates:
             return Response([])
         
@@ -136,7 +136,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         newest = Product.objects.select_related('category', 'subcategory').filter(
             visibility=True,
             status='active',
-        ).exclude(image_url='').order_by('-created_at', '-id')[:30]
+        ).order_by('-created_at', '-id')[:30]
         
         # Paginate manually if pagination class is set
         page = self.paginate_queryset(newest)
@@ -152,12 +152,12 @@ class CategoryListView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
-        active_products = Q(products__visibility=True, products__status='active') & ~Q(products__image_url='')
+        active_products = Q(products__visibility=True, products__status='active')
         first_product_image = Product.objects.filter(
             category=OuterRef('pk'),
             visibility=True,
             status='active',
-        ).exclude(image_url='').order_by(
+        ).order_by(
             '-review_count', '-discount_percent', 'name'
         ).values('image_url')[:1]
 
@@ -422,9 +422,14 @@ class TokenRefreshView(APIView):
 
 
 class ProductListView(generics.ListAPIView):
-    queryset = Product.objects.all()
     serializer_class = ProductSerializer
     permission_classes = [permissions.AllowAny]
+    
+    def get_queryset(self):
+        return Product.objects.select_related('category', 'subcategory').filter(
+            visibility=True,
+            status='active',
+        ).order_by('-review_count', '-discount_percent', '-rating', 'name')
 
 
 class ProductSearchView(APIView):
@@ -433,13 +438,66 @@ class ProductSearchView(APIView):
     def get(self, request):
         query = request.query_params.get('q', '')
         category = request.query_params.get('category')
-        products = Product.objects.select_related('category').all()
+        page_size = int(request.query_params.get('page_size', 30))
+        
+        products = Product.objects.select_related('category', 'subcategory').filter(
+            visibility=True,
+            status='active',
+        )
+        
         if query:
-            products = products.filter(name__icontains=query)
+            products = products.filter(
+                Q(name__icontains=query) |
+                Q(brand__icontains=query) |
+                Q(search_keywords__icontains=query)
+            )
         if category:
             products = products.filter(Q(category__name__iexact=category) | Q(category__slug__iexact=category))
+        
+        products = products.order_by('-review_count', '-discount_percent', '-rating', 'name')[:page_size]
+        
         serializer = ProductSerializer(products, many=True)
-        return Response(serializer.data)
+        response = Response(serializer.data)
+        response['Cache-Control'] = 'max-age=60, stale-while-revalidate=120'
+        return response
+
+
+class CategoryProductsView(APIView):
+    """Get products for a specific category with pagination"""
+    permission_classes = [permissions.AllowAny]
+    
+    def get(self, request, category_slug):
+        limit = int(request.query_params.get('limit', 6))
+        
+        products = Product.objects.select_related('category', 'subcategory').filter(
+            visibility=True,
+            status='active',
+        ).filter(
+            Q(category__slug__iexact=category_slug) | Q(category__name__iexact=category_slug)
+        ).order_by('-review_count', '-discount_percent', '-rating', 'name')[:limit]
+        
+        serializer = ProductSerializer(products, many=True)
+        response = Response(serializer.data)
+        response['Cache-Control'] = 'max-age=60, stale-while-revalidate=120'
+        return response
+
+
+class RecommendedProductsView(APIView):
+    """Get recommended products for home page and cart"""
+    permission_classes = [permissions.AllowAny]
+    
+    def get(self, request):
+        limit = int(request.query_params.get('limit', 8))
+        
+        products = Product.objects.select_related('category', 'subcategory').filter(
+            visibility=True,
+            status='active',
+        ).order_by('-discount_percent', '-review_count', '-rating', '-created_at')[:limit]
+        
+        serializer = ProductSerializer(products, many=True)
+        response = Response(serializer.data)
+        response['Cache-Control'] = 'max-age=60, stale-while-revalidate=120'
+        return response
 
 
 class ProductDetailView(generics.RetrieveAPIView):

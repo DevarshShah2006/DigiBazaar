@@ -89,7 +89,7 @@ function Products() {
     
     apiFetch(`/products/?${qs}`, {}, TTL.SHORT)
       .then(data => {
-        const prods = (data.results || []).filter(product => product.image_url)
+        const prods = (data.results || [])
         setProducts(withGroupedVariants(prods))
         setTotalCount(data.count || (data.results ? data.results.length : 0))
         setTotalPages(Math.max(1, Math.ceil((data.count || 0) / 30)))

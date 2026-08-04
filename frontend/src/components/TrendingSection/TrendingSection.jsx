@@ -10,14 +10,14 @@ function TrendingSection() {
   const scrollRef = useRef(null)
 
   useEffect(() => {
-    apiFetch('/products/featured/?page_size=30', {}, TTL.SHORT)
+    apiFetch('/products/featured/?page_size=12', {}, TTL.SHORT)
       .then(data => {
         const prods = data.results || data || []
         setProducts(withGroupedVariants(prods).slice(0, 12))
         setLoading(false)
       })
       .catch(() => {
-        apiFetch('/products/?page_size=30', {}, TTL.SHORT).then(d => {
+        apiFetch('/products/?page_size=12', {}, TTL.SHORT).then(d => {
           const prods = d.results || d || []
           setProducts(withGroupedVariants(prods).slice(0, 12))
           setLoading(false)

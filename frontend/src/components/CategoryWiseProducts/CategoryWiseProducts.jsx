@@ -11,23 +11,31 @@ function CategoryWiseProducts() {
   useEffect(() => {
     let cancelled = false
 
-    Promise.all([
-      apiFetch('/categories/', {}, TTL.STATIC),
-      apiFetch('/products/?page_size=120', {}, TTL.NORMAL),
-    ])
-      .then(([cats, productsData]) => {
+    // Fetch only categories first (already cached and fast)
+    apiFetch('/categories/', {}, TTL.STATIC)
+      .then(cats => {
+        if (cancelled) return
+        
         const categories = (cats || []).slice(0, 4)
-        const allProducts = withGroupedVariants(productsData?.results || productsData || [])
-
-        return categories.map(cat => {
-          const categoryKey = (cat.slug || cat.name || '').toString().toLowerCase()
-          const categoryProducts = allProducts.filter(prod => {
-            const productCategorySlug = (prod.category_slug || '').toString().toLowerCase()
-            const productCategoryName = (prod.category_name || '').toString().toLowerCase()
-            return productCategorySlug === categoryKey || productCategoryName === categoryKey
-          }).slice(0, 6)
-
-          return { category: cat, products: categoryProducts }
+        
+        if (categories.length === 0) {
+          setBlocks([])
+          setLoading(false)
+          return
+        }
+        
+        // Fetch products for each category in parallel
+        const promises = categories.map(cat =>
+          apiFetch(`/categories/${cat.slug}/products/?limit=6`, {}, TTL.NORMAL)
+            .then(products => withGroupedVariants(products || []))
+            .catch(() => [])
+        )
+        
+        return Promise.all(promises).then(productsLists => {
+          return categories.map((cat, index) => ({
+            category: cat,
+            products: productsLists[index] || []
+          }))
         })
       })
       .then(results => {

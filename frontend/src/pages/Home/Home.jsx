@@ -61,7 +61,7 @@ function Home() {
   useEffect(() => {
     apiFetch('/products/new_arrivals/?page_size=8', {}, TTL.SHORT)
       .then(data => {
-        const prods = (data.results || data || []).filter(product => product.image_url)
+        const prods = (data.results || data || [])
         setNewArrivals(withGroupedVariants(prods).slice(0, 8))
       })
       .catch(() => {})

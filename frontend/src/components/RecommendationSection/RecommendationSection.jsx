@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { apiFetch, TTL } from '../../api/api'
-import { useAuth } from '../../context/AuthContext'
 import ProductCard from '../ProductCard/ProductCard'
 import { withGroupedVariants } from '../../utils/productVariants'
 import './RecommendationSection.css'
@@ -12,26 +11,19 @@ function RecommendationSection() {
 
   useEffect(() => {
     let cancelled = false
-    const url = user ? `/recommend/${user.id}/` : null
-    const fallback = () => apiFetch('/products/?page_size=30', {}, TTL.SHORT).then(d => (d.results || d || []))
 
     async function load() {
       try {
-        let prods = []
-        if (url) {
-          const data = await apiFetch(url, {}, TTL.SHORT)
-          prods = Array.isArray(data) ? data : (data.results || [])
-        }
-
-        // If no personalized prods, fetch general products from DB
-        if (!prods || prods.length === 0) {
-          prods = await fallback()
-        }
-
+        // Use the new optimized recommended products API
+        const data = await apiFetch('/products/recommended/?limit=8', {}, TTL.NORMAL)
+        const prods = Array.isArray(data) ? data : (data.results || data || [])
+        
         if (!cancelled) setProducts(withGroupedVariants(prods || []).slice(0, 8))
       } catch (err) {
         if (!cancelled) {
-          const prods = await fallback().catch(() => [])
+          // Fallback to general products
+          const fallbackData = await apiFetch('/products/?page_size=8', {}, TTL.SHORT).catch(() => [])
+          const prods = (fallbackData.results || fallbackData || [])
           setProducts(withGroupedVariants(prods || []).slice(0, 8))
         }
       } finally {
@@ -42,7 +34,7 @@ function RecommendationSection() {
     load()
 
     return () => { cancelled = true }
-  }, [user])
+  }, [])
 
   if (loading) return (
     <section className="rec-section">
