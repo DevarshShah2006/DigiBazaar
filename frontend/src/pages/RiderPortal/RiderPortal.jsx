@@ -94,6 +94,7 @@ export default function RiderPortal() {
   }
 
   const active = data.active_assignments && data.active_assignments[0]
+  const riderName = data.full_name?.trim() || user?.full_name?.trim() || user?.username || 'Partner'
 
   return (
     <div className="rider-portal fade-in">
@@ -103,9 +104,11 @@ export default function RiderPortal() {
           {/* Header profile summary card */}
           <div className="rider-header-card">
             <div className="rider-header-profile">
-              <div className="rider-avatar">Rider</div>
+              <div className="rider-avatar" aria-label="Rider profile avatar">
+                {riderName.charAt(0).toUpperCase()}
+              </div>
               <div>
-                <h2>Hello, {user?.username || 'Partner'}!</h2>
+                <h2>Hello, {riderName}!</h2>
                 <p>{data.vehicle_type} · {data.vehicle_number}</p>
               </div>
             </div>
@@ -360,7 +363,7 @@ export default function RiderPortal() {
           
           <div className="profile-details-card">
             <h4>Personal Info</h4>
-            <p><strong>Name:</strong> {data.full_name || user?.username || 'Rider Partner'}</p>
+            <p><strong>Name:</strong> {riderName}</p>
             <p><strong>Phone:</strong> {data.phone || user?.username?.replace('rider_', '') || '9876500013'}</p>
             <p><strong>Email:</strong> {user?.email || 'rider@digibazaar.in'}</p>
           </div>

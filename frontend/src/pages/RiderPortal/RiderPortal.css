@@ -914,6 +914,107 @@
   background: #334155;
 }
 
+/* Charcoal and orange rider theme */
+.portal-rider, .portal-rider main { background: #18181b !important; }
+.rider-portal { background: #27272a; border-color: rgba(251, 146, 60, .24); color: #fff7ed; box-shadow: 0 12px 42px rgba(0, 0, 0, .35); }
+.rider-header-card, .rider-online-toggle-box, .rider-active-job-card, .rider-no-jobs-card, .rider-empty-state, .profile-details-card { background: #18181b; border-color: #3f3f46; }
+.rider-avatar { background: #431407; border-color: #fb923c; color: #ffedd5; }
+.rider-header-profile h2, .job-card-header h3, .address-row strong { color: #fff7ed; }
+.rider-header-profile p, .address-row p, .rider-online-toggle-box p { color: #a1a1aa; }
+.rider-online-toggle-box.online { border-color: rgba(251, 146, 60, .45); box-shadow: 0 0 20px rgba(249, 115, 22, .12); }
+.toggle-btn.go-online, .job-action-btn.pickup { background: #f97316; }
+.toggle-btn.go-online:hover, .job-action-btn.pickup:hover { background: #ea580c; }
+.rider-stat-card, .job-addresses, .rider-history-summary-card { background: #27272a; border-color: #3f3f46; }
+.rider-stat-card h3, .rider-history-summary-card .val { color: #fdba74; }
+.job-status-pill { color: #fdba74; background: rgba(249, 115, 22, .14); border-color: rgba(249, 115, 22, .35); }
+.circle-dot.shop { background: #fb923c; box-shadow: 0 0 6px #fb923c; }
+.circle-dot.cust { background: #facc15; box-shadow: 0 0 6px #facc15; }
+.rider-nav-button { background: #27272a; border-color: #52525b; color: #fff7ed; }
+.rider-nav-button:hover { background: #3f3f46; border-color: #fb923c; }
+.profile-details-card h4 { color: #fdba74; border-bottom-color: #3f3f46; }
+.rider-logout-btn-card { border-color: #fb923c; color: #fdba74; }
+.rider-logout-btn-card:hover { background: #431407; color: #ffedd5; }
+.rider-portal-footer { border-top-color: #3f3f46; color: #a1a1aa; }
+
+/* Light orange variant */
+body.portal-rider { --background: #fff7ed; --text-main: #3f2a1d; }
+body.portal-rider #root { min-height: 100vh; background: #fff7ed; }
+.portal-rider, .portal-rider main { background: #fff7ed !important; }
+.rider-portal { background: #fffaf5; border-color: #fdba74; color: #3f2a1d; box-shadow: 0 12px 35px rgba(154, 52, 18, .12); }
+.rider-header-card, .rider-online-toggle-box, .rider-active-job-card, .rider-no-jobs-card, .rider-empty-state, .profile-details-card { background: #ffffff; border-color: #fed7aa; }
+.rider-avatar { background: #ffedd5; border-color: #f97316; color: #9a3412; }
+.rider-header-profile h2, .job-card-header h3, .address-row strong { color: #3f2a1d; }
+.rider-header-profile p, .address-row p, .rider-online-toggle-box p { color: #786052; }
+.rider-online-toggle-box.online { border-color: #fb923c; box-shadow: 0 0 20px rgba(249, 115, 22, .12); }
+.rider-stat-card, .job-addresses, .rider-history-summary-card { background: #fff7ed; border-color: #fed7aa; }
+.rider-stat-card h3, .rider-history-summary-card .val { color: #c2410c; }
+.rider-stat-card h4, .rider-history-summary-card .lbl { color: #786052; }
+.job-status-pill { color: #c2410c; background: #ffedd5; border-color: #fdba74; }
+.rider-nav-button { background: #fff7ed; border-color: #fdba74; color: #9a3412; }
+.rider-nav-button:hover { background: #ffedd5; border-color: #f97316; }
+.profile-details-card h4 { color: #c2410c; border-bottom-color: #fed7aa; }
+.profile-details-card p, .history-item p { color: #786052; }
+.rider-logout-btn-card { border-color: #ea580c; color: #c2410c; }
+.rider-logout-btn-card:hover { background: #fff7ed; color: #9a3412; }
+.delivery-proof-card { border-color: #fdba74; background: linear-gradient(130deg, #ffedd5, #fffaf5); }
+.proof-eyebrow, .proof-code { color: #c2410c; }
+.proof-code { background: rgba(249, 115, 22, .12); }
+.proof-card-heading h4 { color: #3f2a1d; }
+.proof-details span { color: #5f4637; }
+.proof-details strong, .signature-line { color: #786052; }
+.signature-row, .rider-portal-footer { border-top-color: #fed7aa; }
+.rider-portal-footer { color: #9a7b69; }
+
+.history-item { background: #ffffff; border: 1px solid #fed7aa; box-shadow: 0 4px 12px rgba(154, 52, 18, .06); }
+.history-item:hover { border-color: #fb923c; box-shadow: 0 6px 16px rgba(154, 52, 18, .12); }
+.history-item h4 { color: #3f2a1d; }
+.history-time-txt { color: #9a7b69; }
+.pay-amount { color: #c2410c; }
+.rating-tag { color: #9a3412; background: #ffedd5; }
+
+/* Rider dark-theme toggle */
+body.portal-rider.rider-dark-theme { --background: #18181b; --text-main: #fff7ed; }
+body.portal-rider.rider-dark-theme #root { background: #18181b; }
+body.rider-dark-theme.portal-rider, body.rider-dark-theme .portal-rider, body.rider-dark-theme .portal-rider main { background: #18181b !important; }
+body.rider-dark-theme .rider-portal { background: #27272a; border-color: rgba(251, 146, 60, .3); color: #fff7ed; }
+body.rider-dark-theme .rider-header-card, body.rider-dark-theme .rider-online-toggle-box, body.rider-dark-theme .rider-active-job-card, body.rider-dark-theme .rider-no-jobs-card, body.rider-dark-theme .rider-empty-state, body.rider-dark-theme .profile-details-card, body.rider-dark-theme .history-item { background: #18181b; border-color: #3f3f46; }
+body.rider-dark-theme .rider-avatar { background: #431407; border-color: #fb923c; color: #ffedd5; }
+body.rider-dark-theme .rider-header-profile h2, body.rider-dark-theme .job-card-header h3, body.rider-dark-theme .address-row strong, body.rider-dark-theme .history-item h4 { color: #fff7ed; }
+body.rider-dark-theme .rider-header-profile p, body.rider-dark-theme .address-row p, body.rider-dark-theme .rider-online-toggle-box p, body.rider-dark-theme .history-item p, body.rider-dark-theme .history-time-txt { color: #a1a1aa; }
+body.rider-dark-theme .rider-stat-card, body.rider-dark-theme .job-addresses, body.rider-dark-theme .rider-history-summary-card { background: #27272a; border-color: #3f3f46; }
+body.rider-dark-theme .rider-stat-card h3, body.rider-dark-theme .rider-history-summary-card .val, body.rider-dark-theme .pay-amount { color: #fdba74; }
+body.rider-dark-theme .delivery-proof-card { background: linear-gradient(130deg, rgba(124, 45, 18, .3), #18181b); border-color: rgba(251, 146, 60, .3); }
+body.rider-dark-theme .proof-card-heading h4 { color: #fff7ed; }
+body.rider-dark-theme .proof-details span { color: #d6d3d1; }
+body.rider-dark-theme .rider-nav-button { background: #27272a; border-color: #52525b; color: #fff7ed; }
+body.rider-dark-theme .rider-portal-footer { border-top-color: #3f3f46; color: #a1a1aa; }
+
+/* The layout sits outside the portal card, so theme it explicitly as well. */
+body.portal-rider, body.portal-rider #root, body.portal-rider .rider-layout-wrapper-panel { background-color: #fff7ed !important; }
+body.portal-rider.rider-dark-theme, body.portal-rider.rider-dark-theme #root, body.portal-rider.rider-dark-theme .rider-layout-wrapper-panel { background: #18181b !important; }
+
+/* Light-theme route map */
+body.portal-rider:not(.rider-dark-theme) .full-map-card { background: #ffffff; border-color: #fed7aa; box-shadow: 0 4px 14px rgba(154, 52, 18, .07); }
+body.portal-rider:not(.rider-dark-theme) .map-meta-row { color: #786052; }
+body.portal-rider:not(.rider-dark-theme) .eta-badge { color: #c2410c; }
+body.portal-rider:not(.rider-dark-theme) .rider-map-svg { background: #fff7ed; border: 1px solid #fed7aa; }
+body.portal-rider:not(.rider-dark-theme) .rider-map-svg path:first-of-type { stroke: #fed7aa; }
+body.portal-rider:not(.rider-dark-theme) .rider-map-svg path:nth-of-type(2) { stroke: #f97316; }
+body.portal-rider:not(.rider-dark-theme) .rider-map-svg circle:nth-of-type(1), body.portal-rider:not(.rider-dark-theme) .rider-map-svg circle:nth-of-type(2) { fill: #fffaf5; }
+body.portal-rider:not(.rider-dark-theme) .rider-map-svg circle:nth-of-type(3) { fill: #f97316; }
+body.portal-rider:not(.rider-dark-theme) .rider-map-svg text { fill: #3f2a1d; }
+body.portal-rider:not(.rider-dark-theme) .map-instructions { background: #fff7ed; border-color: #fed7aa; }
+body.portal-rider:not(.rider-dark-theme) .map-instructions p { color: #3f2a1d; }
+body.portal-rider:not(.rider-dark-theme) .map-instructions p.sub { color: #786052; }
+
+/* Light-theme delivery task */
+body.portal-rider:not(.rider-dark-theme) .delivery-task-item { background: #ffffff; border-color: #fed7aa; box-shadow: 0 4px 14px rgba(154, 52, 18, .07); }
+body.portal-rider:not(.rider-dark-theme) .delivery-task-item h4 { color: #3f2a1d; }
+body.portal-rider:not(.rider-dark-theme) .delivery-task-item p { color: #786052; }
+body.portal-rider:not(.rider-dark-theme) .task-badge.active { background: #d1fae5; color: #047857; }
+body.portal-rider:not(.rider-dark-theme) .task-manage-btn { background: #fff7ed; border-color: #fdba74; color: #9a3412; }
+body.portal-rider:not(.rider-dark-theme) .task-manage-btn:hover { background: #ffedd5; border-color: #f97316; }
+
 .delivery-proof-card {
   margin: 20px 0;
   padding: 16px;
@@ -933,4 +1034,13 @@
 .signature-state { color: #fbbf24; font-size: 10px; font-weight: 800; text-transform: uppercase; white-space: nowrap; }
 .rider-portal-footer { display: flex; justify-content: space-between; gap: 16px; margin-top: 24px; padding: 18px 3px 2px; border-top: 1px solid rgba(148, 163, 184, .14); color: #64748b; font-size: 11px; }
 @media (max-width: 540px) { .proof-details { grid-template-columns: 1fr; } .rider-portal-footer { flex-direction: column; gap: 5px; } }
+
+.delivery-proof-card { border-color: rgba(251, 146, 60, .3); background: linear-gradient(130deg, rgba(124, 45, 18, .28), rgba(24, 24, 27, .9)); }
+.proof-eyebrow, .proof-code { color: #fdba74; }
+.proof-code { background: rgba(249, 115, 22, .16); }
+.proof-card-heading h4 { color: #fff7ed; }
+.proof-details span { color: #d4d4d8; }
+.proof-details strong, .signature-line { color: #a1a1aa; }
+.signature-row { border-top-color: rgba(251, 146, 60, .18); }
+.rider-portal-footer { border-top-color: #3f3f46; color: #a1a1aa; }
 

@@ -799,6 +799,7 @@ function ShopOwnerSidebar() {
 // ── 3. RIDER TOP & BOTTOM PORTAL NAVBARS (TEXT ONLY) ──
 function RiderTopNavbar() {
   const [online, setOnline] = useState(true)
+  const [theme, setTheme] = useState(localStorage.getItem('rider_theme') || 'light')
 
   useEffect(() => {
     const handleStatusUpdate = () => {
@@ -808,6 +809,12 @@ function RiderTopNavbar() {
     window.addEventListener('riderStatusUpdated', handleStatusUpdate)
     return () => window.removeEventListener('riderStatusUpdated', handleStatusUpdate)
   }, [])
+
+  useEffect(() => {
+    document.body.classList.toggle('rider-dark-theme', theme === 'dark')
+    localStorage.setItem('rider_theme', theme)
+    return () => document.body.classList.remove('rider-dark-theme')
+  }, [theme])
 
   return (
     <header className="rider-top-navbar">
@@ -835,6 +842,14 @@ function RiderTopNavbar() {
         <span className="rider-bell-alert" onClick={() => alert('Active jobs will be auto-allocated.')} style={{ cursor: 'pointer' }}>
           Notifications
         </span>
+        <button
+          className="rider-theme-toggle"
+          onClick={() => setTheme(current => current === 'light' ? 'dark' : 'light')}
+          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
+          title={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
+        >
+          {theme === 'light' ? '☾ Dark' : '☀ Light'}
+        </button>
         <button className="rider-nav-avatar" aria-label="Open profile" onClick={() => {
           localStorage.setItem('active_rider_tab', 'profile')
           window.dispatchEvent(new Event('riderTabChanged'))
