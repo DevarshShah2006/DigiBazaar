@@ -175,7 +175,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    user_name = serializers.CharField(source="user.username", read_only=True)
+    user_name = serializers.SerializerMethodField()
     user_phone = serializers.SerializerMethodField()
     shop_name = serializers.CharField(source="shop.name", read_only=True)
     shop_phone = serializers.SerializerMethodField()
@@ -191,6 +191,19 @@ class OrderSerializer(serializers.ModelSerializer):
         if obj.total_amount and obj.total_amount > 0:
             return float(obj.total_amount)
         return float(sum(item.price_at_order * item.quantity for item in obj.items.all()) + (obj.delivery_charge or 0))
+
+    def get_user_name(self, obj):
+        """Return a customer-facing name instead of an internal username."""
+        user = obj.user
+        try:
+            full_name = user.profile.full_name.strip()
+            if full_name:
+                return full_name
+        except Exception:
+            pass
+
+        full_name = user.get_full_name().strip()
+        return full_name or user.username
 
     def get_user_phone(self, obj):
         """Extract phone from username pattern user_XXXXXXXXXX"""
