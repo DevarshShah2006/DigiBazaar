@@ -4,14 +4,13 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import { CartProvider, useCart } from './context/CartContext'
 import AppRoutes from './routes/AppRoutes'
 import Cart from './components/Cart/Cart'
-import WishlistPanel from './components/Wishlist/WishlistPanel'
 import './App.css'
 import { fetchJson, apiFetch, clearCache, TTL } from './api/api'
 
 // ── 1. CUSTOMER NAVBAR (TEXT ONLY) ──
-function CustomerNavbar({ wishlistOpen, setWishlistOpen }) {
+function CustomerNavbar() {
   const { user, logout, isLoggedIn } = useAuth()
-  const { itemCount, setIsOpen, wishlistCount } = useCart()
+  const { itemCount, setIsOpen } = useCart()
   const navigate = useNavigate()
   
   // Location States
@@ -203,13 +202,6 @@ function CustomerNavbar({ wishlistOpen, setWishlistOpen }) {
           )}
         </div>
 
-        {/* Wishlist */}
-        <button className="nav-wishlist-btn" onClick={() => setWishlistOpen(true)}>
-          <span style={{ fontSize: '16px' }}>♡</span>
-          {wishlistCount > 0 && <span className="nav-wishlist-badge">{wishlistCount}</span>}
-          <span className="nav-wishlist-tooltip">View wishlist</span>
-        </button>
-
         {/* Cart */}
         <button className="nav-cart-btn-new" onClick={() => navigate('/cart')}>
           <span>Cart</span>
@@ -240,9 +232,6 @@ function CustomerNavbar({ wishlistOpen, setWishlistOpen }) {
                 </Link>
                 <button className="profile-dropdown-link" onClick={() => { setLocationOpen(true); setProfileOpen(false); }}>
                   Saved Addresses
-                </button>
-                <button className="profile-dropdown-link" onClick={() => { setWishlistOpen(true); setProfileOpen(false); }}>
-                  Wishlist
                 </button>
                 <button className="profile-dropdown-link" onClick={() => alert('Profile Settings coming soon!')}>
                   Settings
@@ -1090,7 +1079,6 @@ function AdminTopNavbar() {
 function AppInner() {
   const location = useLocation()
   const { user } = useAuth()
-  const [wishlistOpen, setWishlistOpen] = useState(false)
 
   // Scroll to top on route change
   useEffect(() => {
@@ -1145,9 +1133,8 @@ function AppInner() {
   // Default: customer layout (also renders AppRoutes which handles redirects)
   return (
     <>
-      <CustomerNavbar wishlistOpen={wishlistOpen} setWishlistOpen={setWishlistOpen} />
+      <CustomerNavbar />
       <Cart />
-      <WishlistPanel isOpen={wishlistOpen} onClose={() => setWishlistOpen(false)} />
       <main>
         <AppRoutes />
       </main>
