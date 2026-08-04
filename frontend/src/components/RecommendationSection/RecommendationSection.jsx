@@ -10,33 +10,47 @@ function RecommendationSection() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let cancelled = false
     const url = user ? `/recommend/${user.id}/` : null
-    const fallback = () => fetchJson('/products/').then(d => (d.results || d || []).slice(0, 8))
+    const fallback = () => fetchJson('/products/?page_size=8').then(d => (d.results || d || []).slice(0, 8))
 
-    if (url) {
-      fetchJson(url)
-        .then(data => {
-          const prods = Array.isArray(data) ? data : (data.results || [])
-          if (prods.length > 0) {
-            setProducts(prods.slice(0, 8))
-          } else {
-            return fallback().then(setProducts)
-          }
-        })
-        .catch(() => fallback().then(setProducts))
-        .finally(() => setLoading(false))
-    } else {
-      fallback().then(prods => {
-        setProducts(prods)
-        setLoading(false)
-      })
+    async function load() {
+      try {
+        let prods = []
+        if (url) {
+          const data = await fetchJson(url)
+          prods = Array.isArray(data) ? data : (data.results || [])
+        }
+
+        // If no personalized prods, fetch general products from DB
+        if (!prods || prods.length === 0) {
+          prods = await fallback()
+        }
+
+        if (!cancelled) setProducts((prods || []).slice(0, 8))
+      } catch (err) {
+        if (!cancelled) {
+          const prods = await fallback().catch(() => [])
+          setProducts((prods || []).slice(0, 8))
+        }
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
     }
+
+    load()
+
+    return () => { cancelled = true }
   }, [user])
 
   if (loading) return (
     <section className="rec-section">
-      <div className="section-header">
-        <h2 className="section-title">🤖 {user ? 'Recommended for You' : 'Popular Products'}</h2>
+      <div className="section-header" style={{ padding: '0 24px' }}>
+        <div className="section-title-group">
+          <h2 className="section-title">{user ? 'Recommended for You' : 'Popular Products'}</h2>
+          <p className="section-subtitle">Curated daily essentials based on your taste</p>
+        </div>
+        <div className="section-actions"><a href="/products?recommended=1" className="view-all">View All ▸</a></div>
       </div>
       <div className="rec-grid">
         {Array(8).fill(0).map((_, i) => <div key={i} className="skeleton-card rec-skeleton" />)}
@@ -44,24 +58,28 @@ function RecommendationSection() {
     </section>
   )
 
-  if (!products.length) return null
-
   return (
     <section className="rec-section">
       <div className="section-header" style={{ padding: '0 24px' }}>
         <div className="section-title-group">
           <h2 className="section-title">
-            {user ? '🤖 Recommended for You' : '⭐ Popular Products'}
+            {user ? 'Recommended for You' : '⭐ Popular Products'}
           </h2>
           <p className="section-subtitle">
-            {user ? 'Powered by our AI — based on your order history' : 'Our most loved picks'}
+            {user ? 'Curated daily essentials based on your taste' : 'Our most loved picks'}
           </p>
         </div>
+        <div className="section-actions"><a href="/products?recommended=1" className="view-all">View All ▸</a></div>
       </div>
+
       <div className="rec-grid">
-        {products.map(product => (
-          <ProductCard key={product.id} product={product} />
-        ))}
+        {products && products.length > 0 ? (
+          products.map(product => (
+            <ProductCard key={product.id} product={product} />
+          ))
+        ) : (
+          Array(8).fill(0).map((_, i) => <div key={i} className="skeleton-card rec-skeleton" />)
+        )}
       </div>
     </section>
   )

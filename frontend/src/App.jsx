@@ -203,7 +203,7 @@ function CustomerNavbar() {
         </div>
 
         {/* Cart */}
-        <button className="nav-cart-btn-new" onClick={() => setIsOpen(true)}>
+        <button className="nav-cart-btn-new" onClick={() => navigate('/cart')}>
           <span>Cart</span>
           {itemCount > 0 && <span className="nav-cart-badge-new">{itemCount}</span>}
         </button>
@@ -276,7 +276,11 @@ function ShopOwnerNavbar() {
 
   const searchRef = useRef(null)
 
+  const isAuthorizedShopOwner = isLoggedIn && (user?.role === 'shopowner' || user?.role === 'admin')
+
   const loadNavbarData = () => {
+    if (!isAuthorizedShopOwner) return
+
     fetchJson('/shops/my-products/')
       .then(data => {
         if (data && data.shop_name) {
@@ -355,6 +359,8 @@ function ShopOwnerNavbar() {
   }
 
   useEffect(() => {
+    if (!isAuthorizedShopOwner) return
+
     loadNavbarData()
 
     const syncStatus = () => {
@@ -373,11 +379,11 @@ function ShopOwnerNavbar() {
       window.removeEventListener('shopTabChanged', syncStatus)
       clearInterval(interval)
     }
-  }, [])
+  }, [isAuthorizedShopOwner])
 
   // Global Search API Call
   useEffect(() => {
-    if (!searchQuery.trim()) {
+    if (!searchQuery.trim() || !isAuthorizedShopOwner) {
       setSearchResults(null)
       return
     }
@@ -389,7 +395,7 @@ function ShopOwnerNavbar() {
     }, 250)
 
     return () => clearTimeout(timer)
-  }, [searchQuery])
+  }, [searchQuery, isAuthorizedShopOwner])
 
   useEffect(() => {
     function handleClickOutside(e) {

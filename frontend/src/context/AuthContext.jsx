@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useCallback, useEffect } from 'react'
+import { createContext, useContext, useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { loginUser, signupUser, verifyOTP } from '../api/auth'
 import { fetchJson } from '../api/api'
 
@@ -97,6 +98,8 @@ export function AuthProvider({ children }) {
     return { success: false, error: data?.detail || 'Signup failed' }
   }, [])
 
+  const navigate = useNavigate()
+
   const logout = useCallback(() => {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
@@ -105,35 +108,12 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('active_shop_tab')
     localStorage.removeItem('active_rider_tab')
     setUser(null)
-  }, [])
-
-  // Show minimal loading screen during token verification (prevents flash of wrong page)
-  if (!authChecked) {
-    return (
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        background: '#0f172a',
-        flexDirection: 'column',
-        gap: '16px'
-      }}>
-        <div style={{
-          width: '40px',
-          height: '40px',
-          borderRadius: '50%',
-          border: '3px solid #334155',
-          borderTopColor: '#4ade80',
-          animation: 'spin 0.8s linear infinite'
-        }} />
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-        <span style={{ color: '#94a3b8', fontSize: '14px', fontFamily: 'system-ui' }}>
-          Loading DigiBazaar...
-        </span>
-      </div>
-    )
-  }
+    try {
+      navigate('/login')
+    } catch (e) {
+      window.location.href = '/login'
+    }
+  }, [navigate])
 
   return (
     <AuthContext.Provider value={{ user, login, logout, signup, isLoggedIn: !!user }}>

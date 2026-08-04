@@ -1,10 +1,27 @@
-import { createContext, useContext, useState, useCallback } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 
 const CartContext = createContext(null)
 
+function loadCartFromStorage() {
+  try {
+    const stored = localStorage.getItem('digibazaar_cart')
+    return stored ? JSON.parse(stored) : []
+  } catch {
+    return []
+  }
+}
+
 export function CartProvider({ children }) {
-  const [items, setItems] = useState([])
+  const [items, setItems] = useState(loadCartFromStorage)
   const [isOpen, setIsOpen] = useState(false)
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('digibazaar_cart', JSON.stringify(items))
+    } catch {
+      // ignore localStorage failures
+    }
+  }, [items])
 
   const addItem = useCallback((product, quantity = 1) => {
     setItems(prev => {

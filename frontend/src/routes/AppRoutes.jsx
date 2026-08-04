@@ -66,11 +66,14 @@ function HomeOrPortal() {
   if (user?.role === 'rider') return <Navigate to="/rider" replace />
   return <Home />
 }
+import CartPage from '../pages/Cart/CartPage'
+import RequireAuth from '../components/Auth/RequireAuth'
 
 function AppRoutes() {
   return (
     <Routes>
       <Route path='/' element={<HomeOrPortal />} />
+      <Route path='/' element={<RequireAuth><Home /></RequireAuth>} />
       <Route path='/products' element={<Products />} />
       <Route path='/products/:id' element={<ProductDetail />} />
 
@@ -87,6 +90,14 @@ function AppRoutes() {
 
       {/* Catch all */}
       <Route path='*' element={<Navigate to="/" replace />} />
+      <Route path='/login' element={<Login />} />
+      <Route path='/signup' element={<Signup />} />
+      <Route path='/dashboard' element={<RequireAuth><ShopDashboard /></RequireAuth>} />
+      <Route path='/rider' element={<RiderPortal />} />
+      <Route path='/cart' element={<CartPage />} />
+      <Route path='/checkout' element={<Checkout />} />
+      <Route path='/my-orders' element={<MyOrders />} />
+      <Route path='/order-confirmation/:orderId' element={<OrderConfirmation />} />
     </Routes>
   )
 }
