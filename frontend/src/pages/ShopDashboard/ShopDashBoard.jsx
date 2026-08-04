@@ -87,7 +87,7 @@ function OrderCountdownTimer({ createdAt, onTimeout }) {
     <div className={`order-timer-badge ${timeLeft <= 20 ? 'urgent' : ''}`}>
       {timeLeft > 0
         ? <>Auto-reject in: <span className="timer-seconds font-mono">{formatTime(timeLeft)}</span></>
-        : <span style={{color:'#ef4444', fontWeight: 700}}>⏰ Timed out — routing to next shop…</span>
+        : <span style={{color:'#ef4444', fontWeight: 700}}>Timed out - routing to next shop...</span>
       }
     </div>
   )
@@ -747,7 +747,7 @@ function ShopDashboard() {
     return (
       <div className="shop-error-container container" style={{ padding: '60px 20px', textAlign: 'center' }}>
         <div className="error-card-panel" style={{ background: '#1e293b', padding: '36px', borderRadius: '16px', border: '1px solid #334155', maxWidth: '520px', margin: '0 auto', color: '#fff' }}>
-          <h2 style={{ fontSize: '22px', color: '#f43f5e', marginBottom: '12px' }}>🚫 Access Restricted</h2>
+          <h2 style={{ fontSize: '22px', color: '#f43f5e', marginBottom: '12px' }}>Access Restricted</h2>
           <p style={{ color: '#94a3b8', fontSize: '14px', marginBottom: '20px' }}>
             You are currently logged in as <strong>{user?.username || 'Customer'}</strong> ({user?.role || 'customer'}). This section is reserved for verified Shop Owners.
           </p>

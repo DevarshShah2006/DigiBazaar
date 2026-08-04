@@ -224,7 +224,7 @@ function CustomerNavbar() {
                 </div>
                 {(user?.role === 'admin' || user?.username?.includes('admin') || user?.username?.includes('9111111111')) && (
                   <Link to="/admin" className="profile-dropdown-link" style={{ background: '#e0e7ff', color: '#4338ca', fontWeight: 'bold' }} onClick={() => setProfileOpen(false)}>
-                    🛡️ Admin Portal
+                    Admin Portal
                   </Link>
                 )}
                 <Link to="/my-orders" className="profile-dropdown-link" onClick={() => setProfileOpen(false)}>
@@ -836,7 +836,7 @@ function RiderTopNavbar() {
           aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
           title={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
         >
-          {theme === 'light' ? '☾ Dark' : '☀ Light'}
+          {theme === 'light' ? 'Dark' : 'Light'}
         </button>
         <button className="rider-nav-avatar" aria-label="Open profile" onClick={() => {
           localStorage.setItem('active_rider_tab', 'profile')
