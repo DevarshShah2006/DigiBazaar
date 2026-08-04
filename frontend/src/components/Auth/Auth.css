@@ -19,7 +19,7 @@
   --primary-light: #d1fae5;
   --background: #f0fdf4;
   --card-bg: #ffffff;
-  --text-main: #064e3b;
+  --text-main: #654321;  /* Brown color for text */
   --text-muted: #6b7280;
   --border: rgba(4, 120, 87, 0.1);
   --shadow: 0 10px 30px -5px rgba(4, 120, 87, 0.08);
@@ -206,6 +206,14 @@
   color: #555;
 }
 
+/* Rider card specific text color - brown */
+.role-select-card.rider h4,
+.role-select-card.rider p,
+.auth-page.portal-rider .role-select-card.rider h4,
+.auth-page.portal-rider .role-select-card.rider p {
+  color: #654321 !important;
+}
+
 /* Active states for role selections */
 .role-select-card.active.customer {
   border-color: #047857;
@@ -259,7 +267,7 @@
 }
 
 .role-icon.rider-icon {
-  background: #047857;
+  background: #3b82f6;  /* Blue 500 */
 }
 
 .role-icon.admin-icon {
@@ -276,8 +284,10 @@
   background: #ecfeff;
 }
 .role-select-card.active.rider {
-  border-color: #6366f1;
-  background: #eef2ff;
+  border-color: #047857;  /* Green border to match customer */
+  background: linear-gradient(135deg, rgba(4, 120, 87, 0.12), rgba(4, 120, 87, 0.05));
+  box-shadow: 0 4px 14px rgba(4, 120, 87, 0.18);
+  transform: translateY(-2px);
 }
 .role-select-card.active.admin {
   border-color: #4338ca;
