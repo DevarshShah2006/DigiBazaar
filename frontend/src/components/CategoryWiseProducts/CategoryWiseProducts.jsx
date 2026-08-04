@@ -24,10 +24,10 @@ function CategoryWiseProducts() {
           return
         }
         
-        // Fetch products for each category in parallel
+        // Fetch products for each category in parallel (request limit=20 to ensure we have enough unique products after grouping variants)
         const promises = categories.map(cat =>
-          apiFetch(`/categories/${cat.slug}/products/?limit=6`, {}, TTL.NORMAL)
-            .then(products => withGroupedVariants(products || []))
+          apiFetch(`/categories/${cat.slug}/products/?limit=20`, {}, TTL.NORMAL)
+            .then(products => withGroupedVariants(products || []).slice(0, 5))
             .catch(() => [])
         )
         
@@ -65,7 +65,7 @@ function CategoryWiseProducts() {
           <div key={block.category.id} className="category-block">
             <div className="category-block__header">
               <div>
-                <h3>{block.category.name}</h3>
+                <h3>{block.category.name === 'Homegrown' ? 'Snacks & Munchies' : block.category.name}</h3>
                 <p className="category-subtitle">Farm to table, delivered in minutes</p>
               </div>
               <div className="category-actions"><a href={`/products?category=${encodeURIComponent(block.category.slug || block.category.name)}`} className="view-all">View All Items ▸</a></div>

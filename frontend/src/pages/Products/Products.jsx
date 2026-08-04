@@ -30,7 +30,12 @@ function Products() {
   const [maxPrice, setMaxPrice] = useState('')
   const [ordering, setOrdering] = useState('-review_count')
   const activeCategory = categories.find(c => c.slug === catParam || c.name === catParam)
-  const activeCategoryName = activeCategory?.name || catParam
+  const getCategoryDisplayName = (name) => {
+    if (!name) return name
+    if (name.toLowerCase() === 'homegrown') return 'Snacks & Munchies'
+    return name
+  }
+  const activeCategoryName = getCategoryDisplayName(activeCategory?.name || catParam)
 
   // Load categories list on mount
   useEffect(() => {
@@ -253,7 +258,7 @@ function Products() {
                     className={`category-list-btn ${catParam === cat.slug || catParam === cat.name ? 'active' : ''}`}
                     onClick={() => handleCategorySelect(cat.slug)}
                   >
-                    <span>{cat.name}</span>
+                    <span>{cat.name === 'Homegrown' ? 'Snacks & Munchies' : cat.name}</span>
                     <span className="category-count-badge">{cat.product_count}</span>
                   </button>
                 ))}

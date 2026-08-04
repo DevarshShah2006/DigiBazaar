@@ -15,15 +15,15 @@ function RecommendationSection() {
 
     async function load() {
       try {
-        // Use the new optimized recommended products API
-        const data = await apiFetch('/products/recommended/?limit=8', {}, TTL.NORMAL)
+        // Fetch products from the instant food category (request limit=20 to ensure we have enough unique products after grouping variants)
+        const data = await apiFetch('/categories/instant-food/products/?limit=20', {}, TTL.NORMAL)
         const prods = Array.isArray(data) ? data : (data.results || data || [])
         
         if (!cancelled) setProducts(withGroupedVariants(prods || []).slice(0, 8))
       } catch (err) {
         if (!cancelled) {
-          // Fallback to general products
-          const fallbackData = await apiFetch('/products/?page_size=8', {}, TTL.SHORT).catch(() => [])
+          // Fallback to recommended products API
+          const fallbackData = await apiFetch('/products/recommended/?limit=8', {}, TTL.SHORT).catch(() => [])
           const prods = (fallbackData.results || fallbackData || [])
           setProducts(withGroupedVariants(prods || []).slice(0, 8))
         }
@@ -42,9 +42,9 @@ function RecommendationSection() {
       <div className="section-header" style={{ padding: '0 24px' }}>
         <div className="section-title-group">
           <h2 className="section-title">{user ? 'Recommended for You' : 'Popular Products'}</h2>
-          <p className="section-subtitle">Curated daily essentials based on your taste</p>
+          <p className="section-subtitle">Quick and delicious instant foods based on your taste</p>
         </div>
-        <div className="section-actions"><a href="/products?recommended=1" className="view-all">View All ▸</a></div>
+        <div className="section-actions"><a href="/products?category=instant-food" className="view-all">View All ▸</a></div>
       </div>
       <div className="rec-grid">
         {Array(8).fill(0).map((_, i) => <div key={i} className="skeleton-card rec-skeleton" />)}
@@ -60,10 +60,10 @@ function RecommendationSection() {
             {user ? 'Recommended for You' : '⭐ Popular Products'}
           </h2>
           <p className="section-subtitle">
-            {user ? 'Curated daily essentials based on your taste' : 'Our most loved picks'}
+            {user ? 'Quick and delicious instant foods based on your taste' : 'Quick and delicious instant foods'}
           </p>
         </div>
-        <div className="section-actions"><a href="/products?recommended=1" className="view-all">View All ▸</a></div>
+        <div className="section-actions"><a href="/products?category=instant-food" className="view-all">View All ▸</a></div>
       </div>
 
       <div className="rec-grid">
