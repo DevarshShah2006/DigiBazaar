@@ -14,15 +14,36 @@
 /* Override for rider portal login - use same light theme as customer */
 .auth-page.portal-rider .auth-card,
 .auth-page.portal-rider {
-  --primary: #047857;
-  --primary-hover: #065f46;
-  --primary-light: #d1fae5;
+  --primary: #8B4513;  /* Brown for primary color (button background) */
+  --primary-hover: #654321;  /* Darker brown for hover */
+  --primary-light: #D2B48C;  /* Light brown for logo gradient */
   --background: #f0fdf4;
   --card-bg: #ffffff;
-  --text-main: #654321;  /* Brown color for text */
+  --text-main: #1a1a1a;  /* Black color for text */
   --text-muted: #6b7280;
-  --border: rgba(4, 120, 87, 0.1);
-  --shadow: 0 10px 30px -5px rgba(4, 120, 87, 0.08);
+  --border: rgba(139, 69, 19, 0.1);
+  --shadow: 0 10px 30px -5px rgba(139, 69, 19, 0.08);
+}
+
+/* Rider portal specific overrides */
+.auth-page.portal-rider .auth-logo {
+  color: #8B4513 !important;
+  background: linear-gradient(135deg, #8B4513, #654321) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+.auth-page.portal-rider .auth-primary-btn {
+  background: #8B4513 !important;
+}
+
+.auth-page.portal-rider .auth-redirect a {
+  color: #000000 !important;
+}
+
+.auth-page.portal-rider .auth-redirect a:hover {
+  color: #000000 !important;
 }
 
 /* Subtle background pattern */
@@ -214,6 +235,12 @@
   color: #654321 !important;
 }
 
+/* Override rider card text to black when rider is selected */
+.auth-page.portal-rider .role-select-card.rider h4,
+.auth-page.portal-rider .role-select-card.rider p {
+  color: #1a1a1a !important;
+}
+
 /* Active states for role selections */
 .role-select-card.active.customer {
   border-color: #047857;
@@ -237,9 +264,9 @@
 }
 
 .role-select-card.active.admin {
-  border-color: #4338ca;
-  background: linear-gradient(135deg, rgba(67, 56, 202, 0.12), rgba(67, 56, 202, 0.05));
-  box-shadow: 0 4px 14px rgba(67, 56, 202, 0.18);
+  border-color: #8B4513;
+  background: linear-gradient(135deg, rgba(139, 69, 19, 0.12), rgba(139, 69, 19, 0.05));
+  box-shadow: 0 4px 14px rgba(139, 69, 19, 0.18);
   transform: translateY(-2px);
 }
 
@@ -271,7 +298,7 @@
 }
 
 .role-icon.admin-icon {
-  background: #4338ca;
+  background: #3b82f6;  /* Blue for admin icon */
 }
 
 /* Active states for role selections */
@@ -284,20 +311,43 @@
   background: #ecfeff;
 }
 .role-select-card.active.rider {
-  border-color: #047857;  /* Green border to match customer */
-  background: linear-gradient(135deg, rgba(4, 120, 87, 0.12), rgba(4, 120, 87, 0.05));
-  box-shadow: 0 4px 14px rgba(4, 120, 87, 0.18);
+  border-color: #8B4513;  /* Brown border for rider */
+  background: linear-gradient(135deg, rgba(139, 69, 19, 0.12), rgba(139, 69, 19, 0.05));
+  box-shadow: 0 4px 14px rgba(139, 69, 19, 0.18);
   transform: translateY(-2px);
 }
 .role-select-card.active.admin {
-  border-color: #4338ca;
-  background: #e0e7ff;
+  border-color: #8B4513;  /* Brown border for admin */
+  background: linear-gradient(135deg, rgba(139, 69, 19, 0.12), rgba(139, 69, 19, 0.05));
+  box-shadow: 0 4px 14px rgba(139, 69, 19, 0.18);
+  transform: translateY(-2px);
 }
 
 .portal-admin {
-  --primary: #4338ca;
-  --primary-hover: #3730a3;
-  --primary-light: #e0e7ff;
+  --primary: #8B4513;
+  --primary-hover: #654321;
+  --primary-light: #D2B48C;
+}
+
+/* Admin portal specific overrides */
+.auth-page.portal-admin .auth-logo {
+  color: #8B4513 !important;
+  background: linear-gradient(135deg, #8B4513, #654321) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+.auth-page.portal-admin .auth-primary-btn {
+  background: #8B4513 !important;
+}
+
+.auth-page.portal-admin .auth-redirect a {
+  color: #000000 !important;
+}
+
+.auth-page.portal-admin .auth-redirect a:hover {
+  color: #000000 !important;
 }
 
 .phone-input-group {
