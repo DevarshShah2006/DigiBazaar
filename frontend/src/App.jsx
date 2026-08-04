@@ -1078,12 +1078,17 @@ function AdminTopNavbar() {
 // ── MAIN APPLICATION WRAPPER ──
 function AppInner() {
   const location = useLocation()
-  const { user } = useAuth()
+  const { user, authChecked } = useAuth()
 
   // Scroll to top on route change
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' })
   }, [location.pathname])
+
+  // Wait for auth to be checked before rendering any layout
+  if (!authChecked) {
+    return <div style={{ padding: '24px', textAlign: 'center' }}>Loading...</div>
+  }
 
   // Determine layout by BOTH route AND user role
   // Route-based checks for portal paths

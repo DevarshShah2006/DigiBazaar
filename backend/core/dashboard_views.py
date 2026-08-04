@@ -11,7 +11,7 @@ from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core.models import Shop, Order, OrderItem, Inventory, Product, Coupon
+from core.models import Shop, Order, OrderItem, Inventory, Product, Coupon, ShopProduct
 
 # Open-Meteo Weather Codes Mapping
 WEATHER_CODES = {
@@ -26,6 +26,37 @@ WEATHER_CODES = {
     85: "Slight Snow Showers", 86: "Heavy Snow Showers",
     95: "Thunderstorm", 96: "Thunderstorm with Slight Hail", 99: "Thunderstorm with Heavy Hail"
 }
+
+
+def seed_starter_inventory(shop, limit=12):
+    if not shop or Inventory.objects.filter(shop=shop).exists():
+        return
+
+    products = Product.objects.filter(status='active', visibility=True).order_by('id')[:limit]
+    if not products:
+        products = Product.objects.all().order_by('id')[:limit]
+
+    for idx, product in enumerate(products):
+        price = product.effective_price or product.price or product.selling_price or 0
+        stock = 35 + (idx * 7) % 90
+        ShopProduct.objects.get_or_create(
+            shop=shop,
+            product=product,
+            defaults={'custom_price': price, 'is_available': True},
+        )
+        Inventory.objects.get_or_create(
+            shop=shop,
+            product=product,
+            defaults={
+                'current_stock': stock,
+                'min_stock': 8,
+                'max_stock': 250,
+                'reorder_level': 12,
+                'selling_price': price,
+                'purchase_price': round(float(price) * 0.75, 2) if price else 0,
+            },
+        )
+        shop.products.add(product)
 
 def get_shop_for_owner(user):
     if not user or not getattr(user, 'is_authenticated', False):
@@ -45,6 +76,7 @@ def get_shop_for_owner(user):
     if owner:
         shop = Shop.objects.filter(owner=owner).first()
         if shop:
+            seed_starter_inventory(shop)
             return shop
         from core.models import Category
         from decimal import Decimal
@@ -63,6 +95,7 @@ def get_shop_for_owner(user):
                 long=Decimal("72.5714"),
                 is_open=True
             )
+            seed_starter_inventory(shop)
             return shop
         except Exception:
             return Shop.objects.first()

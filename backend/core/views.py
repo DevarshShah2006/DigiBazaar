@@ -364,7 +364,7 @@ class VerifyOTPView(APIView):
             user.save(update_fields=['is_staff', 'is_superuser'])
 
         # If user explicitly logged in as shopowner, ensure ShopOwner profile & Shop exist
-        if requested_role == 'shopowner' or phone.startswith('90000000'):
+        if requested_role == 'shopowner':
             from .models import ShopOwner, Shop
             so, _ = ShopOwner.objects.get_or_create(user=user, defaults={'phone': phone})
             # Ensure a shop exists for this owner
@@ -389,7 +389,9 @@ class VerifyOTPView(APIView):
                 )
                 if first_cat:
                     new_shop.categories.add(first_cat)
-        elif requested_role == 'rider' or phone.startswith('9876500'):
+                from core.dashboard_views import seed_starter_inventory
+                seed_starter_inventory(new_shop)
+        elif requested_role == 'rider':
             rider_prof, _ = Rider.objects.get_or_create(
                 user=user,
                 defaults={
@@ -400,12 +402,16 @@ class VerifyOTPView(APIView):
                 }
             )
 
+        user_data = UserSerializer(user).data
+        if not is_admin_phone and requested_role in ('customer', 'shopowner', 'rider'):
+            user_data['role'] = requested_role
+
         refresh = RefreshToken.for_user(user)
         return Response({
             'detail': 'OTP verified successfully',
             'access': str(refresh.access_token),
             'refresh': str(refresh),
-            'user': UserSerializer(user).data
+            'user': user_data
         }, status=status.HTTP_200_OK)
 
 

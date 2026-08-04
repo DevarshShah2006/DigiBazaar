@@ -54,16 +54,10 @@ const LoginForm = () => {
     setLoading(false)
     if (result.success) {
       setStep('success')
+      // Let AppRoutes handle the redirect based on user role
+      // No manual redirect here to avoid race conditions
       setTimeout(() => {
-        if (role === 'admin' || phone === '9111111111' || result.user?.role === 'admin') {
-          navigate('/admin')
-        } else if (role === 'shopowner') {
-          navigate('/dashboard')
-        } else if (role === 'rider') {
-          navigate('/rider')
-        } else {
-          navigate('/')
-        }
+        navigate('/')
       }, 1000)
     } else {
       setError(result.error || 'Your phone number is not registered. Please sign up first.')

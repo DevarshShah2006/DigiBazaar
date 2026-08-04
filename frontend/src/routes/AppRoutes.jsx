@@ -17,7 +17,14 @@ const RequireAuth = lazy(() => import('../components/Auth/RequireAuth'))
 
 // Redirects logged-in users away from login/signup pages to their dashboard
 function GuestRoute({ children }) {
-  const { user } = useAuth()
+  const { user, authChecked } = useAuth()
+  
+  // Wait until auth is checked to avoid race conditions
+  if (!authChecked) {
+    // Return a loading state or null to prevent premature redirect
+    return <div style={{ padding: '24px', textAlign: 'center' }}>Loading...</div>
+  }
+  
   if (!user) return children
 
   if (user.role === 'admin') return <Navigate to="/admin" replace />
@@ -28,16 +35,18 @@ function GuestRoute({ children }) {
 
 // Requires any authenticated user
 function ProtectedRoute({ children }) {
-  const { user } = useAuth()
+  const { user, authChecked } = useAuth()
   const location = useLocation()
+  if (!authChecked) return <div style={{ padding: '24px', textAlign: 'center' }}>Loading...</div>
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />
   return children
 }
 
 // Requires admin role
 function AdminRoute({ children }) {
-  const { user } = useAuth()
+  const { user, authChecked } = useAuth()
   const location = useLocation()
+  if (!authChecked) return <div style={{ padding: '24px', textAlign: 'center' }}>Loading...</div>
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />
   if (user.role !== 'admin') return <Navigate to="/" replace />
   return children
@@ -45,8 +54,9 @@ function AdminRoute({ children }) {
 
 // Requires shopowner or admin role
 function ShopOwnerRoute({ children }) {
-  const { user } = useAuth()
+  const { user, authChecked } = useAuth()
   const location = useLocation()
+  if (!authChecked) return <div style={{ padding: '24px', textAlign: 'center' }}>Loading...</div>
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />
   if (user.role !== 'shopowner' && user.role !== 'admin') return <Navigate to="/" replace />
   return children
@@ -54,8 +64,9 @@ function ShopOwnerRoute({ children }) {
 
 // Requires rider role
 function RiderRoute({ children }) {
-  const { user } = useAuth()
+  const { user, authChecked } = useAuth()
   const location = useLocation()
+  if (!authChecked) return <div style={{ padding: '24px', textAlign: 'center' }}>Loading...</div>
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />
   if (user.role !== 'rider' && user.role !== 'admin') return <Navigate to="/" replace />
   return children
@@ -63,7 +74,13 @@ function RiderRoute({ children }) {
 
 // Smart home redirect: if logged in as a special role, go to their portal
 function HomeOrPortal() {
-  const { user } = useAuth()
+  const { user, authChecked } = useAuth()
+  
+  // Wait until auth is checked to avoid race conditions
+  if (!authChecked) {
+    return <div style={{ padding: '24px', textAlign: 'center' }}>Loading...</div>
+  }
+  
   if (user?.role === 'admin') return <Navigate to="/admin" replace />
   if (user?.role === 'shopowner') return <Navigate to="/dashboard" replace />
   if (user?.role === 'rider') return <Navigate to="/rider" replace />

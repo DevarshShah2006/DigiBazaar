@@ -23,9 +23,6 @@ class UserSerializer(serializers.ModelSerializer):
         # Admin check first (highest priority)
         if obj.is_staff or obj.is_superuser or obj.username.startswith('admin_') or '9111111111' in obj.username or '9111111111' in (obj.email or ''):
             return 'admin'
-        # Explicit customer username takes priority
-        if obj.username.startswith('user_'):
-            return 'customer'
         # Explicit rider check
         if obj.username.startswith('rider_'):
             return 'rider'
@@ -33,6 +30,8 @@ class UserSerializer(serializers.ModelSerializer):
         if obj.username.startswith('owner_'):
             return 'shopowner'
 
+        # Profile roles take priority over the generic user_ prefix because
+        # phone signup creates usernames as user_<phone> for all selected roles.
         try:
             obj.shop_owner_profile
             return 'shopowner'
@@ -43,6 +42,8 @@ class UserSerializer(serializers.ModelSerializer):
             return 'rider'
         except Exception:
             pass
+        if obj.username.startswith('user_'):
+            return 'customer'
         return 'customer'
 
     def create(self, validated_data):

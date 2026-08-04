@@ -15,6 +15,17 @@ function getStoredUser() {
   }
 }
 
+function getActiveRole() {
+  const role = localStorage.getItem('active_login_role')
+  return ['customer', 'shopowner', 'rider'].includes(role) ? role : null
+}
+
+function withActiveRole(userData) {
+  if (!userData || userData.role === 'admin') return userData
+  const activeRole = getActiveRole()
+  return activeRole ? { ...userData, role: activeRole } : userData
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(getStoredUser)
   const [authChecked, setAuthChecked] = useState(false)
@@ -40,9 +51,11 @@ export function AuthProvider({ children }) {
     fetchJson('/auth/me/')
       .then(data => {
         if (data && data.user) {
-          // Update stored user with fresh server data (role may have changed)
-          localStorage.setItem('user', JSON.stringify(data.user))
-          setUser(data.user)
+          // Update stored user with fresh server data while preserving the
+          // role selected for this portal session.
+          const userData = withActiveRole(data.user)
+          localStorage.setItem('user', JSON.stringify(userData))
+          setUser(userData)
           // Mark as verified for the rest of this browser session
           sessionStorage.setItem('auth_verified', '1')
         } else {
@@ -83,11 +96,18 @@ export function AuthProvider({ children }) {
     }
 
     if (data && data.access) {
+      const loginRole = data.user?.role === 'admin' ? 'admin' : (credentials.role || data.user?.role)
+      const userData = loginRole ? { ...data.user, role: loginRole } : data.user
       localStorage.setItem('access_token', data.access)
       localStorage.setItem('refresh_token', data.refresh)
-      localStorage.setItem('user', JSON.stringify(data.user))
-      setUser(data.user)
-      return { success: true, user: data.user }
+      if (userData?.role && userData.role !== 'admin') {
+        localStorage.setItem('active_login_role', userData.role)
+      } else {
+        localStorage.removeItem('active_login_role')
+      }
+      localStorage.setItem('user', JSON.stringify(userData))
+      setUser(userData)
+      return { success: true, user: userData }
     }
     return { success: false, error: data?.detail || 'Login failed' }
   }, [])
@@ -103,11 +123,13 @@ export function AuthProvider({ children }) {
 
     const data = await signupUser(payload)
     if (data && data.access) {
+      const userData = withActiveRole({ ...data.user, role: payload.role })
       localStorage.setItem('access_token', data.access)
       localStorage.setItem('refresh_token', data.refresh)
-      localStorage.setItem('user', JSON.stringify(data.user))
-      setUser(data.user)
-      return { success: true, user: data.user }
+      localStorage.setItem('active_login_role', userData.role)
+      localStorage.setItem('user', JSON.stringify(userData))
+      setUser(userData)
+      return { success: true, user: userData }
     }
     return { success: false, error: data?.detail || 'Signup failed' }
   }, [])
@@ -118,6 +140,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
     localStorage.removeItem('user')
+    localStorage.removeItem('active_login_role')
     // Clear portal-specific state so tabs don't persist across sessions
     localStorage.removeItem('active_shop_tab')
     localStorage.removeItem('active_rider_tab')
@@ -132,7 +155,7 @@ export function AuthProvider({ children }) {
   }, [navigate])
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, signup, isLoggedIn: !!user }}>
+    <AuthContext.Provider value={{ user, login, logout, signup, isLoggedIn: !!user, authChecked }}>
       {children}
     </AuthContext.Provider>
   )
@@ -151,7 +174,8 @@ export function useAuth() {
       login: async () => ({ success: false, error: 'No provider' }),
       logout: () => {},
       signup: async () => ({ success: false, error: 'No provider' }),
-      isLoggedIn: false
+      isLoggedIn: false,
+      authChecked: true
     }
   }
 

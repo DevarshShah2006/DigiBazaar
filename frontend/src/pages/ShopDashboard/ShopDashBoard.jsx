@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { getOrders, acceptOrder, rejectOrder, advanceOrder } from '../../api/orders'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
-import { fetchJson } from '../../api/api'
+import { fetchJson, apiFetch, TTL } from '../../api/api'
 import './ShopDashBoard.css'
 
 import { Line, Doughnut, Bar } from 'react-chartjs-2'
@@ -155,7 +155,7 @@ function ShopDashboard() {
       setActiveTab(tab)
     }
     const handleStatusSync = () => {
-      fetchJson('/shops/my-products/').then(data => {
+      apiFetch('/shops/my-products/', {}, TTL.SHORT).then(data => {
         if (data) setShopInfo(data)
       }).catch(() => {})
     }
@@ -298,7 +298,7 @@ function ShopDashboard() {
     setReportsLoading(true)
     setError('')
     try {
-      const data = await fetchJson(`/shop/dashboard/reports/?period=${period}`)
+      const data = await apiFetch(`/shop/dashboard/reports/?period=${period}`, {}, TTL.SHORT)
       setReportsData(data)
     } catch {
       setError('Failed to load sales report.')
@@ -311,11 +311,12 @@ function ShopDashboard() {
     setCrmLoading(true)
     setError('')
     try {
-      const data = await fetchJson(`/shop/dashboard/customers/?page=${page}`)
-      setCrmData(data)
-      setCrmTotalCount(data.total_count || (data.customers ? data.customers.length : 0))
-      setCrmTotalPages(data.total_pages || 1)
-      setCrmPage(data.current_page || page)
+      const data = await apiFetch(`/shop/dashboard/customers/?page=${page}`, {}, TTL.SHORT)
+      const crm = data || { customers: [] }
+      setCrmData(crm)
+      setCrmTotalCount(crm.total_count || (crm.customers ? crm.customers.length : 0))
+      setCrmTotalPages(crm.total_pages || 1)
+      setCrmPage(crm.current_page || page)
     } catch {
       setError('Failed to load customer CRM data.')
     } finally {
@@ -327,7 +328,7 @@ function ShopDashboard() {
     setPromotionsLoading(true)
     setError('')
     try {
-      const data = await fetchJson('/shop/dashboard/promotions/')
+      const data = await apiFetch('/shop/dashboard/promotions/', {}, TTL.SHORT)
       setPromotionsData(data)
     } catch {
       setError('Failed to load promotions.')
@@ -340,7 +341,7 @@ function ShopDashboard() {
     setGrowthLoading(true)
     setError('')
     try {
-      const data = await fetchJson('/shop/dashboard/growth/')
+      const data = await apiFetch('/shop/dashboard/growth/', {}, TTL.SHORT)
       setGrowthData(data)
     } catch {
       setError('Failed to load growth hub data.')
@@ -353,7 +354,7 @@ function ShopDashboard() {
     setSettingsLoading(true)
     setError('')
     try {
-      const data = await fetchJson('/shop/dashboard/settings/')
+      const data = await apiFetch('/shop/dashboard/settings/', {}, TTL.SHORT)
       setSettingsData(data)
     } catch {
       setError('Failed to load store settings.')
@@ -472,24 +473,24 @@ function ShopDashboard() {
     setOverviewLoading(true)
     try {
       const [revToday, revMonth, topProds, trends, lowS, outS, expP, slowM, weather] = await Promise.all([
-        fetchJson('/shop/dashboard/revenue-today/'),
-        fetchJson('/shop/dashboard/revenue-month/'),
-        fetchJson('/shop/dashboard/top-products/'),
-        fetchJson('/shop/dashboard/search-trends/'),
-        fetchJson('/shop/dashboard/low-stock/'),
-        fetchJson('/shop/dashboard/out-of-stock/'),
-        fetchJson('/shop/dashboard/expiring-products/'),
-        fetchJson('/shop/dashboard/slow-moving/'),
-        fetchJson('/shop/dashboard/weather/'),
+        apiFetch('/shop/dashboard/revenue-today/', {}, TTL.SHORT),
+        apiFetch('/shop/dashboard/revenue-month/', {}, TTL.SHORT),
+        apiFetch('/shop/dashboard/top-products/', {}, TTL.SHORT),
+        apiFetch('/shop/dashboard/search-trends/', {}, TTL.SHORT),
+        apiFetch('/shop/dashboard/low-stock/', {}, TTL.SHORT),
+        apiFetch('/shop/dashboard/out-of-stock/', {}, TTL.SHORT),
+        apiFetch('/shop/dashboard/expiring-products/', {}, TTL.SHORT),
+        apiFetch('/shop/dashboard/slow-moving/', {}, TTL.SHORT),
+        apiFetch('/shop/dashboard/weather/', {}, TTL.WEATHER),
       ])
-      setRevenueToday(revToday)
-      setRevenueMonth(revMonth)
-      setTopProductsList(topProds)
-      setSearchTrends(trends)
-      setLowStockList(lowS)
-      setOutOfStockList(outS)
-      setExpiringProducts(expP)
-      setSlowMovingProducts(slowM)
+      setRevenueToday(revToday || null)
+      setRevenueMonth(revMonth || null)
+      setTopProductsList(Array.isArray(topProds) ? topProds : [])
+      setSearchTrends(Array.isArray(trends) ? trends : [])
+      setLowStockList(Array.isArray(lowS) ? lowS : [])
+      setOutOfStockList(Array.isArray(outS) ? outS : [])
+      setExpiringProducts(Array.isArray(expP) ? expP : [])
+      setSlowMovingProducts(Array.isArray(slowM) ? slowM : [])
       setWeatherData(weather)
     } catch (err) {
       console.error("Failed to load dashboard overview stats", err)
@@ -514,8 +515,8 @@ function ShopDashboard() {
         setOrdersTotalPages(1)
       }
       
-      // Load current shop info (like live inventory flag)
-      const shopProductsData = await fetchJson('/shops/my-products/')
+      // Load current shop info (like live inventory flag) - use cached API
+      const shopProductsData = await apiFetch('/shops/my-products/', {}, TTL.SHORT)
       setShopInfo(shopProductsData)
     } catch {
       setError('Failed to load shop orders.')
@@ -528,17 +529,18 @@ function ShopDashboard() {
     setInventoryLoading(true)
     setError('')
     try {
-      const data = await fetchJson(`/shops/my-products/?page=${page}`)
-      setMyInventory(data.products || [])
-      setShopInfo(data)
-      setInventoryTotalCount(data.total_count || (data.products ? data.products.length : 0))
-      setInventoryTotalPages(data.total_pages || 1)
-      setInventoryPage(data.current_page || page)
+      const data = await apiFetch(`/shops/my-products/?page=${page}`, {}, TTL.SHORT)
+      const inventory = data || { products: [] }
+      setMyInventory(inventory.products || [])
+      setShopInfo(inventory)
+      setInventoryTotalCount(inventory.total_count || (inventory.products ? inventory.products.length : 0))
+      setInventoryTotalPages(inventory.total_pages || 1)
+      setInventoryPage(inventory.current_page || page)
 
       // Asynchronously fetch global product catalog once for product creation without blocking inventory page rendering
       if (allProductsCatalog.length === 0) {
-        fetchJson('/products/list/').then(globalProds => {
-          setAllProductsCatalog(globalProds.results || globalProds || [])
+        apiFetch('/products/list/', {}, TTL.NORMAL).then(globalProds => {
+          setAllProductsCatalog(globalProds?.results || globalProds || [])
         }).catch(() => {})
       }
     } catch {
@@ -552,8 +554,8 @@ function ShopDashboard() {
     setAnalyticsLoading(true)
     setError('')
     try {
-      const data = await fetchJson('/shops/analytics/')
-      setAnalytics(data)
+      const data = await apiFetch('/shops/analytics/', {}, TTL.SHORT)
+      setAnalytics(data || { total_revenue: 0, total_orders: 0, status_counts: {}, sales_history: [], top_products: [] })
     } catch {
       setError('Failed to load analytics.')
     } finally {
@@ -565,8 +567,8 @@ function ShopDashboard() {
     setForecastLoading(true)
     setError('')
     try {
-      const data = await fetchJson('/shops/demand-forecast/')
-      setForecastData(data)
+      const data = await apiFetch('/shops/demand-forecast/', {}, TTL.SHORT)
+      setForecastData(data || { forecast_today: [], forecast_history: [], metrics: {} })
     } catch {
       setError('Failed to load demand forecast.')
     } finally {
@@ -577,7 +579,7 @@ function ShopDashboard() {
   const handleToggleLive = () => {
     fetchJson('/shops/toggle-live/', { method: 'POST' })
       .then(res => {
-        setShopInfo(prev => prev ? { ...prev, live_inventory: res.live_inventory } : null)
+        if (res) setShopInfo(prev => prev ? { ...prev, live_inventory: res.live_inventory } : prev)
         window.dispatchEvent(new Event('liveInventoryToggled'))
       })
       .catch(() => setError('Failed to toggle live inventory.'))
@@ -624,7 +626,7 @@ function ShopDashboard() {
     })
       .then(() => {
         loadInventory()
-        fetchJson('/shops/demand-forecast/').then(setForecastData).catch(() => {})
+        apiFetch('/shops/demand-forecast/', {}, TTL.SHORT).then(setForecastData).catch(() => {})
         setEditingItem(null)
       })
       .catch((err) => {
