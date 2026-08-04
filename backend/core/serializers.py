@@ -81,6 +81,11 @@ class ProductSerializer(serializers.ModelSerializer):
             'guarantee',
             'warranty',
             'shelf_life',
+            'storage_instructions',
+            'ingredients',
+            'nutrition_info',
+            'country_of_origin',
+            'images',
             'created_at',
         )
 

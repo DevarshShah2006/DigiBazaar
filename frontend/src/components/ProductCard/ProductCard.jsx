@@ -9,12 +9,14 @@ const PLACEHOLDER_COLORS = [
 ]
 
 function ProductCard({ product, showAddToCart = true }) {
-  const { addItem } = useCart()
+  const { items, addItem, updateQuantity } = useCart()
   const navigate = useNavigate()
   const variants = useMemo(() => product.variants?.length ? product.variants : [product], [product])
   const [selectedId, setSelectedId] = useState(variants[0]?.id)
   const [imageFailed, setImageFailed] = useState(false)
   const selectedProduct = variants.find(item => String(item.id) === String(selectedId)) || variants[0] || product
+  const cartItem = items.find(item => String(item.id) === String(selectedProduct?.id))
+  const cartQuantity = cartItem?.quantity || 0
 
   // Product data can contain an expired or placeholder image URL.  Do not
   // remove the entire card when that image fails: every home-page collection
@@ -31,6 +33,11 @@ function ProductCard({ product, showAddToCart = true }) {
   const handleAdd = (e) => {
     e.stopPropagation()
     addItem(selectedProduct)
+  }
+
+  const changeQuantity = (e, quantity) => {
+    e.stopPropagation()
+    updateQuantity(selectedProduct.id, quantity)
   }
 
   const handleVariantChange = (e) => {
@@ -104,11 +111,17 @@ function ProductCard({ product, showAddToCart = true }) {
             <span className="product-card__unit">/ {getQuantityText(selectedProduct)}</span>
           </div>
 
-          {showAddToCart && (
+          {showAddToCart && (cartQuantity > 0 ? (
+            <div className="product-card__quantity-control" onClick={e => e.stopPropagation()}>
+              <button onClick={e => changeQuantity(e, cartQuantity - 1)} aria-label="Decrease quantity">−</button>
+              <span>Added · {cartQuantity}</span>
+              <button onClick={e => changeQuantity(e, cartQuantity + 1)} aria-label="Increase quantity">+</button>
+            </div>
+          ) : (
             <button className="product-card__add-btn" onClick={handleAdd}>
               + Add
             </button>
-          )}
+          ))}
         </div>
       </div>
     </div>

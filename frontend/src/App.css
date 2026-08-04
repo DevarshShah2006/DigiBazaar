@@ -389,6 +389,22 @@
   background: var(--primary-light);
 }
 
+/* Customer navbar: warm marketplace palette */
+.customer-navbar {
+  background: rgba(253, 250, 246, 0.96);
+  border-bottom-color: #e4d8cf;
+  box-shadow: 0 4px 20px -2px rgba(89, 41, 14, 0.06);
+}
+.nav-search-input { border-color: #e4d8cf; background: #f4f2ef; color: #2d1609; }
+.nav-search-input:focus { border-color: #59290e; background: #fffdfa; box-shadow: 0 0 0 4px rgba(89, 41, 14, 0.10); }
+.nav-location-selector { border-color: #a64d22; background: #f0ece5; color: #59290e; }
+.nav-location-selector:hover { background: #eadccf; }
+.nav-cart-btn-new { background: #f0ece5; border-color: #dec8bb; color: #59290e; }
+.nav-cart-btn-new:hover { background: #59290e; border-color: #59290e; box-shadow: 0 4px 12px rgba(89, 41, 14, 0.18); }
+.nav-cart-badge-new { background: #a64d22; }
+.nav-cart-btn-new:hover .nav-cart-badge-new { color: #a64d22; }
+.avatar-circle { background: #f0ece5; border-color: #59290e; color: #59290e; }
+
 
 /* ── SHOP OWNER TOP NAVBAR ── */
 .shop-owner-navbar {
