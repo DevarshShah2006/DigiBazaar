@@ -25,14 +25,29 @@ function CartPage() {
   const navigate = useNavigate()
   const { user, isLoggedIn } = useAuth()
   const { items, total, updateQuantity, removeItem, addItem, clearCart } = useCart()
-  const [deliveryOption, setDeliveryOption] = useState('home')
-  const [address, setAddress] = useState(
-    localStorage.getItem('delivery_address') || DEFAULT_ADDRESS
+  const [deliveryOption, setDeliveryOption] = useState(
+    localStorage.getItem('digibazaar_cart_delivery_option') || 'home'
   )
+  const [address, setAddress] = useState(
+    localStorage.getItem('digibazaar_cart_delivery_address') || DEFAULT_ADDRESS
+  )
+  const [savedAddresses, setSavedAddresses] = useState([
+    localStorage.getItem('digibazaar_cart_delivery_address') || DEFAULT_ADDRESS,
+    'NID Campus Hostel Block B, Paldi, Ahmedabad - 380007'
+  ])
+  const [addressPickerOpen, setAddressPickerOpen] = useState(false)
+  const [detectingAddress, setDetectingAddress] = useState(false)
+  const [newAddressText, setNewAddressText] = useState('')
   const [recommended, setRecommended] = useState([])
-  const [discountCode, setDiscountCode] = useState('')
-  const [discountApplied, setDiscountApplied] = useState(false)
-  const [discountAmount, setDiscountAmount] = useState(0)
+  const [discountCode, setDiscountCode] = useState(
+    localStorage.getItem('digibazaar_cart_discount_code') || ''
+  )
+  const [discountApplied, setDiscountApplied] = useState(
+    localStorage.getItem('digibazaar_cart_discount_applied') === 'true'
+  )
+  const [discountAmount, setDiscountAmount] = useState(
+    parseFloat(localStorage.getItem('digibazaar_cart_discount_amount') || '0') || 0
+  )
   const [discountMessage, setDiscountMessage] = useState('')
 
   const itemsTotal = useMemo(() => total, [total])
@@ -57,6 +72,16 @@ function CartPage() {
     }
     setDiscountAmount(Math.min(itemsTotal * DISCOUNT_RATE, 250))
   }, [discountApplied, itemsTotal])
+
+  useEffect(() => {
+    localStorage.setItem('digibazaar_cart_delivery_option', deliveryOption)
+  }, [deliveryOption])
+
+  useEffect(() => {
+    localStorage.setItem('digibazaar_cart_discount_code', discountCode)
+    localStorage.setItem('digibazaar_cart_discount_applied', discountApplied ? 'true' : 'false')
+    localStorage.setItem('digibazaar_cart_discount_amount', discountAmount.toFixed(2))
+  }, [discountCode, discountApplied, discountAmount])
 
   useEffect(() => {
     fetchJson('/products/?page_size=4')
@@ -92,6 +117,59 @@ function CartPage() {
     setDiscountMessage('Invalid promo code')
   }
 
+  const setCartAddress = (newAddress) => {
+    setAddress(newAddress)
+    localStorage.setItem('digibazaar_cart_delivery_address', newAddress)
+    localStorage.setItem('delivery_address', newAddress)
+    window.dispatchEvent(new Event('addressUpdated'))
+  }
+
+  const handleSelectAddress = (addr) => {
+    setCartAddress(addr)
+    setAddressPickerOpen(false)
+    if (!savedAddresses.includes(addr)) {
+      const updatedAddresses = [...savedAddresses, addr]
+      setSavedAddresses(updatedAddresses)
+      localStorage.setItem('saved_addresses', JSON.stringify(updatedAddresses))
+    }
+  }
+
+  const handleAddNewAddress = () => {
+    const trimmed = newAddressText.trim()
+    if (!trimmed) {
+      setDiscountMessage('Please enter a delivery address to save.')
+      return
+    }
+    setCartAddress(trimmed)
+    const updatedAddresses = savedAddresses.includes(trimmed)
+      ? savedAddresses
+      : [...savedAddresses, trimmed]
+    setSavedAddresses(updatedAddresses)
+    localStorage.setItem('saved_addresses', JSON.stringify(updatedAddresses))
+    setNewAddressText('')
+    setAddressPickerOpen(false)
+  }
+
+  const handleDetectLocation = () => {
+    setDetectingAddress(true)
+    setTimeout(() => {
+      const detected = '7B, Paldi Cross Roads, Ahmedabad, Gujarat - 380007'
+      setCartAddress(detected)
+      if (!savedAddresses.includes(detected)) {
+        const updatedAddresses = [...savedAddresses, detected]
+        setSavedAddresses(updatedAddresses)
+        localStorage.setItem('saved_addresses', JSON.stringify(updatedAddresses))
+      }
+      setDetectingAddress(false)
+      setAddressPickerOpen(false)
+      setDiscountMessage('')
+    }, 1200)
+  }
+
+  const handleAddressChange = () => {
+    setAddressPickerOpen(prev => !prev)
+  }
+
   const handleProceed = () => {
     if (items.length === 0) return
     if (!isLoggedIn) {
@@ -99,10 +177,6 @@ function CartPage() {
     } else {
       navigate('/checkout')
     }
-  }
-
-  const handleAddressChange = () => {
-    alert('Change address feature will be added soon.')
   }
 
   return (
@@ -157,6 +231,40 @@ function CartPage() {
               </div>
 
               <AddressCard address={address} onChange={handleAddressChange} />
+              {addressPickerOpen && (
+                <div className="address-picker-panel cart-address-picker">
+                  <div className="saved-addresses-list">
+                    {savedAddresses.map((addr, idx) => (
+                      <label key={idx} className="address-label-card">
+                        <input
+                          type="radio"
+                          name="cart_address_choice"
+                          checked={address === addr}
+                          onChange={() => handleSelectAddress(addr)}
+                        />
+                        <span>{addr}</span>
+                      </label>
+                    ))}
+                  </div>
+                  <div className="add-new-address-form">
+                    <input
+                      type="text"
+                      placeholder="Enter new delivery address"
+                      value={newAddressText}
+                      onChange={(e) => setNewAddressText(e.target.value)}
+                    />
+                    <button onClick={handleAddNewAddress}>Save Address</button>
+                  </div>
+                  <button
+                    className="detect-location-btn"
+                    type="button"
+                    onClick={handleDetectLocation}
+                    disabled={detectingAddress}
+                  >
+                    {detectingAddress ? 'Detecting Location…' : 'Detect Current Location'}
+                  </button>
+                </div>
+              )}
             </section>
           </section>
         </div>

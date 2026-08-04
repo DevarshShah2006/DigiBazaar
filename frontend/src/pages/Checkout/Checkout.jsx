@@ -9,23 +9,23 @@ export default function Checkout() {
   const { isLoggedIn } = useAuth()
   const { items, total, clearCart } = useCartState()
   const navigate = useNavigate()
-  const [fulfillment, setFulfillment] = useState('digibazaar_delivery')
   const [address, setAddress] = useState(
-    localStorage.getItem('delivery_address') || '102, Patel Residency, Paldi, Ahmedabad, Gujarat - 380007'
+    localStorage.getItem('digibazaar_cart_delivery_address') || localStorage.getItem('delivery_address') || '102, Patel Residency, Paldi, Ahmedabad, Gujarat - 380007'
   )
-  const [savedAddresses, setSavedAddresses] = useState([
-    '102, Patel Residency, Paldi, Ahmedabad, Gujarat - 380007',
-    'NID Campus Hostel Block B, Paldi, Ahmedabad - 380007'
-  ])
-  const [newAddressOpen, setNewAddressOpen] = useState(false)
-  const [newAddressText, setNewAddressText] = useState('')
-  const [coupon, setCoupon] = useState('')
-  const [discount, setDiscount] = useState(0)
-  const [couponError, setCouponError] = useState('')
-  const [couponSuccess, setCouponSuccess] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('upi')
   const [loading, setLoading] = useState(false)
-  const [mlRecommendation, setMlRecommendation] = useState(null)
+  const [deliveryOption, setDeliveryOption] = useState(
+    localStorage.getItem('digibazaar_cart_delivery_option') || 'home'
+  )
+  const [discountCode, setDiscountCode] = useState(
+    localStorage.getItem('digibazaar_cart_discount_code') || ''
+  )
+  const [discountAmount, setDiscountAmount] = useState(
+    parseFloat(localStorage.getItem('digibazaar_cart_discount_amount') || '0') || 0
+  )
+  const [discountApplied, setDiscountApplied] = useState(
+    localStorage.getItem('digibazaar_cart_discount_applied') === 'true'
+  )
 
   // Redirect if not logged in
   useEffect(() => {
@@ -40,97 +40,36 @@ export default function Checkout() {
     }
   }, [items, navigate, isLoggedIn])
 
-  // Sync address from navbar location selector
+  // Sync address from cart or navbar address updates
   useEffect(() => {
     const handleUpdate = () => {
-      const updated = localStorage.getItem('delivery_address')
+      const updated = localStorage.getItem('digibazaar_cart_delivery_address') || localStorage.getItem('delivery_address')
       if (updated) setAddress(updated)
     }
     window.addEventListener('addressUpdated', handleUpdate)
     return () => window.removeEventListener('addressUpdated', handleUpdate)
   }, [])
 
-  const handleApplyCoupon = () => {
-    if (coupon.toUpperCase() === 'WELCOME10') {
-      setDiscount(total * 0.1)
-      setCouponSuccess('WELCOME10 applied successfully! 10% Discount.')
-      setCouponError('')
-    } else {
-      setCouponError('Invalid coupon code. Try WELCOME10.')
-      setCouponSuccess('')
-      setDiscount(0)
-    }
-  }
-
-  // Fetch ML Delivery Recommendation
-  useEffect(() => {
-    if (items.length > 0) {
-      const fetchRecommendation = async () => {
-        try {
-          const shopId = items[0]?.shop_id || (items[0]?.shops && items[0]?.shops[0]?.id)
-          const productId = items[0]?.id
-          if (!shopId && !productId) return
-
-          const payload = {
-            shop_id: shopId,
-            product_id: productId,
-            order_value: total,
-            lat: 23.0125,
-            long: 72.5575
-          }
-
-          const res = await fetchJson('/orders/recommend-delivery/', {
-            method: 'POST',
-            body: JSON.stringify(payload)
-          })
-
-          if (res && res.recommended_delivery_mode) {
-            setMlRecommendation({
-              mode: res.recommended_delivery_mode,
-              confidence: res.delivery_mode_confidence
-            })
-            // Auto-select the recommended mode
-            setFulfillment(res.recommended_delivery_mode)
-          }
-        } catch (error) {
-          console.error("Failed to fetch ML recommendation", error)
-        }
-      }
-      fetchRecommendation()
-    }
-  }, [items, total])
-
   // Delivery charge calculations
-  const getDeliveryCharge = () => {
-    if (fulfillment === 'pickup') return 0.00
-    if (fulfillment === 'shop_delivery') return 25.00
-    return 35.00 // DigiBazaar Express flat mock
-  }
+  const getDeliveryCharge = () => 0.00
 
   const getETA = () => {
-    if (fulfillment === 'pickup') return 'Ready in 10 mins'
-    if (fulfillment === 'shop_delivery') return 'Delivered in 25-35 mins'
-    return 'Delivered in 15-20 mins (Express)'
+    if (deliveryOption === 'pickup') return 'Ready in 10 mins'
+    return 'Delivered today, 5-7 PM'
   }
 
   const handlePlaceOrder = async () => {
     setLoading(true)
     try {
       // Pre-check: DigiExpress + multi-store warning
+      const fulfillment = deliveryOption === 'pickup' ? 'pickup' : 'digibazaar_delivery'
       if (fulfillment === 'digibazaar_delivery') {
         const shopIds = new Set(items.map(i => i.shop_id || (i.shops && i.shops[0]?.id)).filter(Boolean))
         if (shopIds.size > 1) {
-          alert('DigiBazaar Express only allows items from a SINGLE store per order. Please use Shop Delivery for multi-store orders.')
+          alert('DigiBazaar Express only allows items from a SINGLE store per order. Please remove multi-store items or choose pickup.')
           setLoading(false)
           return
         }
-      }
-
-      // Pre-check: Shop Delivery minimum ₹50
-      if (fulfillment === 'shop_delivery' && subtotal < 50) {
-        alert(`Minimum order for Shop Delivery is ₹50. Your subtotal is ₹${subtotal.toFixed(2)}.`)
-        setLoading(false)
-        return
       }
 
       const payload = {
@@ -142,7 +81,7 @@ export default function Checkout() {
         fulfillment_option: fulfillment,
         delivery_address: address,
         payment_method: paymentMethod,
-        discount_amount: discount,
+        discount_amount: discountAmount,
         lat: 23.0125,
         long: 72.5575
       }
@@ -175,8 +114,8 @@ export default function Checkout() {
 
   const subtotal = total
   const deliveryFee = getDeliveryCharge()
-  const tax = subtotal * 0.05
-  const grandTotal = subtotal + deliveryFee + tax - discount
+  const smallOrderCharge = subtotal > 0 && subtotal < 1000 ? 49.00 : 0.00
+  const grandTotal = subtotal + deliveryFee + smallOrderCharge - discountAmount
 
   return (
     <div className="checkout-page fade-in">
@@ -192,106 +131,25 @@ export default function Checkout() {
             </div>
             <div className="address-display">
               <p>{address}</p>
-              <button className="change-address-btn" onClick={() => setNewAddressOpen(!newAddressOpen)}>
-                {newAddressOpen ? 'Close Address Form' : 'Choose another address'}
-              </button>
             </div>
-
-            {newAddressOpen && (
-              <div className="address-picker-panel">
-                <div className="saved-addresses-list">
-                  {savedAddresses.map((addr, idx) => (
-                    <label key={idx} className="address-label-card">
-                      <input 
-                        type="radio" 
-                        name="address_choice" 
-                        checked={address === addr} 
-                        onChange={() => { setAddress(addr); setNewAddressOpen(false); }} 
-                      />
-                      <span>{addr}</span>
-                    </label>
-                  ))}
-                </div>
-                <div className="add-new-address-form">
-                  <input 
-                    type="text" 
-                    placeholder="Enter new address..." 
-                    value={newAddressText}
-                    onChange={e => setNewAddressText(e.target.value)}
-                  />
-                  <button onClick={() => {
-                    if (newAddressText.trim()) {
-                      setSavedAddresses(prev => [...prev, newAddressText])
-                      setAddress(newAddressText)
-                      setNewAddressText('')
-                      setNewAddressOpen(false)
-                    }
-                  }}>
-                    Add Address
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* Fulfillment Model Options */}
-          <div className="checkout-card">
-            <div className="card-header-icon" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3>Fulfillment Options</h3>
-              {mlRecommendation && (
-                <div style={{ fontSize: '13px', color: '#6366f1', background: '#e0e7ff', padding: '4px 10px', borderRadius: '15px', fontWeight: 600 }}>
-                  🤖 ML Recommended: {mlRecommendation.mode.replace('_', ' ')} ({mlRecommendation.confidence}%)
-                </div>
-              )}
+          <div className="checkout-card delivery-card clean-card">
+            <div className="card-header-icon">
+              <div>
+                <h3>Delivery</h3>
+              </div>
+              <span className="delivery-badge">{deliveryOption === 'pickup' ? 'Pickup' : 'Home Delivery'}</span>
             </div>
-            <div className="fulfillment-grid">
-              <label className={`fulfillment-option-card ${fulfillment === 'pickup' ? 'active' : ''}`}>
-                <input 
-                  type="radio" 
-                  name="fulfillment" 
-                  value="pickup" 
-                  checked={fulfillment === 'pickup'} 
-                  onChange={() => setFulfillment('pickup')}
-                />
-                <div className="fulfillment-info">
-                  <span className="option-title">Store Pickup</span>
-                  <span className="option-desc">Collect it yourself from the store</span>
-                  <span className="option-cost font-bold">₹0.00</span>
-                </div>
-              </label>
-
-              <label className={`fulfillment-option-card ${fulfillment === 'shop_delivery' ? 'active' : ''}`}>
-                <input 
-                  type="radio" 
-                  name="fulfillment" 
-                  value="shop_delivery" 
-                  checked={fulfillment === 'shop_delivery'} 
-                  onChange={() => setFulfillment('shop_delivery')}
-                />
-                <div className="fulfillment-info">
-                  <span className="option-title">Shop Delivery</span>
-                  <span className="option-desc">Delivered by the shop's partner</span>
-                  <span className="option-cost font-bold">₹25.00</span>
-                </div>
-              </label>
-
-              <label className={`fulfillment-option-card ${fulfillment === 'digibazaar_delivery' ? 'active' : ''}`}>
-                <input 
-                  type="radio" 
-                  name="fulfillment" 
-                  value="digibazaar_delivery" 
-                  checked={fulfillment === 'digibazaar_delivery'} 
-                  onChange={() => setFulfillment('digibazaar_delivery')}
-                />
-                <div className="fulfillment-info">
-                  <span className="option-title">DigiBazaar Express</span>
-                  <span className="option-desc">Delivered in 15 mins by DigiBazaar Riders</span>
-                  <span className="option-cost font-bold">₹35.00</span>
-                </div>
-              </label>
-            </div>
-            <div className="fulfillment-summary-info">
-              <span>Delivery Details: {getETA()}</span>
+            <div className="delivery-summary-card compact">
+              <div className="delivery-summary-row">
+                <span>ETA</span>
+                <strong>{getETA()}</strong>
+              </div>
+              <div className="delivery-summary-row">
+                <span>Fee</span>
+                <strong>{deliveryFee === 0 ? 'FREE' : `₹${deliveryFee.toFixed(2)}`}</strong>
+              </div>
             </div>
           </div>
 
@@ -338,24 +196,6 @@ export default function Checkout() {
         {/* Right Side: Bill Details & Cart Overview */}
         <div className="checkout-side-bar">
           <div className="checkout-sticky-panel">
-            {/* Promo Codes */}
-            <div className="checkout-card promo-card-box">
-              <div className="card-header-icon">
-                <h3>Promo Code</h3>
-              </div>
-              <div className="promo-input-row">
-                <input 
-                  type="text" 
-                  placeholder="e.g. WELCOME10" 
-                  value={coupon}
-                  onChange={e => setCoupon(e.target.value)}
-                />
-                <button onClick={handleApplyCoupon}>Apply</button>
-              </div>
-              {couponError && <p className="promo-error">{couponError}</p>}
-              {couponSuccess && <p className="promo-success">{couponSuccess}</p>}
-            </div>
-
             {/* Bill Summary */}
             <div className="checkout-card bill-details-card">
               <h3>Bill Summary</h3>
@@ -365,16 +205,16 @@ export default function Checkout() {
               </div>
               <div className="bill-item-row">
                 <span>Delivery Charge</span>
-                <span>₹{deliveryFee.toFixed(2)}</span>
+                <span>{deliveryFee === 0 ? 'FREE' : `₹${deliveryFee.toFixed(2)}`}</span>
               </div>
               <div className="bill-item-row">
-                <span>Taxes & GST (5%)</span>
-                <span>₹{tax.toFixed(2)}</span>
+                <span>Small Order Surcharge</span>
+                <span>{smallOrderCharge === 0 ? '₹0' : `₹${smallOrderCharge.toFixed(2)}`}</span>
               </div>
-              {discount > 0 && (
+              {discountApplied && discountAmount > 0 && (
                 <div className="bill-item-row discount-row">
-                  <span>Promo Code Discount</span>
-                  <span>- ₹{discount.toFixed(2)}</span>
+                  <span>Coupon Discount</span>
+                  <span>- ₹{discountAmount.toFixed(2)}</span>
                 </div>
               )}
               <div className="grand-total-row">
