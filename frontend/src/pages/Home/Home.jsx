@@ -59,12 +59,20 @@ function Home() {
   }, [])
 
   useEffect(() => {
-    apiFetch('/products/new_arrivals/?page_size=8', {}, TTL.SHORT)
+    apiFetch('/categories/beauty-makeup/products/?limit=20', {}, TTL.SHORT)
       .then(data => {
-        const prods = (data.results || data || [])
+        const prods = Array.isArray(data) ? data : (data.results || data || [])
         setNewArrivals(withGroupedVariants(prods).slice(0, 8))
       })
-      .catch(() => {})
+      .catch(() => {
+        // Fallback to original new arrivals
+        apiFetch('/products/new_arrivals/?page_size=20', {}, TTL.SHORT)
+          .then(data => {
+            const prods = (data.results || data || [])
+            setNewArrivals(withGroupedVariants(prods).slice(0, 8))
+          })
+          .catch(() => {})
+      })
   }, [])
 
   const handleSearch = (e) => {

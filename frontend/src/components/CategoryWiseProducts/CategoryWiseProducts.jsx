@@ -16,7 +16,9 @@ function CategoryWiseProducts() {
       .then(cats => {
         if (cancelled) return
         
-        const categories = (cats || []).slice(0, 4)
+        // We want Bath & Body, Beverages, Breakfast & Pantry, and Fresh Produce categories
+        const targetSlugs = ['bath-body', 'beverages', 'breakfast-pantry', 'fresh-produce']
+        const categories = targetSlugs.map(slug => (cats || []).find(c => c.slug === slug)).filter(Boolean)
         
         if (categories.length === 0) {
           setBlocks([])
@@ -66,7 +68,6 @@ function CategoryWiseProducts() {
             <div className="category-block__header">
               <div>
                 <h3>{block.category.name === 'Homegrown' ? 'Snacks & Munchies' : block.category.name}</h3>
-                <p className="category-subtitle">Farm to table, delivered in minutes</p>
               </div>
               <div className="category-actions"><a href={`/products?category=${encodeURIComponent(block.category.slug || block.category.name)}`} className="view-all">View All Items ▸</a></div>
             </div>
