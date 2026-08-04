@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { fetchJson } from '../../api/api'
 import { useAuth } from '../../context/AuthContext'
 import ProductCard from '../ProductCard/ProductCard'
+import { withGroupedVariants } from '../../utils/productVariants'
 import './RecommendationSection.css'
 
 function RecommendationSection() {
@@ -12,7 +13,7 @@ function RecommendationSection() {
   useEffect(() => {
     let cancelled = false
     const url = user ? `/recommend/${user.id}/` : null
-    const fallback = () => fetchJson('/products/?page_size=8').then(d => (d.results || d || []).slice(0, 8))
+    const fallback = () => fetchJson('/products/?page_size=30').then(d => (d.results || d || []))
 
     async function load() {
       try {
@@ -27,11 +28,11 @@ function RecommendationSection() {
           prods = await fallback()
         }
 
-        if (!cancelled) setProducts((prods || []).slice(0, 8))
+        if (!cancelled) setProducts(withGroupedVariants(prods || []).slice(0, 8))
       } catch (err) {
         if (!cancelled) {
           const prods = await fallback().catch(() => [])
-          setProducts((prods || []).slice(0, 8))
+          setProducts(withGroupedVariants(prods || []).slice(0, 8))
         }
       } finally {
         if (!cancelled) setLoading(false)

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { fetchJson } from '../../api/api'
 import { useCart } from '../../context/CartContext'
+import { getProductBaseName, getProductGroupKey, getQuantityText } from '../../utils/productVariants'
 import './ProductDetail.css'
 
 function ProductDetail() {
@@ -10,8 +11,10 @@ function ProductDetail() {
   const { addItem } = useCart()
   const [product, setProduct] = useState(null)
   const [shops, setShops] = useState([])
+  const [variants, setVariants] = useState([])
   const [selectedShopId, setSelectedShopId] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [imageFailed, setImageFailed] = useState(false)
 
   useEffect(() => {
     Promise.all([
@@ -23,7 +26,22 @@ function ProductDetail() {
       setShops(list)
       setSelectedShopId(list.length > 0 ? list[0].id : null)
       setLoading(false)
+
+      if (prod) {
+        const baseName = getProductBaseName(prod) || prod.name
+        fetchJson(`/products/?search=${encodeURIComponent(baseName)}&page_size=30`)
+          .then(data => {
+            const prods = (data?.results || []).filter(item => item.image_url)
+            const groupKey = getProductGroupKey(prod)
+            const matching = prods
+              .filter(item => getProductGroupKey(item) === groupKey)
+              .sort((a, b) => parseFloat(a.price || 0) - parseFloat(b.price || 0))
+            setVariants(matching.length > 1 ? matching : [])
+          })
+          .catch(() => setVariants([]))
+      }
     }).catch(() => setLoading(false))
+    setImageFailed(false)
   }, [id])
 
   const selectedShop = shops.find(s => s.id === selectedShopId) || null
@@ -58,9 +76,18 @@ function ProductDetail() {
         <div className="pd-main">
           <div className="pd-image-wrap">
             {product.image_url ? (
-              <img src={product.image_url} alt={product.name} className="pd-image" />
+              imageFailed ? (
+                <div className="pd-image-placeholder">Image unavailable</div>
+              ) : (
+                <img
+                  src={product.image_url}
+                  alt={product.name}
+                  className="pd-image"
+                  onError={() => setImageFailed(true)}
+                />
+              )
             ) : (
-              <div className="pd-image-placeholder">Product Image</div>
+              <div className="pd-image-placeholder">Image unavailable</div>
             )}
           </div>
 
@@ -80,6 +107,21 @@ function ProductDetail() {
 
             {product.description && (
               <p className="pd-description">{product.description}</p>
+            )}
+
+            {variants.length > 1 && (
+              <div className="pd-variants">
+                {variants.map(variant => (
+                  <button
+                    key={variant.id}
+                    type="button"
+                    className={`pd-variant-btn ${String(variant.id) === String(product.id) ? 'active' : ''}`}
+                    onClick={() => navigate(`/products/${variant.id}`)}
+                  >
+                    {getQuantityText(variant)}
+                  </button>
+                ))}
+              </div>
             )}
 
             <div className="pd-meta">

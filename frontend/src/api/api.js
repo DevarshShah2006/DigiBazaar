@@ -1,3 +1,7 @@
+import { cachedFetch, clearCache, TTL } from './cache'
+
+export { clearCache, TTL }
+
 const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost'
 const API_BASE = import.meta.env.VITE_API_BASE || `http://${hostname}:8000/api`
 
@@ -39,6 +43,11 @@ async function refreshAccessToken() {
   }
 }
 
+/**
+ * Core fetch function — handles auth headers and token refresh.
+ * Use fetchJson directly for mutations (POST/PUT/DELETE).
+ * For GETs, prefer apiFetch() which adds caching.
+ */
 export async function fetchJson(endpoint, options = {}) {
   const token = getToken()
   const headers = {
@@ -54,34 +63,26 @@ export async function fetchJson(endpoint, options = {}) {
 
   // Token expired — try to refresh once
   if (response.status === 401) {
+    let newToken = null
     if (!isRefreshing) {
       isRefreshing = true
-      const newToken = await refreshAccessToken()
+      newToken = await refreshAccessToken()
       isRefreshing = false
       if (newToken) {
         onRefreshed(newToken)
-        // Retry original request with new token
-        const retryHeaders = {
-          ...headers,
-          Authorization: `Bearer ${newToken}`,
-        }
-        response = await fetch(`${API_BASE}${endpoint}`, {
-          ...options,
-          headers: retryHeaders,
-        })
       } else {
-        // Refresh failed — clear all auth data and notify app
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
         localStorage.removeItem('user')
         window.dispatchEvent(new Event('auth:logout'))
-        return null
       }
     } else {
-      // Wait for the refresh to complete
-      const newToken = await new Promise(resolve => {
+      newToken = await new Promise(resolve => {
         refreshSubscribers.push(resolve)
       })
+    }
+
+    if (newToken) {
       const retryHeaders = {
         ...headers,
         Authorization: `Bearer ${newToken}`,
@@ -90,6 +91,22 @@ export async function fetchJson(endpoint, options = {}) {
         ...options,
         headers: retryHeaders,
       })
+    } else {
+      // Token refresh failed - retry without Authorization header for public endpoints
+      const unauthHeaders = { ...headers }
+      delete unauthHeaders.Authorization
+      const retryUnauth = await fetch(`${API_BASE}${endpoint}`, {
+        ...options,
+        headers: unauthHeaders,
+      })
+      if (retryUnauth.ok) {
+        try {
+          return await retryUnauth.json()
+        } catch {
+          return null
+        }
+      }
+      return null
     }
   }
 
@@ -102,4 +119,17 @@ export async function fetchJson(endpoint, options = {}) {
   } catch {
     return null
   }
+}
+
+/**
+ * Cached version of fetchJson for GET requests.
+ * Pass a TTL from the TTL constant or a custom value in ms.
+ * POST/PUT/DELETE requests bypass cache and invalidate related entries.
+ *
+ * @param {string} endpoint
+ * @param {object} [options]
+ * @param {number} [ttlMs] - override default 60s TTL
+ */
+export function apiFetch(endpoint, options = {}, ttlMs = TTL.NORMAL) {
+  return cachedFetch(endpoint, fetchJson, options, ttlMs)
 }

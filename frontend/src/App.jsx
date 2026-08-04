@@ -6,7 +6,7 @@ import AppRoutes from './routes/AppRoutes'
 import Cart from './components/Cart/Cart'
 import WishlistPanel from './components/Wishlist/WishlistPanel'
 import './App.css'
-import { fetchJson } from './api/api'
+import { fetchJson, apiFetch, clearCache, TTL } from './api/api'
 
 // ── 1. CUSTOMER NAVBAR (TEXT ONLY) ──
 function CustomerNavbar({ wishlistOpen, setWishlistOpen }) {
@@ -265,7 +265,7 @@ function CustomerNavbar({ wishlistOpen, setWishlistOpen }) {
 
 // ── 2. SHOP OWNER NAVBAR & SIDEBAR (TEXT ONLY) ──
 function ShopOwnerNavbar() {
-  const { logout, user } = useAuth()
+  const { logout, user, isLoggedIn } = useAuth()
   const navigate = useNavigate()
   const [storeOpen, setStoreOpen] = useState(true)
   const [revenue, setRevenue] = useState(0)
@@ -289,81 +289,69 @@ function ShopOwnerNavbar() {
   const loadNavbarData = () => {
     if (!isAuthorizedShopOwner) return
 
-    fetchJson('/shops/my-products/')
+    // Single batch request replaces 5 serial requests (my-products, revenue-today,
+    // shop-orders, low-stock, weather). Cached for 30s so rapid re-renders are instant.
+    apiFetch('/shop/dashboard/summary/', {}, TTL.SHORT)
       .then(data => {
-        if (data && data.shop_name) {
-          setStoreOpen(Boolean(data.is_open))
-          setShopName(data.shop_name)
+        if (!data) return
+
+        if (data.shop_name) setShopName(data.shop_name)
+        if (data.is_open !== undefined) setStoreOpen(Boolean(data.is_open))
+        if (data.revenue_today !== undefined) setRevenue(data.revenue_today)
+
+        const alerts = []
+        const pendingCount = data.pending_orders_count ?? 0
+        if (pendingCount > 0) {
+          alerts.push({
+            id: 'pending-orders',
+            badge: 'URGENT',
+            badgeBg: '#fee2e2',
+            badgeColor: '#dc2626',
+            title: `${pendingCount} Pending Order(s) Awaiting Acceptance`,
+            message: 'Review and accept incoming customer orders promptly to prevent auto-cancellation.',
+            actionTab: 'orders'
+          })
         }
-      })
-      .catch(() => {})
 
-    fetchJson('/shop/dashboard/revenue-today/')
-      .then(data => {
-        if (data) {
-          setRevenue(data.revenue_today ?? data.today_total ?? 0)
+        const lowStockCount = data.low_stock_count ?? 0
+        if (lowStockCount > 0) {
+          alerts.push({
+            id: 'low-stock',
+            badge: 'STOCK ALERT',
+            badgeBg: '#fef3c7',
+            badgeColor: '#b45309',
+            title: `${lowStockCount} Product(s) Running Low in Stock`,
+            message: 'Update stock levels in Inventory to maintain continuous order dispatch.',
+            actionTab: 'inventory'
+          })
         }
-      })
-      .catch(() => {})
 
-    // Load dynamic operational alerts
-    Promise.all([
-      fetchJson('/orders/shop-orders/').catch(() => []),
-      fetchJson('/shop/dashboard/low-stock/').catch(() => []),
-      fetchJson('/shop/dashboard/weather/').catch(() => null)
-    ]).then(([ordersData, lowStockData, weatherData]) => {
-      const alerts = []
-      const pendingOrders = (Array.isArray(ordersData) ? ordersData : []).filter(o => o.status === 'pending')
-      
-      if (pendingOrders.length > 0) {
-        alerts.push({
-          id: 'pending-orders',
-          badge: 'URGENT',
-          badgeBg: '#fee2e2',
-          badgeColor: '#dc2626',
-          title: `${pendingOrders.length} Pending Order(s) Awaiting Acceptance`,
-          message: 'Review and accept incoming customer orders promptly to prevent auto-cancellation.',
-          actionTab: 'orders'
-        })
-      }
+        const weatherData = data.weather
+        if (weatherData && weatherData.is_raining) {
+          alerts.push({
+            id: 'weather',
+            badge: 'RAIN WARNING',
+            badgeBg: '#e0f2fe',
+            badgeColor: '#0369a1',
+            title: `Rainy Weather Reported in ${weatherData.city}`,
+            message: 'Delivery rider assignments may take 5-10 mins longer due to weather conditions.',
+            actionTab: 'dashboard'
+          })
+        }
 
-      const lowStockCount = Array.isArray(lowStockData?.low_stock) ? lowStockData.low_stock.length : (Array.isArray(lowStockData) ? lowStockData.length : 0)
-      if (lowStockCount > 0) {
         alerts.push({
-          id: 'low-stock',
-          badge: 'STOCK ALERT',
-          badgeBg: '#fef3c7',
-          badgeColor: '#b45309',
-          title: `${lowStockCount} Product(s) Running Low in Stock`,
-          message: 'Update stock levels in Inventory to maintain continuous order dispatch.',
-          actionTab: 'inventory'
-        })
-      }
-
-      if (weatherData && weatherData.is_raining) {
-        alerts.push({
-          id: 'weather',
-          badge: 'RAIN WARNING',
-          badgeBg: '#e0f2fe',
-          badgeColor: '#0369a1',
-          title: `Rainy Weather Reported in ${weatherData.city}`,
-          message: 'Delivery rider assignments may take 5-10 mins longer due to weather conditions.',
+          id: 'system',
+          badge: 'SYSTEM OPERATIONAL',
+          badgeBg: '#dcfce7',
+          badgeColor: '#15803d',
+          title: 'DigiBazaar Dispatch Engine Active',
+          message: 'Payment gateways, instant dispatch, and store services are running smoothly.',
           actionTab: 'dashboard'
         })
-      }
 
-      alerts.push({
-        id: 'system',
-        badge: 'SYSTEM OPERATIONAL',
-        badgeBg: '#dcfce7',
-        badgeColor: '#15803d',
-        title: 'DigiBazaar Dispatch Engine Active',
-        message: 'Payment gateways, instant dispatch, and store services are running smoothly.',
-        actionTab: 'dashboard'
+        setDynamicAlerts(alerts)
       })
-
-      setDynamicAlerts(alerts)
-    })
+      .catch(() => {})
   }
 
   useEffect(() => {
@@ -378,8 +366,11 @@ function ShopOwnerNavbar() {
     window.addEventListener('shopStatusChanged', syncStatus)
     window.addEventListener('shopTabChanged', syncStatus)
     
-    // Refresh navbar data periodically every 30 seconds
-    const interval = setInterval(loadNavbarData, 30000)
+    // Refresh navbar data every 60s (matches cache TTL — won't hit network more than once per 30s)
+    const interval = setInterval(() => {
+      clearCache('/shop/dashboard/summary/')
+      loadNavbarData()
+    }, 60000)
 
     return () => {
       window.removeEventListener('liveInventoryToggled', syncStatus)
@@ -1100,6 +1091,11 @@ function AppInner() {
   const location = useLocation()
   const { user } = useAuth()
   const [wishlistOpen, setWishlistOpen] = useState(false)
+
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }, [location.pathname])
 
   // Determine layout by BOTH route AND user role
   // Route-based checks for portal paths

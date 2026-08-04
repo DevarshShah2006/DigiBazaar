@@ -19,7 +19,9 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(getStoredUser)
   const [authChecked, setAuthChecked] = useState(false)
 
-  // On mount: verify stored token with backend and refresh user data
+  // On mount: verify stored token with backend and refresh user data.
+  // Uses a session-level flag to avoid re-verifying on every HMR / navigation mount.
+  // The server check only needs to happen once per browser session.
   useEffect(() => {
     const token = localStorage.getItem('access_token')
     if (!token) {
@@ -27,20 +29,31 @@ export function AuthProvider({ children }) {
       return
     }
 
-    // Verify token and get fresh user data from server
+    // If already verified this session, use the stored user immediately
+    const alreadyVerified = sessionStorage.getItem('auth_verified')
+    if (alreadyVerified && getStoredUser()) {
+      setAuthChecked(true)
+      return
+    }
+
+    // First visit this session — verify token and get fresh user data from server
     fetchJson('/auth/me/')
       .then(data => {
         if (data && data.user) {
           // Update stored user with fresh server data (role may have changed)
           localStorage.setItem('user', JSON.stringify(data.user))
           setUser(data.user)
+          // Mark as verified for the rest of this browser session
+          sessionStorage.setItem('auth_verified', '1')
         } else {
           // Token invalid / fetch returned null (handled by api.js which fires auth:logout)
           setUser(null)
+          sessionStorage.removeItem('auth_verified')
         }
       })
       .catch(() => {
         setUser(null)
+        sessionStorage.removeItem('auth_verified')
       })
       .finally(() => {
         setAuthChecked(true)
@@ -50,6 +63,7 @@ export function AuthProvider({ children }) {
   // Listen to forced logout events from the API layer (token refresh failure)
   useEffect(() => {
     const handleForceLogout = () => {
+      sessionStorage.removeItem('auth_verified')
       setUser(null)
     }
     window.addEventListener('auth:logout', handleForceLogout)
@@ -107,6 +121,8 @@ export function AuthProvider({ children }) {
     // Clear portal-specific state so tabs don't persist across sessions
     localStorage.removeItem('active_shop_tab')
     localStorage.removeItem('active_rider_tab')
+    // Clear session auth cache so next login re-verifies with the server
+    sessionStorage.removeItem('auth_verified')
     setUser(null)
     try {
       navigate('/login')

@@ -2,6 +2,7 @@ import urllib.request
 import json
 import random
 import math
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, timedelta
 from decimal import Decimal
 from django.db.models import Sum, F, Count, Q
@@ -72,12 +73,14 @@ class ShopRevenueTodayView(APIView):
             pct_change = 100.0 if today_rev > 0 else 0.0
             status_val = "up"
 
-        return Response({
+        resp = Response({
             'revenue_today': today_rev,
             'yesterday_revenue': yesterday_rev,
             'percentage_change': pct_change,
             'status': status_val
         })
+        resp['Cache-Control'] = 'max-age=30, stale-while-revalidate=60'
+        return resp
 
 
 class ShopRevenueMonthView(APIView):
@@ -171,26 +174,41 @@ class MarketSearchTrendsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        # Deterministic simulation of Google Trends based on the day
-        today_val = date.today().toordinal()
-        rng = random.Random(today_val)
+        # Deterministic simulation of Google Trends based on the day and shop category
+        shop = get_shop_for_owner(request.user)
+        shop_type = shop.shop_type if shop else "kirana"
+
+        keywords_map = {
+            "clothing": ["T-Shirts", "Jeans", "Sarees", "Summer Dresses", "Kurtis", "Socks", "Jackets"],
+            "medical": ["Paracetamol", "Vitamin C", "Cough Syrup", "Face Masks", "Band-Aids", "Hand Sanitizer", "Painkiller Tablets"],
+            "kirana": ["Fresh Milk", "Salted Butter", "Whole Wheat Atta", "Basmati Rice", "Refined Cooking Oil", "Farm Eggs", "White Bread"],
+            "snacks": ["Chocolate Chip Cookies", "Potato Chips", "Fruit Cake", "Salted Peanuts", "Garlic Bread", "Soft Drinks", "Apple Juice"],
+            "household": ["Liquid Detergent", "Dishwashing Gel", "Floor Cleaner", "Garbage Bags", "Toilet Roll", "Scrub Pads", "Air Freshener"],
+            "pet": ["Dry Dog Food", "Cat Food Cans", "Dog Chew Bones", "Pet Shampoo", "Cat Litter Box", "Bird Seeds", "Fish Flakes"],
+            "electronics": ["USB-C Charger", "Wireless Earbuds", "10000mAh Powerbank", "Bluetooth Speaker", "Tempered Glass", "LED Smart Bulb", "AA Batteries"],
+        }
         
-        keywords = ["Milk", "Butter", "Ice Cream", "Cold Drink", "Rice", "Cooking Oil", "Eggs"]
+        keywords = keywords_map.get(shop_type, keywords_map["kirana"])
+        today_val = date.today().toordinal()
+
         trends = []
-        for kw in keywords:
-            base_score = 65
-            if kw == "Ice Cream" or kw == "Cold Drink":
-                base_score = 80 if date.today().month in [4, 5, 6, 7, 8] else 50
-            elif kw == "Milk" or kw == "Eggs":
-                base_score = 75
-            
-            score = base_score + rng.randint(-10, 15)
+        for i, kw in enumerate(keywords):
+            # Seed rng with (keyword + day) to make it deterministic per-day but changing daily
+            # Also ensures different keywords fluctuate independently
+            import hashlib
+            seed_str = f"{kw}_{today_val}"
+            seed_val = int(hashlib.md5(seed_str.encode()).hexdigest(), 16)
+            kw_rng = random.Random(seed_val)
+
+            # Heuristic base score based on keyword length
+            base_score = 65 + (len(kw) % 15)
+            score = base_score + kw_rng.randint(-15, 15)
             score = max(10, min(100, score))
             trends.append({
                 "keyword": kw,
                 "trend_score": score
             })
-            
+
         trends.sort(key=lambda x: x['trend_score'], reverse=True)
         return Response(trends[:5])
 
@@ -218,7 +236,9 @@ class ShopLowStockView(APIView):
             }
             for item in low_stock
         ]
-        return Response(items)
+        resp = Response(items)
+        resp["Cache-Control"] = "max-age=30, stale-while-revalidate=60"
+        return resp
 
 
 class ShopOutOfStockView(APIView):
@@ -377,6 +397,93 @@ class ShopWeatherView(APIView):
                 "city": "Ahmedabad (Offline)"
             })
 
+
+def _fetch_weather_data():
+    """
+    Shared helper to fetch weather — used by ShopWeatherView and ShopDashboardSummaryView.
+    Returns a dict with temp, condition, is_raining, city.
+    """
+    lat, lon = "23.0225", "72.5714"
+    weather_api_url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true"
+    try:
+        req = urllib.request.Request(
+            weather_api_url,
+            headers={'User-Agent': 'Mozilla/5.0 (DigiBazaar/1.0)'}
+        )
+        with urllib.request.urlopen(req, timeout=3) as response:
+            data = json.loads(response.read().decode())
+            current = data.get("current_weather", {})
+            temp = current.get("temperature", 32.5)
+            code = current.get("weathercode", 0)
+            condition = WEATHER_CODES.get(code, "Sunny")
+            is_raining = code in [51, 53, 55, 61, 63, 65, 80, 81, 82, 95, 96, 99]
+            return {"temp": float(temp), "condition": condition, "is_raining": is_raining, "city": "Ahmedabad"}
+    except Exception:
+        return {"temp": 32.5, "condition": "Sunny", "is_raining": False, "city": "Ahmedabad (Offline)"}
+
+
+class ShopDashboardSummaryView(APIView):
+    """
+    Batch endpoint that returns all data needed by the shop owner navbar
+    in a single request, replacing 5 serial API calls:
+      - /shops/my-products/      (shop name, is_open)
+      - /shop/dashboard/revenue-today/
+      - /orders/shop-orders/     (pending count)
+      - /shop/dashboard/low-stock/
+      - /shop/dashboard/weather/
+
+    Cached by the frontend for 30 seconds.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        shop = get_shop_for_owner(request.user)
+        if not shop:
+            return Response({'detail': 'Not a shop owner or shop not found'}, status=status.HTTP_403_FORBIDDEN)
+
+        today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+
+        # All DB queries are independent — run them concurrently via ThreadPoolExecutor
+        def get_revenue():
+            result = OrderItem.objects.filter(
+                order__shop=shop,
+                order__status__in=['completed', 'delivered'],
+                order__created_at__gte=today_start
+            ).aggregate(total=Sum(F('price_at_order') * F('quantity')))['total']
+            return float(result or 0.0)
+
+        def get_pending_count():
+            return Order.objects.filter(shop=shop, status='pending').count()
+
+        def get_low_stock_count():
+            return Inventory.objects.filter(
+                shop=shop,
+                current_stock__gt=0,
+                current_stock__lt=F('min_stock')
+            ).count()
+
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            revenue_future = executor.submit(get_revenue)
+            pending_future = executor.submit(get_pending_count)
+            low_stock_future = executor.submit(get_low_stock_count)
+            weather_future = executor.submit(_fetch_weather_data)
+
+            revenue_today = revenue_future.result()
+            pending_orders_count = pending_future.result()
+            low_stock_count = low_stock_future.result()
+            weather = weather_future.result()
+
+        response = Response({
+            'shop_name': shop.name,
+            'is_open': shop.is_open,
+            'revenue_today': revenue_today,
+            'pending_orders_count': pending_orders_count,
+            'low_stock_count': low_stock_count,
+            'weather': weather,
+        })
+        # Cache for 30 seconds — safe for near-real-time data
+        response['Cache-Control'] = 'max-age=30, stale-while-revalidate=60'
+        return response
 
 class ShopSalesReportView(APIView):
     permission_classes = [permissions.IsAuthenticated]

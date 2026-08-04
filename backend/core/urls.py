@@ -54,6 +54,7 @@ from .dashboard_views import (
     ShopUpgradeTierView,
     ShopSettingsView,
     ShopGlobalSearchView,
+    ShopDashboardSummaryView,
 )
 
 from .admin_views import (
@@ -109,6 +110,7 @@ urlpatterns = [
     path('shop/dashboard/growth/upgrade/', ShopUpgradeTierView.as_view(), name='dashboard_upgrade_tier'),
     path('shop/dashboard/settings/', ShopSettingsView.as_view(), name='dashboard_settings'),
     path('shop/dashboard/search/', ShopGlobalSearchView.as_view(), name='dashboard_global_search'),
+    path('shop/dashboard/summary/', ShopDashboardSummaryView.as_view(), name='dashboard_summary'),
 
     path('shops/my-products/', ShopProductsListView.as_view(), name='shop_my_products'),
     path('shops/toggle-live/', ShopToggleLiveInventoryView.as_view(), name='shop_toggle_live'),

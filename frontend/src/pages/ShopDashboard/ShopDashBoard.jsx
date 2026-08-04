@@ -93,11 +93,17 @@ function OrderCountdownTimer({ createdAt, onTimeout }) {
 function PaginationControls({ currentPage, totalPages, onPageChange }) {
   const page = currentPage || 1
   const total = totalPages || 1
+  
+  const handlePageClick = (p) => {
+    onPageChange(p)
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }
+
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, marginTop: 24, marginBottom: 20 }}>
       <button
         disabled={page <= 1}
-        onClick={() => onPageChange(page - 1)}
+        onClick={() => handlePageClick(page - 1)}
         style={{
           padding: '8px 18px',
           borderRadius: '8px',
@@ -116,7 +122,7 @@ function PaginationControls({ currentPage, totalPages, onPageChange }) {
       </span>
       <button
         disabled={page >= total}
-        onClick={() => onPageChange(page + 1)}
+        onClick={() => handlePageClick(page + 1)}
         style={{
           padding: '8px 18px',
           borderRadius: '8px',
@@ -137,14 +143,13 @@ function PaginationControls({ currentPage, totalPages, onPageChange }) {
 function ShopDashboard() {
   const { isLoggedIn, user } = useAuth()
   const navigate = useNavigate()
-  // Always start fresh on dashboard tab when component mounts (page reload/fresh open)
-  const [activeTab, setActiveTab] = useState(() => {
-    // Clear stale tab from localStorage on every fresh mount so we always land on dashboard
-    localStorage.removeItem('active_shop_tab')
-    return 'dashboard'
-  })
+  const [activeTab, setActiveTab] = useState('dashboard')
 
   useEffect(() => {
+    // Set localStorage active_shop_tab to dashboard and notify sidebar on mount
+    localStorage.setItem('active_shop_tab', 'dashboard')
+    window.dispatchEvent(new Event('shopTabChanged'))
+
     const handleTabChange = () => {
       const tab = localStorage.getItem('active_shop_tab') || 'dashboard'
       setActiveTab(tab)
@@ -256,7 +261,9 @@ function ShopDashboard() {
   }, [activeTab])
 
   const handleTabClick = (tabName) => {
+    localStorage.setItem('active_shop_tab', tabName)
     setActiveTab(tabName)
+    window.dispatchEvent(new Event('shopTabChanged'))
   }
 
   const loadDashboardData = () => {
@@ -947,7 +954,7 @@ function ShopDashboard() {
                   </div>
 
                   <div className="insights-card insights-ai-box">
-                    <h4>ML Demand Forecast (Tomorrow)</h4>
+                    <h4>Demand Forecast (Tomorrow)</h4>
                     <div className="forecast-summary-list" style={{ marginTop: 10 }}>
                       {forecastLoading ? (
                         <p className="text-muted">Calculating forecast...</p>
@@ -979,7 +986,7 @@ function ShopDashboard() {
                 <div className="overview-alerts-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
                   {forecastData?.forecast_today?.some(fc => fc.status === 'restock_required') && (
                     <div className="alert-card out-of-stock" style={{ border: '1px solid #ef4444', borderLeft: '4px solid #ef4444' }}>
-                      <h4 style={{ color: '#dc2626' }}>ML Stock Deficit Alerts</h4>
+                      <h4 style={{ color: '#dc2626' }}>Stock Deficit Alerts</h4>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
                         {forecastData.forecast_today
                           .filter(fc => fc.status === 'restock_required')
@@ -1418,7 +1425,7 @@ function ShopDashboard() {
 
                   return (
                     <div className="demand-forecast-analytics-box" style={{ marginTop: 40, borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 25 }}>
-                      <h3 style={{ marginBottom: 8, fontSize: '1.4rem' }}>ML Product Demand Forecasting</h3>
+                      <h3 style={{ marginBottom: 8, fontSize: '1.4rem' }}>Product Demand Forecasting</h3>
                       <p className="text-muted" style={{ marginBottom: 20, fontSize: '0.85rem' }}>
                         Evaluates Multiple Linear Regression model predictions against actual sales data.
                       </p>
@@ -1477,7 +1484,7 @@ function ShopDashboard() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: '1.4rem' }}>📊 Sales & Tax Financial Ledger</h3>
-                <p className="text-muted" style={{ margin: '4px 0 0 0', fontSize: '0.85rem' }}>Comprehensive revenue reporting, GST tax breakdown, and ML anomaly detection.</p>
+                <p className="text-muted" style={{ margin: '4px 0 0 0', fontSize: '0.85rem' }}>Comprehensive revenue reporting, GST tax breakdown, and anomaly detection.</p>
               </div>
               <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                 <select
@@ -1556,7 +1563,7 @@ function ShopDashboard() {
                   </div>
 
                   <div className="chart-card-box">
-                    <h4>ML Sales Anomaly & Tax Forecast</h4>
+                    <h4>Sales Anomaly & Tax Forecast</h4>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 10 }}>
                       <div style={{ background: '#f8fafc', padding: 12, borderRadius: 6, border: '1px solid #e2e8f0' }}>
                         <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Predicted Next Week Sales:</span>
@@ -1591,7 +1598,7 @@ function ShopDashboard() {
           <div className="shop-customers-section">
             <div style={{ marginBottom: 20 }}>
               <h3 style={{ margin: 0, fontSize: '1.4rem' }}>👥 Customer Intelligence & CRM</h3>
-              <p className="text-muted" style={{ margin: '4px 0 0 0', fontSize: '0.85rem' }}>Track buyer loyalty, RFM segmentation, customer lifetime value, and ML churn risks.</p>
+              <p className="text-muted" style={{ margin: '4px 0 0 0', fontSize: '0.85rem' }}>Track buyer loyalty, RFM segmentation, customer lifetime value, and churn risks.</p>
             </div>
 
             {crmLoading ? (
@@ -1630,7 +1637,7 @@ function ShopDashboard() {
                 </div>
 
                 <div className="recent-orders-table-box">
-                  <h4>Customer Loyalty Directory & ML Churn Scores</h4>
+                  <h4>Customer Loyalty Directory & Churn Scores</h4>
                   <table className="recent-orders-table" style={{ marginTop: 12 }}>
                     <thead>
                       <tr>
@@ -1641,7 +1648,7 @@ function ShopDashboard() {
                         <th>Avg Order Value</th>
                         <th>Last Order Date</th>
                         <th>Loyalty Tier</th>
-                        <th>ML Churn Risk</th>
+                        <th>Churn Risk</th>
                         <th>Action</th>
                       </tr>
                     </thead>
@@ -1709,7 +1716,7 @@ function ShopDashboard() {
           <div className="shop-promotions-section">
             <div style={{ marginBottom: 20 }}>
               <h3 style={{ margin: 0, fontSize: '1.4rem' }}>Smart Promotions & Discount Campaign Manager</h3>
-              <p className="text-muted" style={{ margin: '4px 0 0 0', fontSize: '0.85rem' }}>Create store promo codes and launch ML-driven dynamic price discounts for targeted inventory.</p>
+              <p className="text-muted" style={{ margin: '4px 0 0 0', fontSize: '0.85rem' }}>Create store promo codes and launch smart dynamic price discounts for targeted inventory.</p>
             </div>
 
             {promotionsLoading ? (
@@ -1750,7 +1757,7 @@ function ShopDashboard() {
                 {/* ML Smart Recommendations */}
                 {promotionsData.ml_recommendations?.length > 0 && (
                   <div className="chart-card-box" style={{ marginBottom: 25, borderLeft: '4px solid #8b5cf6' }}>
-                    <h4 style={{ color: '#a78bfa' }}>ML Dynamic Promotion Recommendations</h4>
+                    <h4 style={{ color: '#a78bfa' }}>Dynamic Promotion Recommendations</h4>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 12, marginTop: 12 }}>
                       {promotionsData.ml_recommendations.map((rec, idx) => (
                         <div key={idx} style={{ background: '#f8fafc', padding: 12, borderRadius: 6, border: '1px solid #e2e8f0' }}>
@@ -1879,7 +1886,7 @@ function ShopDashboard() {
               <>
                 {/* ML Growth Simulator Box */}
                 <div className="chart-card-box" style={{ marginBottom: 25, background: '#f8fafc', border: '1px solid #e2e8f0' }}>
-                  <h4 style={{ color: '#0891b2' }}>ML Store Growth & Revenue Uplift Simulator</h4>
+                  <h4 style={{ color: '#0891b2' }}>Store Growth & Revenue Uplift Simulator</h4>
                   <p style={{ fontSize: '0.85rem', color: '#475569', margin: '4px 0 16px 0' }}>
                     Based on your 30-day store revenue of <strong>₹{growthData.monthly_volume.toLocaleString()}</strong>, upgrading to Gold Super-Seller Tier produces:
                   </p>
@@ -1946,7 +1953,7 @@ function ShopDashboard() {
                 {/* AI Operating Hours Widget */}
                 {settingsData.ml_recommended_hours && (
                   <div style={{ background: '#ecfeff', padding: 12, borderRadius: 8, borderLeft: '4px solid #0891b2' }}>
-                    <strong style={{ color: '#0891b2', fontSize: '0.85rem' }}>ML Locality Hours Optimizer:</strong>
+                    <strong style={{ color: '#0891b2', fontSize: '0.85rem' }}>Smart Locality Hours Optimizer:</strong>
                     <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#334155' }}>
                       {settingsData.ml_recommended_hours.reason}. Suggested operating hours: <strong>{settingsData.ml_recommended_hours.recommended_open} - {settingsData.ml_recommended_hours.recommended_close}</strong>.
                     </p>

@@ -10,6 +10,7 @@ import NearbyShops from '../../components/NearbyShops/NearbyShops'
 import ErrorBoundary from '../../components/ErrorBoundary/ErrorBoundary'
 import CategoryWiseProducts from '../../components/CategoryWiseProducts/CategoryWiseProducts'
 import { fetchJson } from '../../api/api'
+import { withGroupedVariants } from '../../utils/productVariants'
 import './Home.css'
 
 const CAROUSEL_SLIDES = [
@@ -51,7 +52,7 @@ function Home() {
   useEffect(() => {
     fetchJson('/categories/')
       .then(data => {
-        setCategories(data.slice(0, 11) || [])
+        setCategories((data || []).filter(cat => Number(cat.product_count || 0) > 0))
       })
       .catch(() => {})
   }, [])
@@ -59,8 +60,8 @@ function Home() {
   useEffect(() => {
     fetchJson('/products/new_arrivals/?page_size=8')
       .then(data => {
-        const prods = data.results || data || []
-        setNewArrivals(prods.slice(0, 8))
+        const prods = (data.results || data || []).filter(product => product.image_url)
+        setNewArrivals(withGroupedVariants(prods).slice(0, 8))
       })
       .catch(() => {})
   }, [])
