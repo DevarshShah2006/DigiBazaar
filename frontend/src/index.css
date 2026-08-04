@@ -72,6 +72,48 @@ body {
   overflow-x: hidden;
 }
 
+/* Customer marketplace theme — warm cream, brown and rust.
+   Portal-specific palettes are left untouched. */
+body:has(.customer-navbar) {
+  --primary: #59290E;
+  --primary-hover: #3D1A08;
+  --primary-light: #F0ECE5;
+  --background: #FDFAF6;
+  --card-bg: #FFFFFF;
+  --text-main: #2D1609;
+  --text-muted: #766961;
+  --accent: #A64D22;
+  --border: #E4D8CF;
+  --shadow: 0 10px 30px -5px rgba(89, 41, 14, 0.10);
+}
+
+body:has(.customer-navbar) main { background: #FDFAF6; }
+body:has(.customer-navbar) .footer {
+  margin-top: 48px;
+  border-top: 1px solid #E4D8CF;
+  background: #F4F2EF;
+  color: #2D1609;
+}
+body:has(.customer-navbar) .footer__inner {
+  max-width: 1200px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 auto;
+  padding: 26px 24px;
+  font-size: 13px;
+}
+body:has(.customer-navbar) .home .section-title,
+body:has(.customer-navbar) .products-page h1,
+body:has(.customer-navbar) .products-page h2 { color: #2D1609 !important; }
+body:has(.customer-navbar) .home .section-subtitle,
+body:has(.customer-navbar) .view-all { color: #766961 !important; }
+body:has(.customer-navbar) .view-all:hover { color: #A64D22 !important; }
+
+@media (max-width: 640px) {
+  body:has(.customer-navbar) .footer__inner { flex-direction: column; }
+}
+
 /* Animations */
 .fade-in {
   animation: fadeIn 0.4s ease-out forwards;

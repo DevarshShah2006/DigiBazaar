@@ -50,7 +50,7 @@ function TrendingSection() {
     <section className="trending-section">
       <div className="section-header">
         <div className="section-title-group">
-          <h2 className="section-title">✨ Featured Products</h2>
+          <h2 className="section-title"> Featured Products</h2>
           <p className="section-subtitle">Our curated selection of top-rated items</p>
         </div>
         <div className="scroll-btns">
