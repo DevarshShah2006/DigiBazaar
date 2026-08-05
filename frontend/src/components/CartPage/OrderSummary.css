@@ -62,12 +62,16 @@
 .promo-apply-btn {
   min-width: 110px;
   border: none;
-  background: #4f46e5;
+  background: #4c8631;
   color: #fff;
   border-radius: 16px;
   padding: 14px 18px;
   font-weight: 700;
   cursor: pointer;
+}
+
+.promo-apply-btn:hover {
+  background: #3d7027;
 }
 
 .promo-message {
@@ -81,6 +85,106 @@
 
 .promo-message.error {
   color: #dc2626;
+}
+
+.available-promos {
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.available-promos summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  color: #315c22;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+}
+
+.available-promos summary::-webkit-details-marker {
+  display: none;
+}
+
+.available-promos summary::after {
+  content: '+';
+  color: #4c8631;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.available-promos[open] summary {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.available-promos[open] summary::after {
+  content: '−';
+}
+
+.available-promos__menu {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+
+.available-promos__menu button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #dcebd6;
+  border-radius: 10px;
+  background: #fff;
+  color: #315c22;
+  cursor: pointer;
+  text-align: left;
+}
+
+.available-promos__menu button:hover {
+  border-color: #4c8631;
+  background: #f4faef;
+}
+
+.available-promos__menu span {
+  color: #61715b;
+  font-size: 12px;
+}
+
+.summary-row--discount strong {
+  color: #16a34a;
+  font-size: 17px;
+}
+
+.summary-row--discount {
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid #cce8c1;
+  border-radius: 14px;
+  background: #f4faef;
+  color: #315c22;
+}
+
+.summary-row__discount-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.summary-row__discount-label small {
+  color: #6c8063;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
 }
 
 .summary-divider {
@@ -104,7 +208,7 @@
   padding: 16px;
   border: none;
   border-radius: 18px;
-  background: linear-gradient(135deg, #e8a93d 0%, #f6735f 100%);
+  background: linear-gradient(135deg, #4c8631 0%, #73a54c 100%);
   color: #fff;
   font-size: 16px;
   font-weight: 700;
@@ -119,5 +223,5 @@
 
 .summary-proceed-btn:not(:disabled):hover {
   transform: translateY(-1px);
-  box-shadow: 0 18px 30px rgba(231, 115, 95, 0.24);
+  box-shadow: 0 18px 30px rgba(76, 134, 49, 0.24);
 }

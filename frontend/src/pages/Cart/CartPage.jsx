@@ -16,9 +16,12 @@ const DELIVERY_OPTIONS = [
 ]
 
 const DEFAULT_ADDRESS = '42 Oak Valley, Apt 12B, Central Square'
-const VALID_DISCOUNT_CODE = 'FRESH2024'
-const DISCOUNT_RATE = 0.10
-const SMALL_ORDER_THRESHOLD = 1000
+const PROMO_CODES = {
+  WELCOME50: { discountPercent: 50, firstOrderOnly: true },
+  SAVE20: { discountPercent: 20 },
+  FLAT10: { discountPercent: 10 }
+}
+const SMALL_ORDER_THRESHOLD = 100
 const SMALL_ORDER_FEE = 49
 
 function CartPage() {
@@ -49,10 +52,13 @@ function CartPage() {
     parseFloat(localStorage.getItem('digibazaar_cart_discount_amount') || '0') || 0
   )
   const [discountMessage, setDiscountMessage] = useState('')
+  const [hasPreviousOrders, setHasPreviousOrders] = useState(null)
 
   const itemsTotal = useMemo(() => total, [total])
   const deliveryFee = 0
-  const smallOrderCharge = itemsTotal > 0 && itemsTotal < SMALL_ORDER_THRESHOLD ? SMALL_ORDER_FEE : 0
+  const smallOrderCharge = deliveryOption === 'home' && itemsTotal > 0 && itemsTotal < SMALL_ORDER_THRESHOLD
+    ? SMALL_ORDER_FEE
+    : 0
   const totalPayable = Math.max(itemsTotal + deliveryFee + smallOrderCharge - discountAmount, 0)
 
   useEffect(() => {
@@ -67,11 +73,30 @@ function CartPage() {
   useEffect(() => {
     if (!discountApplied) {
       setDiscountAmount(0)
-      setDiscountMessage('')
       return
     }
-    setDiscountAmount(Math.min(itemsTotal * DISCOUNT_RATE, 250))
-  }, [discountApplied, itemsTotal])
+    const promo = PROMO_CODES[discountCode.trim().toUpperCase()]
+    if (!promo) {
+      setDiscountApplied(false)
+      setDiscountAmount(0)
+      return
+    }
+    setDiscountAmount(itemsTotal * (promo.discountPercent / 100))
+  }, [discountApplied, discountCode, itemsTotal])
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setHasPreviousOrders(false)
+      return
+    }
+
+    fetchJson('/orders/my-orders/')
+      .then(data => {
+        const orders = Array.isArray(data) ? data : (data?.results || [])
+        setHasPreviousOrders(orders.length > 0)
+      })
+      .catch(() => setHasPreviousOrders(false))
+  }, [isLoggedIn])
 
   useEffect(() => {
     localStorage.setItem('digibazaar_cart_delivery_option', deliveryOption)
@@ -98,7 +123,7 @@ function CartPage() {
     setDeliveryOption(optionId)
   }
 
-  const handleApplyDiscount = () => {
+  const handleApplyDiscount = async () => {
     const code = discountCode.trim().toUpperCase()
     if (!code) {
       setDiscountMessage('Enter a discount code')
@@ -106,15 +131,47 @@ function CartPage() {
       return
     }
 
-    if (code === VALID_DISCOUNT_CODE && itemsTotal > 0) {
-      setDiscountApplied(true)
-      setDiscountMessage('Coupon applied successfully')
+    const promo = PROMO_CODES[code]
+    if (!promo) {
+      setDiscountApplied(false)
+      setDiscountAmount(0)
+      setDiscountMessage('Invalid promo code')
       return
     }
 
+    if (itemsTotal <= 0) {
+      setDiscountApplied(false)
+      setDiscountAmount(0)
+      setDiscountMessage('Add items to your cart before applying a promo code')
+      return
+    }
+
+    let userHasPreviousOrders = hasPreviousOrders
+    if (promo.firstOrderOnly && isLoggedIn && userHasPreviousOrders === null) {
+      const data = await fetchJson('/orders/my-orders/')
+      const orders = Array.isArray(data) ? data : (data?.results || [])
+      userHasPreviousOrders = orders.length > 0
+      setHasPreviousOrders(userHasPreviousOrders)
+    }
+
+    if (promo.firstOrderOnly && userHasPreviousOrders) {
+      setDiscountApplied(false)
+      setDiscountAmount(0)
+      setDiscountMessage('This promo code is only valid for first-time users.')
+      return
+    }
+
+    setDiscountCode(code)
+    setDiscountApplied(true)
+    setDiscountAmount(itemsTotal * (promo.discountPercent / 100))
+    setDiscountMessage(`${code} applied: ${promo.discountPercent}% off`)
+  }
+
+  const handleDiscountCodeChange = (value) => {
+    setDiscountCode(value)
     setDiscountApplied(false)
     setDiscountAmount(0)
-    setDiscountMessage('Invalid promo code')
+    setDiscountMessage('')
   }
 
   const setCartAddress = (newAddress) => {
@@ -172,6 +229,12 @@ function CartPage() {
 
   const handleProceed = () => {
     if (items.length === 0) return
+    if (discountApplied && discountCode.trim().toUpperCase() === 'WELCOME50' && hasPreviousOrders) {
+      setDiscountApplied(false)
+      setDiscountAmount(0)
+      setDiscountMessage('This promo code is only valid for first-time users.')
+      return
+    }
     if (!isLoggedIn) {
       navigate('/login')
     } else {
@@ -277,7 +340,7 @@ function CartPage() {
             discountAmount={discountAmount}
             totalPayable={totalPayable}
             discountCode={discountCode}
-            setDiscountCode={setDiscountCode}
+            setDiscountCode={handleDiscountCodeChange}
             onApplyDiscount={handleApplyDiscount}
             discountApplied={discountApplied}
             discountMessage={discountMessage}

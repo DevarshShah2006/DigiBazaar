@@ -14,6 +14,8 @@ function OrderSummary({
   onProceed,
   disabled
 }) {
+  const currency = '\u20B9'
+
   return (
     <div className="order-summary-card">
       <div className="order-summary-card__header">
@@ -24,15 +26,15 @@ function OrderSummary({
       <div className="order-summary-card__body">
         <div className="summary-row">
           <span>Items Total</span>
-          <strong>₹{itemsTotal.toFixed(2)}</strong>
+          <strong>{currency}{itemsTotal.toFixed(2)}</strong>
         </div>
         <div className="summary-row">
           <span>Delivery Fee</span>
-          <strong>{deliveryFee === 0 ? 'FREE' : `₹${deliveryFee.toFixed(2)}`}</strong>
+          <strong>{deliveryFee === 0 ? 'FREE' : `${currency}${deliveryFee.toFixed(2)}`}</strong>
         </div>
         <div className="summary-row">
           <span>Small Order Surcharge</span>
-          <strong>{smallOrderCharge === 0 ? '₹0' : `₹${smallOrderCharge.toFixed(2)}`}</strong>
+          <strong>{smallOrderCharge === 0 ? `${currency}0` : `${currency}${smallOrderCharge.toFixed(2)}`}</strong>
         </div>
 
         <div className="promo-row">
@@ -49,11 +51,33 @@ function OrderSummary({
           <p className={`promo-message ${discountApplied ? 'success' : 'error'}`}>{discountMessage}</p>
         )}
 
+        <details className="available-promos">
+          <summary>View Available Promo Codes</summary>
+          <div className="available-promos__menu">
+            <button type="button" onClick={() => setDiscountCode('WELCOME50')}>
+              <strong>WELCOME50</strong><span>50% OFF · First order only</span>
+            </button>
+            <button type="button" onClick={() => setDiscountCode('SAVE20')}>
+              <strong>SAVE20</strong><span>20% OFF</span>
+            </button>
+            <button type="button" onClick={() => setDiscountCode('FLAT10')}>
+              <strong>FLAT10</strong><span>10% OFF</span>
+            </button>
+          </div>
+        </details>
+
+        {discountApplied && discountAmount > 0 && (
+          <div className="summary-row summary-row--discount">
+            <span className="summary-row__discount-label"><small>Applied promo</small>{discountCode.trim().toUpperCase()} discount</span>
+            <strong>- {currency}{discountAmount.toFixed(2)}</strong>
+          </div>
+        )}
+
         <div className="summary-divider" />
 
         <div className="summary-total-row">
           <span>Total Payable</span>
-          <strong>₹{totalPayable.toFixed(2)}</strong>
+          <strong>{currency}{totalPayable.toFixed(2)}</strong>
         </div>
 
         <button className="summary-proceed-btn" onClick={onProceed} disabled={disabled}>

@@ -114,7 +114,7 @@ export default function Checkout() {
 
   const subtotal = total
   const deliveryFee = getDeliveryCharge()
-  const smallOrderCharge = subtotal > 0 && subtotal < 1000 ? 49.00 : 0.00
+  const smallOrderCharge = deliveryOption === 'home' && subtotal > 0 && subtotal < 100 ? 49.00 : 0.00
   const grandTotal = subtotal + deliveryFee + smallOrderCharge - discountAmount
 
   return (
