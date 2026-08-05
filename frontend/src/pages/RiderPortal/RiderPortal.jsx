@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { fetchJson } from '../../api/api'
+import RouteMap from '../../components/RouteMap/RouteMap'
 import './RiderPortal.css'
 
 export default function RiderPortal() {
@@ -34,6 +35,21 @@ export default function RiderPortal() {
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [riderLocation, setRiderLocation] = useState(null)
+
+  // Capture the rider's own live coordinates for navigation display
+  useEffect(() => {
+    if (!navigator.geolocation) return
+    let cancelled = false
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        if (!cancelled) setRiderLocation({ lat: pos.coords.latitude, long: pos.coords.longitude })
+      },
+      () => {},
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+    )
+    return () => { cancelled = true }
+  }, [])
 
   useEffect(() => {
     document.body.classList.add('portal-rider')
@@ -265,33 +281,43 @@ export default function RiderPortal() {
       {/* ── TAB 3: FULL SCREEN NAVIGATION MAP ── */}
       {activeTab === 'map' && (
         <div className="rider-tab-content full-map-tab">
-          <h3>Simulated Route Navigation Map</h3>
+          <h3>Live Navigation Map</h3>
           {active ? (
             <div className="full-map-card">
               <div className="map-meta-row">
-                <span>Paldi, Ahmedabad Map (Simulated Live)</span>
+                <span>{active.order_details.shop_name} → {active.order_details.user_name}'s Home · OpenStreetMap Route</span>
                 <span className="eta-badge">ETA: {active.eta || 15} mins</span>
               </div>
-              <svg viewBox="0 0 400 240" className="rider-map-svg">
-                {/* Roads */}
-                <path d="M 50 120 Q 200 40 350 120" fill="none" stroke="#334155" strokeWidth="12" strokeLinecap="round" />
-                <path d="M 50 120 Q 200 40 350 120" fill="none" stroke="#6366f1" strokeWidth="4" strokeDasharray="8,8" strokeLinecap="round" />
-                
-                {/* Shop Node */}
-                <circle cx="50" cy="120" r="14" fill="#1e293b" stroke="#0891b2" strokeWidth="3" />
-                <text x="50" y="100" fill="#f8fafc" fontSize="10" fontWeight="bold" textAnchor="middle">Paldi Store</text>
-                
-                {/* Customer Node */}
-                <circle cx="350" cy="120" r="14" fill="#1e293b" stroke="#10b981" strokeWidth="3" />
-                <text x="350" y="100" fill="#f8fafc" fontSize="10" fontWeight="bold" textAnchor="middle">Customer</text>
-                
-                {/* Rider Node */}
-                <circle cx="200" cy="80" r="10" fill="#6366f1" />
-                <text x="200" y="65" fill="#6366f1" fontSize="11" fontWeight="bold" textAnchor="middle">Rider (You)</text>
-              </svg>
+
+              <RouteMap
+                height={420}
+                origin={{
+                  lat: active.order_details.shop_lat,
+                  long: active.order_details.shop_long,
+                  label: active.order_details.shop_name || 'Pickup (Shop)',
+                  icon: '🛒',
+                  color: '#0891b2',
+                }}
+                destination={{
+                  lat: active.order_details.lat,
+                  long: active.order_details.long,
+                  label: active.order_details.user_name || 'Drop (Home)',
+                  icon: '🏠',
+                  color: '#10b981',
+                }}
+                rider={riderLocation}
+              />
+
               <div className="map-instructions">
-                <p><strong>Turn right on Paldi Cross Roads</strong></p>
-                <p className="sub">Remaining distance: 1.2 km</p>
+                <p><strong>Pickup:</strong> {active.order_details.shop_address || active.order_details.shop_name}</p>
+                <p className="sub"><strong>Drop:</strong> {active.order_details.delivery_address}</p>
+                {riderLocation ? (
+                  <p className="sub" style={{ marginTop: 6, color: '#6366f1' }}>
+                    🛵 Your live location is marked on the map.
+                  </p>
+                ) : (
+                  <p className="sub" style={{ marginTop: 6 }}>Enable location permission to show your live rider position.</p>
+                )}
               </div>
             </div>
           ) : (

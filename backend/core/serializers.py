@@ -248,6 +248,16 @@ class OrderSerializer(serializers.ModelSerializer):
     shop_name = serializers.CharField(source="shop.name", read_only=True)
     shop_phone = serializers.SerializerMethodField()
     shop_address = serializers.CharField(source="shop.address", read_only=True)
+    shop_area = serializers.CharField(source="shop.area", read_only=True)
+    shop_city = serializers.CharField(source="shop.city", read_only=True)
+    shop_lat = serializers.SerializerMethodField()
+    shop_long = serializers.SerializerMethodField()
+
+    def get_shop_lat(self, obj):
+        return float(obj.shop.lat) if obj.shop and obj.shop.lat is not None else None
+
+    def get_shop_long(self, obj):
+        return float(obj.shop.long) if obj.shop and obj.shop.long is not None else None
     items = OrderItemSerializer(many=True, read_only=True)
     total_price = serializers.SerializerMethodField()
     rider_details = RiderSerializer(source="rider", read_only=True)
@@ -322,6 +332,10 @@ class OrderSerializer(serializers.ModelSerializer):
             "shop",
             "shop_name",
             "shop_address",
+            "shop_area",
+            "shop_city",
+            "shop_lat",
+            "shop_long",
             "shop_phone",
             "user",
             "user_name",

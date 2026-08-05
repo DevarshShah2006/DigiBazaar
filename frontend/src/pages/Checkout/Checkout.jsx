@@ -5,6 +5,22 @@ import { fetchJson } from '../../api/api'
 import { useNavigate } from 'react-router-dom'
 import './Checkout.css'
 
+const DEFAULT_COORD = { lat: 23.0125, long: 72.5575 }
+
+function getCurrentPosition() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('Geolocation not supported'))
+      return
+    }
+    navigator.geolocation.getCurrentPosition(resolve, reject, {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 60000,
+    })
+  })
+}
+
 export default function Checkout() {
   const { isLoggedIn } = useAuth()
   const { items, total, clearCart } = useCartState()
@@ -12,6 +28,8 @@ export default function Checkout() {
   const [address, setAddress] = useState(
     localStorage.getItem('digibazaar_cart_delivery_address') || localStorage.getItem('delivery_address') || '102, Patel Residency, Paldi, Ahmedabad, Gujarat - 380007'
   )
+  const [location, setLocation] = useState(null)
+  const [detectingLocation, setDetectingLocation] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState('upi')
   const [loading, setLoading] = useState(false)
   const [deliveryOption, setDeliveryOption] = useState(
@@ -50,6 +68,38 @@ export default function Checkout() {
     return () => window.removeEventListener('addressUpdated', handleUpdate)
   }, [])
 
+  // Capture the customer's real coordinates via navigator.geolocation
+  useEffect(() => {
+    let cancelled = false
+    getCurrentPosition()
+      .then(pos => {
+        if (cancelled) return
+        const coords = { lat: pos.coords.latitude, long: pos.coords.longitude }
+        setLocation(coords)
+        localStorage.setItem('digibazaar_customer_location', JSON.stringify(coords))
+      })
+      .catch(() => {
+        // Fall back to saved coords or default (Paldi, Ahmedabad)
+        try {
+          const saved = JSON.parse(localStorage.getItem('digibazaar_customer_location'))
+          if (saved && Number.isFinite(saved.lat) && Number.isFinite(saved.long)) setLocation(saved)
+        } catch (e) { /* ignore */ }
+      })
+    return () => { cancelled = true }
+  }, [])
+
+  const detectLocationNow = () => {
+    setDetectingLocation(true)
+    getCurrentPosition()
+      .then(pos => {
+        const coords = { lat: pos.coords.latitude, long: pos.coords.longitude }
+        setLocation(coords)
+        localStorage.setItem('digibazaar_customer_location', JSON.stringify(coords))
+      })
+      .catch(() => alert('Could not detect your current location. Make sure location permission is granted.'))
+      .finally(() => setDetectingLocation(false))
+  }
+
   // Delivery charge calculations
   const getDeliveryCharge = () => 0.00
 
@@ -72,6 +122,21 @@ export default function Checkout() {
         }
       }
 
+      // Get the customer's current coordinates at the time of placing the order
+      let coords = location || DEFAULT_COORD
+      try {
+        const pos = await getCurrentPosition()
+        coords = { lat: pos.coords.latitude, long: pos.coords.longitude }
+        setLocation(coords)
+        localStorage.setItem('digibazaar_customer_location', JSON.stringify(coords))
+      } catch (e) {
+        // Fall back to detected/previous/default coordinates
+        try {
+          const saved = JSON.parse(localStorage.getItem('digibazaar_customer_location'))
+          if (saved && Number.isFinite(saved.lat) && Number.isFinite(saved.long)) coords = saved
+        } catch (err) { /* ignore */ }
+      }
+
       const payload = {
         items: items.map(i => ({
           product_id: i.id,
@@ -82,8 +147,8 @@ export default function Checkout() {
         delivery_address: address,
         payment_method: paymentMethod,
         discount_amount: discountAmount,
-        lat: 23.0125,
-        long: 72.5575
+        lat: coords.lat,
+        long: coords.long
       }
 
       const res = await fetchJson('/orders/checkout/', {
@@ -131,6 +196,22 @@ export default function Checkout() {
             </div>
             <div className="address-display">
               <p>{address}</p>
+            </div>
+            <div className="location-detect-row" style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+              <button
+                type="button"
+                className="detect-loc-btn"
+                onClick={detectLocationNow}
+                disabled={detectingLocation}
+                style={{ border: 'none', background: '#e0f2fe', color: '#0369a1', padding: '8px 14px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
+              >
+                {detectingLocation ? 'Detecting Current Location…' : '📍 Use My Current Location'}
+              </button>
+              <span style={{ fontSize: '12px', color: '#64748b' }}>
+                {location
+                  ? `Coordinates captured: ${location.lat.toFixed(5)}, ${location.long.toFixed(5)}`
+                  : 'Location not detected yet — will attempt again at checkout'}
+              </span>
             </div>
           </div>
 

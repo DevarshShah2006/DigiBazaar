@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { loginUser, signupUser, verifyOTP } from '../api/auth'
-import { fetchJson } from '../api/api'
+import { fetchJson, clearCache } from '../api/api'
 
 const AuthContext = createContext(null)
 
@@ -144,6 +144,8 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('active_rider_tab')
     // Clear session auth cache so next login re-verifies with the server
     sessionStorage.removeItem('auth_verified')
+    // Clear SPA memory cache so the next user doesn't see old data
+    clearCache()
     setUser(null)
     try {
       navigate('/login')

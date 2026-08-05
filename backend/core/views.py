@@ -1315,13 +1315,14 @@ class ShopProductsListView(APIView):
             "shop_name": shop.name,
             "is_open": shop.is_open,
             "live_inventory": shop.live_inventory,
+            "tier": shop.effective_tier,
+            "commission_pct": shop.commission_rate_pct,
             "total_count": total_inventories,
             "total_pages": total_pages,
             "current_page": page,
             "page_size": page_size,
             "products": products_data
         })
-        resp['Cache-Control'] = 'max-age=30, stale-while-revalidate=60'
         return resp
 
     def post(self, request):

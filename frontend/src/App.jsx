@@ -17,6 +17,11 @@ function CustomerNavbar() {
   const [address, setAddress] = useState(
     localStorage.getItem('delivery_address') || '102, Patel Residency, Paldi, Ahmedabad, Gujarat - 380007'
   )
+  const [coordinates, setCoordinates] = useState(
+    localStorage.getItem('delivery_coordinates') && localStorage.getItem('delivery_coordinates') !== 'null' 
+      ? localStorage.getItem('delivery_coordinates') 
+      : null
+  )
   const [savedAddresses, setSavedAddresses] = useState(
     JSON.parse(localStorage.getItem('saved_addresses')) || [
       '102, Patel Residency, Paldi, Ahmedabad, Gujarat - 380007',
@@ -26,6 +31,7 @@ function CustomerNavbar() {
   const [locationOpen, setLocationOpen] = useState(false)
   const [newAddressText, setNewAddressText] = useState('')
   const [detecting, setDetecting] = useState(false)
+  const [showAddressInput, setShowAddressInput] = useState(false)
   
   // Search States
   const [searchVal, setSearchVal] = useState('')
@@ -77,20 +83,50 @@ function CustomerNavbar() {
   // Detect Location
   const handleDetectLocation = () => {
     setDetecting(true)
-    setTimeout(() => {
-      const detected = '7B, Paldi Cross Roads, Ahmedabad, Gujarat - 380007'
-      localStorage.setItem('delivery_address', detected)
-      setAddress(detected)
+    setShowAddressInput(false)
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude.toFixed(6)
+          const lng = position.coords.longitude.toFixed(6)
+          const coords = `${lat}, ${lng}`
+          setCoordinates(coords)
+          localStorage.setItem('delivery_coordinates', coords)
+          setDetecting(false)
+          setShowAddressInput(true)
+        },
+        (error) => {
+          console.error('Geolocation error:', error)
+          const fallback = '7B, Paldi Cross Roads, Ahmedabad, Gujarat - 380007'
+          localStorage.setItem('delivery_address', fallback)
+          setAddress(fallback)
+          setCoordinates(null)
+          localStorage.removeItem('delivery_coordinates')
+          setDetecting(false)
+          setShowAddressInput(false)
+          alert('Unable to detect location. Please enter address manually.')
+        }
+      )
+    } else {
+      const fallback = '7B, Paldi Cross Roads, Ahmedabad, Gujarat - 380007'
+      localStorage.setItem('delivery_address', fallback)
+      setAddress(fallback)
+      setCoordinates(null)
+      localStorage.removeItem('delivery_coordinates')
       setDetecting(false)
-      setLocationOpen(false)
-      window.dispatchEvent(new Event('addressUpdated'))
-    }, 1200)
+      setShowAddressInput(false)
+      alert('Geolocation not supported. Please enter address manually.')
+    }
   }
 
   // Select Address
   const handleSelectAddress = (addr) => {
     localStorage.setItem('delivery_address', addr)
     setAddress(addr)
+    setCoordinates(null)
+    localStorage.removeItem('delivery_coordinates')
+    setShowAddressInput(false)
+    setNewAddressText('')
     setLocationOpen(false)
     window.dispatchEvent(new Event('addressUpdated'))
   }
@@ -103,9 +139,26 @@ function CustomerNavbar() {
       localStorage.setItem('saved_addresses', JSON.stringify(newList))
       localStorage.setItem('delivery_address', newAddressText.trim())
       setAddress(newAddressText.trim())
+      setCoordinates(null)
+      localStorage.removeItem('delivery_coordinates')
       setNewAddressText('')
+      setShowAddressInput(false)
       setLocationOpen(false)
       window.dispatchEvent(new Event('addressUpdated'))
+    }
+  }
+
+  // Save address after coordinates captured
+  const handleSaveAddressWithCoordinates = () => {
+    if (newAddressText.trim()) {
+      localStorage.setItem('delivery_address', newAddressText.trim())
+      setAddress(newAddressText.trim())
+      setNewAddressText('')
+      setShowAddressInput(false)
+      setLocationOpen(false)
+      window.dispatchEvent(new Event('addressUpdated'))
+    } else {
+      alert('Please enter an address')
     }
   }
 
@@ -169,9 +222,14 @@ function CustomerNavbar() {
       {/* Right Actions */}
       <div className="customer-nav-actions">
         {/* Location Selector */}
-        <div className="nav-location-selector" onClick={() => setLocationOpen(!locationOpen)} ref={locRef}>
+        <div className="nav-location-selector" onClick={() => { setLocationOpen(!locationOpen); if (!locationOpen) { setShowAddressInput(false); setNewAddressText(''); } }} ref={locRef}>
           <span style={{ marginRight: '4px' }}>Deliver:</span>
           <span className="location-address-txt">{address}</span>
+          {coordinates && (
+            <span className="location-coordinates-txt" style={{ fontSize: '10px', color: '#64748b', marginLeft: '6px' }}>
+              ({coordinates})
+            </span>
+          )}
           <span style={{ fontSize: '9px', marginLeft: '4px' }}>▼</span>
 
           {locationOpen && (
@@ -179,25 +237,54 @@ function CustomerNavbar() {
               <button className="detect-loc-btn" onClick={handleDetectLocation} disabled={detecting}>
                 {detecting ? 'Detecting Location...' : 'Detect Current Location'}
               </button>
-              <div className="popover-subtitle">Saved Addresses</div>
-              <div className="saved-addr-list">
-                {savedAddresses.map((addr, idx) => (
-                  <div key={idx} className="saved-addr-row" onClick={() => handleSelectAddress(addr)}>
-                    <input type="radio" checked={address === addr} readOnly />
-                    <span>{addr}</span>
+              
+              {showAddressInput && coordinates && (
+                <>
+                  <div className="popover-subtitle" style={{ marginTop: '8px', fontSize: '11px', color: '#475569' }}>
+                    Coordinates Captured: <strong>{coordinates}</strong>
                   </div>
-                ))}
-              </div>
-              <div className="popover-subtitle">Add New Address</div>
-              <div className="add-addr-form">
-                <input 
-                  type="text" 
-                  placeholder="Street, Block, City..." 
-                  value={newAddressText}
-                  onChange={e => setNewAddressText(e.target.value)}
-                />
-                <button onClick={handleAddAddress}>Add</button>
-              </div>
+                  <div className="popover-subtitle" style={{ marginTop: '8px', color: '#dc2626', fontSize: '12px' }}>
+                    Please enter your address below:
+                  </div>
+                  <div className="add-addr-form" style={{ marginTop: '8px' }}>
+                    <input 
+                      type="text" 
+                      placeholder="Enter your full address..." 
+                      value={newAddressText}
+                      onChange={e => setNewAddressText(e.target.value)}
+                      style={{ width: '100%' }}
+                    />
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                      <button onClick={handleSaveAddressWithCoordinates} style={{ flex: 1 }}>Save Address</button>
+                      <button onClick={() => { setShowAddressInput(false); setNewAddressText(''); }} style={{ flex: 1, background: '#fee2e2', color: '#dc2626', border: 'none' }}>Cancel</button>
+                    </div>
+                  </div>
+                </>
+              )}
+              
+              {!showAddressInput && (
+                <>
+                  <div className="popover-subtitle">Saved Addresses</div>
+                  <div className="saved-addr-list">
+                    {savedAddresses.map((addr, idx) => (
+                      <div key={idx} className="saved-addr-row" onClick={() => handleSelectAddress(addr)}>
+                        <input type="radio" checked={address === addr} readOnly />
+                        <span>{addr}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="popover-subtitle">Add New Address</div>
+                  <div className="add-addr-form">
+                    <input 
+                      type="text" 
+                      placeholder="Street, Block, City..." 
+                      value={newAddressText}
+                      onChange={e => setNewAddressText(e.target.value)}
+                    />
+                    <button onClick={handleAddAddress}>Add</button>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>

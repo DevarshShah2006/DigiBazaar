@@ -1,61 +1,60 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { fetchJson } from '../../api/api'
+import RouteMap from '../../components/RouteMap/RouteMap'
 import './OrderConfirmation.css'
 
-function AnimatedDeliveryMap({ status, fulfillment }) {
-  // Simple animated SVG map representing Shop, Rider, and Customer
-  // Rider (dot) moves along the line depending on status
-  let riderPosPct = 0
-  let isRiderActive = false
+function AnimatedDeliveryMap({ order, status, fulfillment }) {
+  // Live OpenStreetMap route between the shop and the customer's home.
+  // The rider marker is interpolated along the route based on order status.
+  const shopLat = Number(order?.shop_lat)
+  const shopLon = Number(order?.shop_long)
+  const homeLat = Number(order?.lat)
+  const homeLon = Number(order?.long)
 
+  let riderPosPct = 0
   if (fulfillment === 'digibazaar_delivery' || fulfillment === 'shop_delivery') {
-    isRiderActive = true
     if (status === 'accepted') riderPosPct = 10
-    if (status === 'preparing') riderPosPct = 25
-    if (status === 'ready') riderPosPct = 40
-    if (status === 'picked_up') riderPosPct = 70
-    if (status === 'delivered') riderPosPct = 100
+    else if (status === 'preparing') riderPosPct = 25
+    else if (status === 'ready') riderPosPct = 40
+    else if (status === 'picked_up') riderPosPct = 70
+    else if (status === 'delivered') riderPosPct = 100
   }
+
+  const riderPos =
+    Number.isFinite(shopLat) && Number.isFinite(homeLat)
+      ? {
+          lat: shopLat + (homeLat - shopLat) * (riderPosPct / 100),
+          long: shopLon + (homeLon - shopLon) * (riderPosPct / 100),
+        }
+      : null
 
   return (
     <div className="live-tracker-map">
       <div className="map-title-row">
-        <span>Simulated Live Tracking (Paldi, Ahmedabad Zone)</span>
+        <span>{order?.shop_name || 'Shop'} → Your Home · Live Route</span>
         <span className="live-dot-indicator"></span>
       </div>
-      
-      <svg viewBox="0 0 400 180" className="vector-tracker-svg">
-        {/* Road Background lines */}
-        <line x1="40" y1="90" x2="360" y2="90" stroke="#e2e8f0" strokeWidth="8" strokeLinecap="round" />
-        <line x1="40" y1="90" x2="360" y2="90" stroke="#047857" strokeWidth="2" strokeDasharray="6,6" strokeLinecap="round" />
-        
-        {/* Shop Node */}
-        <circle cx="80" cy="90" r="16" fill="#fff" stroke="#0891b2" strokeWidth="3" />
-        <text x="80" y="94" textAnchor="middle" fontSize="9">Shop</text>
-        <text x="80" y="65" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#0891b2">SHOP</text>
 
-        {/* Customer Node */}
-        <circle cx="320" cy="90" r="16" fill="#fff" stroke="#047857" strokeWidth="3" />
-        <text x="320" y="94" textAnchor="middle" fontSize="9">Home</text>
-        <text x="320" y="65" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#047857">YOU</text>
+      <RouteMap
+        height={240}
+        origin={{
+          lat: shopLat,
+          long: shopLon,
+          label: order?.shop_name || 'Shop',
+          icon: '🛒',
+          color: '#0891b2',
+        }}
+        destination={{
+          lat: homeLat,
+          long: homeLon,
+          label: 'Your Home',
+          icon: '🏠',
+          color: '#10b981',
+        }}
+        rider={riderPos}
+      />
 
-        {/* Rider Moto dot */}
-        {isRiderActive && status !== 'delivered' && (
-          <g transform={`translate(${80 + (240 * riderPosPct) / 100}, 0)`}>
-            <circle cx="0" cy="90" r="12" fill="#6366f1" />
-            <text x="0" y="94" textAnchor="middle" fontSize="9" fill="#fff">Rider</text>
-            <circle cx="0" cy="90" r="20" fill="none" stroke="#6366f1" strokeWidth="2" opacity="0.3" className="pulse-ring" />
-          </g>
-        )}
-
-        {/* Delivered success state dot */}
-        {status === 'delivered' && (
-          <g transform="translate(320, 0)">
-            <circle cx="0" cy="90" r="22" fill="none" stroke="#10b981" strokeWidth="3" opacity="0.4" className="pulse-ring" />
-          </g>
-        )}
-      </svg>
       <div className="map-coordinates-info">
         <span>Rider status: <strong className="status-highlight">{status.replace('_', ' ')}</strong></span>
       </div>
@@ -146,8 +145,8 @@ function OrderConfirmation() {
             </div>
           </div>
 
-          {/* Interactive SVG Tracking Map */}
-          <AnimatedDeliveryMap status={order.status} fulfillment={order.fulfillment_option} />
+          {/* Live OpenStreetMap tracking map */}
+          <AnimatedDeliveryMap order={order} status={order.status} fulfillment={order.fulfillment_option} />
 
           {/* Stepper Progress bar */}
           <div className="order-stepper-box">

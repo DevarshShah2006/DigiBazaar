@@ -4,6 +4,7 @@ import { getOrders, acceptOrder, rejectOrder, advanceOrder } from '../../api/ord
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { fetchJson, apiFetch, TTL } from '../../api/api'
+import RouteMap from '../../components/RouteMap/RouteMap'
 import './ShopDashBoard.css'
 
 import { Line, Doughnut, Bar } from 'react-chartjs-2'
@@ -432,12 +433,13 @@ function ShopDashboard() {
   const handleUpgradeTier = () => {
     fetchJson('/shop/dashboard/growth/upgrade/', {
       method: 'POST',
-      body: JSON.stringify({ tier: 'premium' })
+      body: JSON.stringify({ tier: 'premium', payment_amount: 5000 })
     })
       .then(res => {
         alert(res.message)
         loadGrowthData()
         loadOrders()
+        window.location.reload()
       })
       .catch(err => alert("Upgrade failed: " + (err.message || err)))
   }
@@ -792,7 +794,7 @@ function ShopDashboard() {
               </span>
             </div>
             <p style={{ margin: '6px 0 0 0', color: '#64748b', fontSize: '0.88rem' }}>
-              Commission Tier: <strong className="commission-badge" style={{ color: '#0891b2' }}>{shopInfo?.live_inventory ? '5% (Live)' : '10% (Standard)'}</strong>
+              Commission Tier: <strong className="commission-badge" style={{ color: '#0891b2' }}>{shopInfo?.commission_pct ? `${shopInfo.commission_pct}% (${shopInfo.tier === 'premium' ? 'Gold' : shopInfo.live_inventory ? 'Live' : 'Standard'})` : '...'}</strong>
             </p>
             {weatherData && (
               <div className="weather-widget" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#e0f2fe', border: '1px solid #bae6fd', padding: '5px 14px', borderRadius: 16, fontSize: '0.82rem', marginTop: 8, color: '#0369a1' }}>
@@ -1109,12 +1111,28 @@ function ShopDashboard() {
                     <h4>Live Delivery Route Tracker</h4>
                     {orders.filter(o => ['picked_up', 'out_for_delivery'].includes(o.status)).slice(0, 1).map(o => (
                       <div key={o.id} className="live-delivery-tracking-wrapper">
-                        <p className="tracking-order-txt">Tracking Order <strong>#{o.id}</strong> (Rider: {o.rider_details?.username || 'Auto assigned'})</p>
-                        <div className="mini-tracking-map">
-                          {/* Simple animated map line */}
-                          <div className="mini-map-line"></div>
-                          <div className="mini-map-rider">Rider</div>
-                        </div>
+                        <p className="tracking-order-txt">Tracking Order <strong>#{o.id}</strong> (Rider: {o.rider_details?.full_name || o.rider_details?.username || 'Auto assigned'})</p>
+                        <RouteMap
+                          height={200}
+                          origin={{
+                            lat: o.shop_lat,
+                            long: o.shop_long,
+                            label: o.shop_name || 'Shop',
+                            icon: '🛒',
+                            color: '#0891b2',
+                          }}
+                          destination={{
+                            lat: o.lat,
+                            long: o.long,
+                            label: o.user_name || 'Customer',
+                            icon: '🏠',
+                            color: '#10b981',
+                          }}
+                          rider={{
+                            lat: o.rider_details?.lat,
+                            long: o.rider_details?.long,
+                          }}
+                        />
                       </div>
                     ))}
                     {orders.filter(o => ['picked_up', 'out_for_delivery'].includes(o.status)).length === 0 && (
@@ -1933,9 +1951,15 @@ function ShopDashboard() {
                         </ul>
                       </div>
 
+                      {t.is_current && t.id === 'premium' && growthData.days_remaining !== null && (
+                        <div style={{ marginTop: 20, padding: 12, background: '#fef3c7', borderRadius: 8, color: '#d97706', fontSize: '0.85rem', fontWeight: 'bold', textAlign: 'center' }}>
+                          Expires in: {growthData.days_remaining} days ({growthData.tier_expires_at})
+                        </div>
+                      )}
+
                       {!t.is_current && t.id === 'premium' && (
                         <button className="add-to-inv-btn" onClick={handleUpgradeTier} style={{ width: '100%', marginTop: 20, padding: 12, fontWeight: 'bold' }}>
-                          Upgrade Store to Gold Tier (5% Flat)
+                          Pay ₹{growthData.upgrade_cost || 5000} to Activate Gold (30 Days)
                         </button>
                       )}
                     </div>
