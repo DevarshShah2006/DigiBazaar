@@ -124,17 +124,17 @@ class ShopRevenueTodayView(APIView):
         today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
         yesterday_start = today_start - timedelta(days=1)
 
-        # Revenue Today (Completed / Delivered)
+        # Revenue Today (Accepted and beyond - all confirmed orders)
         today_rev = OrderItem.objects.filter(
             order__shop=shop,
-            order__status__in=['completed', 'delivered'],
+            order__status__in=['accepted', 'preparing', 'ready', 'picked_up', 'out_for_delivery', 'delivered', 'completed'],
             order__created_at__gte=today_start
         ).aggregate(total=Sum(F('price_at_order') * F('quantity')))['total'] or 0.0
 
         # Revenue Yesterday
         yesterday_rev = OrderItem.objects.filter(
             order__shop=shop,
-            order__status__in=['completed', 'delivered'],
+            order__status__in=['accepted', 'preparing', 'ready', 'picked_up', 'out_for_delivery', 'delivered', 'completed'],
             order__created_at__range=(yesterday_start, today_start)
         ).aggregate(total=Sum(F('price_at_order') * F('quantity')))['total'] or 0.0
 
@@ -180,14 +180,14 @@ class ShopRevenueMonthView(APIView):
         # Revenue This Month
         this_month_rev = OrderItem.objects.filter(
             order__shop=shop,
-            order__status__in=['completed', 'delivered'],
+            order__status__in=['accepted', 'preparing', 'ready', 'picked_up', 'out_for_delivery', 'delivered', 'completed'],
             order__created_at__gte=this_month_start
         ).aggregate(total=Sum(F('price_at_order') * F('quantity')))['total'] or 0.0
 
         # Revenue Last Month
         last_month_rev = OrderItem.objects.filter(
             order__shop=shop,
-            order__status__in=['completed', 'delivered'],
+            order__status__in=['accepted', 'preparing', 'ready', 'picked_up', 'out_for_delivery', 'delivered', 'completed'],
             order__created_at__range=(last_month_start, this_month_start)
         ).aggregate(total=Sum(F('price_at_order') * F('quantity')))['total'] or 0.0
 
@@ -549,7 +549,7 @@ class ShopDashboardSummaryView(APIView):
         def get_revenue():
             result = OrderItem.objects.filter(
                 order__shop=shop,
-                order__status__in=['completed', 'delivered'],
+                order__status__in=['accepted', 'preparing', 'ready', 'picked_up', 'out_for_delivery', 'delivered', 'completed'],
                 order__created_at__gte=today_start
             ).aggregate(total=Sum(F('price_at_order') * F('quantity')))['total']
             return float(result or 0.0)

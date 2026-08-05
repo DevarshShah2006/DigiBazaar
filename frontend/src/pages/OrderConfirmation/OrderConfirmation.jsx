@@ -200,7 +200,10 @@ function OrderConfirmation() {
                     <p>Vehicle: {order.rider.vehicle_type || 'Motorcycle'} ({order.rider.vehicle_number || 'KA-01-XX-9999'})</p>
                     <p className="rider-status-tag">Status: Online</p>
                   </div>
-                  <button className="contact-rider-btn" onClick={() => alert(`Calling rider +91 ${order.rider.phone || '9988776655'}`)}>
+                  <button className="contact-rider-btn" onClick={() => {
+                    const phone = order.rider?.phone || order.rider_phone || order.delivery_assignment?.rider?.phone || '9988776655';
+                    window.location.href = `tel:+91${phone.replace(/\D/g, '')}`;
+                  }}>
                     Call
                   </button>
                 </div>

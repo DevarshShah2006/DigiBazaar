@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { getOrders, acceptOrder, rejectOrder, advanceOrder } from '../../api/orders'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
-import { fetchJson, apiFetch, TTL } from '../../api/api'
+import { fetchJson, apiFetch, clearCache, TTL } from '../../api/api'
 import RouteMap from '../../components/RouteMap/RouteMap'
 import './ShopDashBoard.css'
 
@@ -56,7 +56,7 @@ const ADVANCE_CONFIG = {
 
 // Order Countdown Timer component — triggers backend timeout when time runs out
 function OrderCountdownTimer({ createdAt, onTimeout }) {
-  const TIMEOUT_SECS = 60  // 1 minute
+  const TIMEOUT_SECS = 180  // 3 minutes
   const [timeLeft, setTimeLeft] = useState(TIMEOUT_SECS)
   const [expired, setExpired] = useState(false)
 
@@ -477,6 +477,10 @@ function ShopDashboard() {
   const loadDashboardOverviewData = async () => {
     setOverviewLoading(true)
     try {
+      // Clear cache for revenue endpoints to get fresh data
+      clearCache('/shop/dashboard/revenue-today/')
+      clearCache('/shop/dashboard/revenue-month/')
+      
       const [revToday, revMonth, topProds, trends, lowS, outS, expP, slowM, weather] = await Promise.all([
         apiFetch('/shop/dashboard/revenue-today/', {}, TTL.SHORT),
         apiFetch('/shop/dashboard/revenue-month/', {}, TTL.SHORT),
@@ -523,6 +527,11 @@ function ShopDashboard() {
       // Load current shop info (like live inventory flag) - use cached API
       const shopProductsData = await apiFetch('/shops/my-products/', {}, TTL.SHORT)
       setShopInfo(shopProductsData)
+      
+      // If we're on the dashboard tab, reload revenue data to ensure it's up to date
+      if (activeTab === 'dashboard') {
+        loadDashboardOverviewData()
+      }
     } catch {
       setError('Failed to load shop orders.')
     } finally {
@@ -655,6 +664,10 @@ function ShopDashboard() {
     try {
       await acceptOrder(id)
       loadOrders(ordersPage)
+      // Reload dashboard overview to update revenue
+      if (activeTab === 'dashboard') {
+        loadDashboardOverviewData()
+      }
     } catch (e) {
       alert('Failed to accept order: ' + (e?.message || 'Server error'))
     }
@@ -667,6 +680,10 @@ function ShopDashboard() {
         alert(`Order rejected. Rerouted to: ${res.new_order?.shop_name || 'next shop'}`)
       }
       loadOrders(ordersPage)
+      // Reload dashboard overview to update revenue
+      if (activeTab === 'dashboard') {
+        loadDashboardOverviewData()
+      }
     } catch (e) {
       alert('Failed to reject order: ' + (e?.message || 'Server error'))
     }
@@ -676,6 +693,10 @@ function ShopDashboard() {
     try {
       await advanceOrder(id)
       loadOrders(ordersPage)
+      // Reload dashboard overview to update revenue
+      if (activeTab === 'dashboard') {
+        loadDashboardOverviewData()
+      }
     } catch (e) {
       alert('Failed to advance order: ' + (e?.message || 'Server error'))
     }
@@ -686,7 +707,7 @@ function ShopDashboard() {
     try {
       const res = await fetchJson('/orders/timeout/', {
         method: 'POST',
-        body: JSON.stringify({ timeout_seconds: 60 })
+        body: JSON.stringify({ timeout_seconds: 180 })
       })
       if (res && res.total_processed > 0) {
         loadOrders(ordersPage)

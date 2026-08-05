@@ -657,7 +657,7 @@ class CheckoutView(APIView):
                 status_note = f'Order auto-accepted (Live Inventory) via {fulfillment_option}'
             else:
                 initial_status = 'pending'
-                status_note = f'Order placed via {fulfillment_option} — waiting for shop acceptance (1 min timeout)'
+                status_note = f'Order placed via {fulfillment_option} — waiting for shop acceptance (3 min timeout)'
 
             payment_status = 'paid' if payment_method in ['upi', 'card', 'netbanking', 'wallet'] else 'pending'
 
@@ -1060,20 +1060,33 @@ class OrderTimeoutView(APIView):
             # Try to reroute to next shop
             rerouted_flag = False
             if items:
-                first_product = items[0].product
-                ranked_shops = rank_shops_for_product(
-                    first_product, user_lat=user_lat, user_long=user_long
-                )
-                next_shops = [s for s in ranked_shops if s.id != order.shop_id and s.is_open]
-                if next_shops:
-                    next_shop = next_shops[0]
-                    new_status = 'accepted' if next_shop.live_inventory else 'cancelled'
-                    if new_status == 'accepted':
-                        # Create rerouted order
+                # Get all unique products in this order
+                order_products = [item.product for item in items]
+                
+                # Find shops that have ALL products in the order
+                product_ids = [p.id for p in order_products]
+                shops_with_all_products = Shop.objects.filter(
+                    products__in=product_ids,
+                    is_open=True
+                ).exclude(id=order.shop_id).distinct()
+                
+                # Rank these shops by proximity and other factors
+                if shops_with_all_products.exists():
+                    # Get ranked shops for the first product (as a baseline for ranking)
+                    ranked_shops = rank_shops_for_product(
+                        order_products[0], user_lat=user_lat, user_long=user_long
+                    )
+                    # Filter to only shops that have all products and are open
+                    ranked_shops = [s for s in ranked_shops if s.id != order.shop_id and s.is_open and s in shops_with_all_products]
+                    
+                    if ranked_shops:
+                        next_shop = ranked_shops[0]
+                        # Create rerouted order with appropriate status
+                        new_order_status = 'accepted' if next_shop.live_inventory else 'pending'
                         new_order = Order.objects.create(
                             user=order.user,
                             shop=next_shop,
-                            status='accepted',
+                            status=new_order_status,
                             fulfillment_option=order.fulfillment_option,
                             delivery_address=order.delivery_address,
                             lat=order.lat,
@@ -1088,9 +1101,9 @@ class OrderTimeoutView(APIView):
                         )
                         OrderTimeline.objects.create(
                             order=new_order,
-                            status='accepted',
+                            status=new_order_status,
                             timestamp=timezone.now(),
-                            note=f'Auto-rerouted: {order.shop.name} timed out. Assigned to {next_shop.name}'
+                            note=f'Auto-rerouted from {order.shop.name} (timeout). All products available at {next_shop.name}'
                         )
                         for item in items:
                             OrderItem.objects.create(
@@ -1108,9 +1121,9 @@ class OrderTimeoutView(APIView):
                             order=order,
                             status='cancelled',
                             timestamp=timezone.now(),
-                            note='Auto-cancelled: shop did not accept within 1 minute'
+                            note=f'Auto-cancelled: shop did not accept within 3 minutes, rerouted to {next_shop.name}'
                         )
-                        rerouted.append({'original_order_id': order.id, 'new_order_id': new_order.id, 'shop': next_shop.name})
+                        rerouted.append({'original_order_id': order.id, 'new_order_id': new_order.id, 'shop': next_shop.name, 'status': new_order_status})
                         rerouted_flag = True
 
             if not rerouted_flag:
