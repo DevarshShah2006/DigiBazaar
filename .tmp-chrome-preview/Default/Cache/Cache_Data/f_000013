@@ -190,7 +190,7 @@ export default function RiderPortal() {
       }, this),
       /* @__PURE__ */ jsxDEV("div", { className: "rider-stats-grid", children: [
         /* @__PURE__ */ jsxDEV("div", { className: "rider-stat-card", children: [
-          /* @__PURE__ */ jsxDEV("h4", { children: "Today's Payout" }, void 0, false, {
+          /* @__PURE__ */ jsxDEV("h4", { children: "Total Payout" }, void 0, false, {
             fileName: "D:/DigiBazaar/frontend/src/pages/RiderPortal/RiderPortal.jsx",
             lineNumber: 157,
             columnNumber: 15

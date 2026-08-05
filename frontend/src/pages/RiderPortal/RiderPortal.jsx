@@ -154,11 +154,11 @@ export default function RiderPortal() {
           {/* Performance Summary Cards */}
           <div className="rider-stats-grid">
             <div className="rider-stat-card">
-              <h4>Today's Payout</h4>
+              <h4>Total Payout</h4>
               <h3>₹{parseFloat(data.total_earnings).toFixed(2)}</h3>
             </div>
             <div className="rider-stat-card">
-              <h4>Deliveries</h4>
+              <h4>Total Deliveries</h4>
               <h3>{data.completed_deliveries} drops</h3>
             </div>
             <div className="rider-stat-card">
