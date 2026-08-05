@@ -13,6 +13,7 @@ function CustomerNavbar() {
   const { itemCount, setIsOpen } = useCart()
   const navigate = useNavigate()
   const location = useLocation()
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/signup'
   const activeShopId = location.pathname.match(/^\/shops\/(\d+)/)?.[1]
   
   // Location States
@@ -189,113 +190,119 @@ function CustomerNavbar() {
       </Link>
 
       {/* Middle Search Bar with Suggestions Popover */}
-      <div className="nav-search-container" ref={searchRef}>
-        <form onSubmit={handleSearchSubmit} className="search-input-wrapper">
-          <input
-            type="text"
-            className="nav-search-input"
-            style={{ paddingLeft: '16px' }}
-            placeholder={activeShopId ? 'Search within this shop...' : 'Search products, category, shop, brand...'}
-            value={searchVal}
-            onChange={e => setSearchVal(e.target.value)}
-            onFocus={() => setSearchFocused(true)}
-          />
-        </form>
+      {!isAuthPage && (
+        <div className="nav-search-container" ref={searchRef}>
+          <form onSubmit={handleSearchSubmit} className="search-input-wrapper">
+            <input
+              type="text"
+              className="nav-search-input"
+              style={{ paddingLeft: '16px' }}
+              placeholder={activeShopId ? 'Search within this shop...' : 'Search products, category, shop, brand...'}
+              value={searchVal}
+              onChange={e => setSearchVal(e.target.value)}
+              onFocus={() => setSearchFocused(true)}
+            />
+          </form>
 
-        {searchFocused && (
-          <div className="search-suggestions-dropdown">
-            <div className="suggestion-header">
-              {searchVal.trim() === '' ? 'Try Searching For' : 'Matching Results'}
-            </div>
-            {filteredSuggestions.map((s, idx) => (
-              <div 
-                key={idx} 
-                className="suggestion-item" 
-                onClick={() => handleSelectSuggestion(s.text)}
-              >
-                <span>{s.text}</span>
-                <span className="suggestion-match-type">{s.type}</span>
+          {searchFocused && (
+            <div className="search-suggestions-dropdown">
+              <div className="suggestion-header">
+                {searchVal.trim() === '' ? 'Try Searching For' : 'Matching Results'}
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+              {filteredSuggestions.map((s, idx) => (
+                <div 
+                  key={idx} 
+                  className="suggestion-item" 
+                  onClick={() => handleSelectSuggestion(s.text)}
+                >
+                  <span>{s.text}</span>
+                  <span className="suggestion-match-type">{s.type}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Right Actions */}
       <div className="customer-nav-actions">
         {/* Location Selector */}
-        <div className="nav-location-selector" onClick={() => { setLocationOpen(!locationOpen); if (!locationOpen) { setShowAddressInput(false); setNewAddressText(''); } }} ref={locRef}>
-          <span style={{ marginRight: '4px' }}>Deliver:</span>
-          <span className="location-address-txt">{address}</span>
-          {coordinates && (
-            <span className="location-coordinates-txt" style={{ fontSize: '10px', color: '#64748b', marginLeft: '6px' }}>
-              ({coordinates})
-            </span>
-          )}
-          <span style={{ fontSize: '9px', marginLeft: '4px' }}>▼</span>
+        {!isAuthPage && (
+          <div className="nav-location-selector" onClick={() => { setLocationOpen(!locationOpen); if (!locationOpen) { setShowAddressInput(false); setNewAddressText(''); } }} ref={locRef}>
+            <span style={{ marginRight: '4px' }}>Deliver:</span>
+            <span className="location-address-txt">{address}</span>
+            {coordinates && (
+              <span className="location-coordinates-txt" style={{ fontSize: '10px', color: '#64748b', marginLeft: '6px' }}>
+                ({coordinates})
+              </span>
+            )}
+            <span style={{ fontSize: '9px', marginLeft: '4px' }}>▼</span>
 
-          {locationOpen && (
-            <div className="location-dropdown-popover" onClick={e => e.stopPropagation()}>
-              <button className="detect-loc-btn" onClick={handleDetectLocation} disabled={detecting}>
-                {detecting ? 'Detecting Location...' : 'Detect Current Location'}
-              </button>
-              
-              {showAddressInput && coordinates && (
-                <>
-                  <div className="popover-subtitle" style={{ marginTop: '8px', fontSize: '11px', color: '#475569' }}>
-                    Coordinates Captured: <strong>{coordinates}</strong>
-                  </div>
-                  <div className="popover-subtitle" style={{ marginTop: '8px', color: '#dc2626', fontSize: '12px' }}>
-                    Please enter your address below:
-                  </div>
-                  <div className="add-addr-form" style={{ marginTop: '8px' }}>
-                    <input 
-                      type="text" 
-                      placeholder="Enter your full address..." 
-                      value={newAddressText}
-                      onChange={e => setNewAddressText(e.target.value)}
-                      style={{ width: '100%' }}
-                    />
-                    <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                      <button onClick={handleSaveAddressWithCoordinates} style={{ flex: 1 }}>Save Address</button>
-                      <button onClick={() => { setShowAddressInput(false); setNewAddressText(''); }} style={{ flex: 1, background: '#fee2e2', color: '#dc2626', border: 'none' }}>Cancel</button>
+            {locationOpen && (
+              <div className="location-dropdown-popover" onClick={e => e.stopPropagation()}>
+                <button className="detect-loc-btn" onClick={handleDetectLocation} disabled={detecting}>
+                  {detecting ? 'Detecting Location...' : 'Detect Current Location'}
+                </button>
+                
+                {showAddressInput && coordinates && (
+                  <>
+                    <div className="popover-subtitle" style={{ marginTop: '8px', fontSize: '11px', color: '#475569' }}>
+                      Coordinates Captured: <strong>{coordinates}</strong>
                     </div>
-                  </div>
-                </>
-              )}
-              
-              {!showAddressInput && (
-                <>
-                  <div className="popover-subtitle">Saved Addresses</div>
-                  <div className="saved-addr-list">
-                    {savedAddresses.map((addr, idx) => (
-                      <div key={idx} className="saved-addr-row" onClick={() => handleSelectAddress(addr)}>
-                        <input type="radio" checked={address === addr} readOnly />
-                        <span>{addr}</span>
+                    <div className="popover-subtitle" style={{ marginTop: '8px', color: '#dc2626', fontSize: '12px' }}>
+                      Please enter your address below:
+                    </div>
+                    <div className="add-addr-form" style={{ marginTop: '8px' }}>
+                      <input 
+                        type="text" 
+                        placeholder="Enter your full address..." 
+                        value={newAddressText}
+                        onChange={e => setNewAddressText(e.target.value)}
+                        style={{ width: '100%' }}
+                      />
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                        <button onClick={handleSaveAddressWithCoordinates} style={{ flex: 1 }}>Save Address</button>
+                        <button onClick={() => { setShowAddressInput(false); setNewAddressText(''); }} style={{ flex: 1, background: '#fee2e2', color: '#dc2626', border: 'none' }}>Cancel</button>
                       </div>
-                    ))}
-                  </div>
-                  <div className="popover-subtitle">Add New Address</div>
-                  <div className="add-addr-form">
-                    <input 
-                      type="text" 
-                      placeholder="Street, Block, City..." 
-                      value={newAddressText}
-                      onChange={e => setNewAddressText(e.target.value)}
-                    />
-                    <button onClick={handleAddAddress}>Add</button>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-        </div>
+                    </div>
+                  </>
+                )}
+                
+                {!showAddressInput && (
+                  <>
+                    <div className="popover-subtitle">Saved Addresses</div>
+                    <div className="saved-addr-list">
+                      {savedAddresses.map((addr, idx) => (
+                        <div key={idx} className="saved-addr-row" onClick={() => handleSelectAddress(addr)}>
+                          <input type="radio" checked={address === addr} readOnly />
+                          <span>{addr}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="popover-subtitle">Add New Address</div>
+                    <div className="add-addr-form">
+                      <input 
+                        type="text" 
+                        placeholder="Street, Block, City..." 
+                        value={newAddressText}
+                        onChange={e => setNewAddressText(e.target.value)}
+                      />
+                      <button onClick={handleAddAddress}>Add</button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Cart */}
-        <button className="nav-cart-btn-new" onClick={() => navigate('/cart')}>
-          <span>Cart</span>
-          {itemCount > 0 && <span className="nav-cart-badge-new">{itemCount}</span>}
-        </button>
+        {!isAuthPage && (
+          <button className="nav-cart-btn-new" onClick={() => navigate('/cart')}>
+            <span>Cart</span>
+            {itemCount > 0 && <span className="nav-cart-badge-new">{itemCount}</span>}
+          </button>
+        )}
 
         {/* Profile Popover */}
         {isLoggedIn ? (
