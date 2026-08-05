@@ -224,7 +224,7 @@ function CustomerNavbar() {
                 </div>
                 {(user?.role === 'admin' || user?.username?.includes('admin') || user?.username?.includes('9111111111')) && (
                   <Link to="/admin" className="profile-dropdown-link" style={{ background: '#e0e7ff', color: '#4338ca', fontWeight: 'bold' }} onClick={() => setProfileOpen(false)}>
-                    🛡️ Admin Portal
+                    Admin Portal
                   </Link>
                 )}
                 <Link to="/my-orders" className="profile-dropdown-link" onClick={() => setProfileOpen(false)}>
@@ -836,7 +836,7 @@ function RiderTopNavbar() {
           aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
           title={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
         >
-          {theme === 'light' ? '☾ Dark' : '☀ Light'}
+          {theme === 'light' ? 'Dark' : 'Light'}
         </button>
         <button className="rider-nav-avatar" aria-label="Open profile" onClick={() => {
           localStorage.setItem('active_rider_tab', 'profile')
@@ -935,8 +935,8 @@ function AdminTopNavbar() {
       {/* Brand & Badge */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
         <Link to="/admin" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '20px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.5px' }}>
-            DigiBazaar <span style={{ color: '#4338ca' }}>Admin</span>
+          <span style={{ fontSize: '20px', fontWeight: '800', color: '#8B4513', letterSpacing: '-0.5px' }}>
+            DigiBazaar <span style={{ color: '#654321' }}>Admin</span>
           </span>
         </Link>
         <span style={{
@@ -1006,7 +1006,7 @@ function AdminTopNavbar() {
               width: '26px',
               height: '26px',
               borderRadius: '50%',
-              background: '#4338ca',
+              background: '#3b82f6',
               color: '#ffffff',
               display: 'flex',
               alignItems: 'center',
@@ -1078,12 +1078,17 @@ function AdminTopNavbar() {
 // ── MAIN APPLICATION WRAPPER ──
 function AppInner() {
   const location = useLocation()
-  const { user } = useAuth()
+  const { user, authChecked } = useAuth()
 
   // Scroll to top on route change
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' })
   }, [location.pathname])
+
+  // Wait for auth to be checked before rendering any layout
+  if (!authChecked) {
+    return <div style={{ padding: '24px', textAlign: 'center' }}>Loading...</div>
+  }
 
   // Determine layout by BOTH route AND user role
   // Route-based checks for portal paths

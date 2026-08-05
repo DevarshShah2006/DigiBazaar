@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fetchJson } from '../../api/api'
+import { apiFetch, TTL } from '../../api/api'
 import ProductCard from '../ProductCard/ProductCard'
 import { withGroupedVariants } from '../../utils/productVariants'
 import './CategoryWiseProducts.css'
@@ -11,19 +11,34 @@ function CategoryWiseProducts() {
   useEffect(() => {
     let cancelled = false
 
-    fetchJson('/categories/')
+    // Fetch only categories first (already cached and fast)
+    apiFetch('/categories/', {}, TTL.STATIC)
       .then(cats => {
-        const categories = (cats || []).slice(0, 4)
-        return Promise.all(categories.map(cat => {
-          const categoryFilter = cat.slug || cat.name || cat.id
-          return fetchJson(`/products/?category=${encodeURIComponent(categoryFilter)}&page_size=30`)
-            .then(d => {
-              const rawProds = d.results || d || []
-              const grouped = withGroupedVariants(rawProds).slice(0, 6)
-              return { category: cat, products: grouped }
-            })
-            .catch(() => ({ category: cat, products: [] }))
-        }))
+        if (cancelled) return
+        
+        // We want Bath & Body, Beverages, Breakfast & Pantry, and Fresh Produce categories
+        const targetSlugs = ['bath-body', 'beverages', 'breakfast-pantry', 'fresh-produce']
+        const categories = targetSlugs.map(slug => (cats || []).find(c => c.slug === slug)).filter(Boolean)
+        
+        if (categories.length === 0) {
+          setBlocks([])
+          setLoading(false)
+          return
+        }
+        
+        // Fetch products for each category in parallel (request limit=20 to ensure we have enough unique products after grouping variants)
+        const promises = categories.map(cat =>
+          apiFetch(`/categories/${cat.slug}/products/?limit=20`, {}, TTL.NORMAL)
+            .then(products => withGroupedVariants(products || []).slice(0, 5))
+            .catch(() => [])
+        )
+        
+        return Promise.all(promises).then(productsLists => {
+          return categories.map((cat, index) => ({
+            category: cat,
+            products: productsLists[index] || []
+          }))
+        })
       })
       .then(results => {
         if (!cancelled) setBlocks(results || [])
@@ -52,8 +67,7 @@ function CategoryWiseProducts() {
           <div key={block.category.id} className="category-block">
             <div className="category-block__header">
               <div>
-                <h3>{block.category.name}</h3>
-                <p className="category-subtitle">Farm to table, delivered in minutes</p>
+                <h3>{block.category.name === 'Homegrown' ? 'Snacks & Munchies' : block.category.name}</h3>
               </div>
               <div className="category-actions"><a href={`/products?category=${encodeURIComponent(block.category.slug || block.category.name)}`} className="view-all">View All Items ▸</a></div>
             </div>

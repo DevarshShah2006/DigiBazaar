@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { fetchJson } from '../../api/api'
+import { apiFetch, fetchJson, TTL } from '../../api/api'
 import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
 import AddressCard from '../../components/CartPage/AddressCard'
@@ -109,9 +109,9 @@ function CartPage() {
   }, [discountCode, discountApplied, discountAmount])
 
   useEffect(() => {
-    fetchJson('/products/?page_size=4')
+    apiFetch('/products/recommended/?limit=4', {}, TTL.NORMAL)
       .then(data => {
-        const products = data.results || data || []
+        const products = data || []
         setRecommended(products.slice(0, 4))
       })
       .catch(() => {

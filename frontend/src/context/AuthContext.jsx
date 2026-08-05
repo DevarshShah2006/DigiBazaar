@@ -15,13 +15,24 @@ function getStoredUser() {
   }
 }
 
+function getActiveRole() {
+  const role = localStorage.getItem('active_login_role')
+  return ['customer', 'shopowner', 'rider'].includes(role) ? role : null
+}
+
+function withActiveRole(userData) {
+  // Trust the backend role - do not override with localStorage
+  // The backend already sets the correct role based on login context
+  if (!userData) return userData
+  return userData
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(getStoredUser)
   const [authChecked, setAuthChecked] = useState(false)
 
   // On mount: verify stored token with backend and refresh user data.
-  // Uses a session-level flag to avoid re-verifying on every HMR / navigation mount.
-  // The server check only needs to happen once per browser session.
+  // Always verify with the server to ensure we have the latest user data and role.
   useEffect(() => {
     const token = localStorage.getItem('access_token')
     if (!token) {
@@ -29,20 +40,14 @@ export function AuthProvider({ children }) {
       return
     }
 
-    // If already verified this session, use the stored user immediately
-    const alreadyVerified = sessionStorage.getItem('auth_verified')
-    if (alreadyVerified && getStoredUser()) {
-      setAuthChecked(true)
-      return
-    }
-
-    // First visit this session — verify token and get fresh user data from server
+    // Always verify token with backend to get fresh user data
     fetchJson('/auth/me/')
       .then(data => {
         if (data && data.user) {
-          // Update stored user with fresh server data (role may have changed)
-          localStorage.setItem('user', JSON.stringify(data.user))
-          setUser(data.user)
+          // Update stored user with fresh server data
+          const userData = withActiveRole(data.user)
+          localStorage.setItem('user', JSON.stringify(userData))
+          setUser(userData)
           // Mark as verified for the rest of this browser session
           sessionStorage.setItem('auth_verified', '1')
         } else {
@@ -83,11 +88,19 @@ export function AuthProvider({ children }) {
     }
 
     if (data && data.access) {
+      // For OTP login, backend already sets correct role. For regular login, use backend role.
+      // If backend role is missing but credentials has role, use that.
+      const userData = withActiveRole(data.user)
       localStorage.setItem('access_token', data.access)
       localStorage.setItem('refresh_token', data.refresh)
-      localStorage.setItem('user', JSON.stringify(data.user))
-      setUser(data.user)
-      return { success: true, user: data.user }
+      if (userData?.role && userData.role !== 'admin') {
+        localStorage.setItem('active_login_role', userData.role)
+      } else {
+        localStorage.removeItem('active_login_role')
+      }
+      localStorage.setItem('user', JSON.stringify(userData))
+      setUser(userData)
+      return { success: true, user: userData }
     }
     return { success: false, error: data?.detail || 'Login failed' }
   }, [])
@@ -103,11 +116,18 @@ export function AuthProvider({ children }) {
 
     const data = await signupUser(payload)
     if (data && data.access) {
+      // Trust the backend role, which should match the requested role
+      const userData = withActiveRole(data.user)
       localStorage.setItem('access_token', data.access)
       localStorage.setItem('refresh_token', data.refresh)
-      localStorage.setItem('user', JSON.stringify(data.user))
-      setUser(data.user)
-      return { success: true, user: data.user }
+      if (userData?.role && userData.role !== 'admin') {
+        localStorage.setItem('active_login_role', userData.role)
+      } else {
+        localStorage.removeItem('active_login_role')
+      }
+      localStorage.setItem('user', JSON.stringify(userData))
+      setUser(userData)
+      return { success: true, user: userData }
     }
     return { success: false, error: data?.detail || 'Signup failed' }
   }, [])
@@ -118,6 +138,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
     localStorage.removeItem('user')
+    localStorage.removeItem('active_login_role')
     // Clear portal-specific state so tabs don't persist across sessions
     localStorage.removeItem('active_shop_tab')
     localStorage.removeItem('active_rider_tab')
@@ -132,7 +153,7 @@ export function AuthProvider({ children }) {
   }, [navigate])
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, signup, isLoggedIn: !!user }}>
+    <AuthContext.Provider value={{ user, login, logout, signup, isLoggedIn: !!user, authChecked }}>
       {children}
     </AuthContext.Provider>
   )
@@ -151,7 +172,8 @@ export function useAuth() {
       login: async () => ({ success: false, error: 'No provider' }),
       logout: () => {},
       signup: async () => ({ success: false, error: 'No provider' }),
-      isLoggedIn: false
+      isLoggedIn: false,
+      authChecked: true
     }
   }
 

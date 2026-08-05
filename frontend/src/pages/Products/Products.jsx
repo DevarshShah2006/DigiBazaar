@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { fetchJson } from '../../api/api'
+import { apiFetch, TTL } from '../../api/api'
+import { getCategories } from '../../api/products'
 import ProductCard from '../../components/ProductCard/ProductCard'
 import { withGroupedVariants } from '../../utils/productVariants'
 import './Products.css'
@@ -29,11 +30,16 @@ function Products() {
   const [maxPrice, setMaxPrice] = useState('')
   const [ordering, setOrdering] = useState('-review_count')
   const activeCategory = categories.find(c => c.slug === catParam || c.name === catParam)
-  const activeCategoryName = activeCategory?.name || catParam
+  const getCategoryDisplayName = (name) => {
+    if (!name) return name
+    if (name.toLowerCase() === 'homegrown') return 'Snacks & Munchies'
+    return name
+  }
+  const activeCategoryName = getCategoryDisplayName(activeCategory?.name || catParam)
 
   // Load categories list on mount
   useEffect(() => {
-    fetchJson('/categories/')
+    getCategories()
       .then(data => {
         setCategories(data || [])
       })
@@ -49,7 +55,7 @@ function Products() {
       
       // Fetch products in that category to extract their subcategories
       // This ensures we always show correct subcategories
-      fetchJson(`/products/?category=${encodeURIComponent(catName)}&page_size=100`)
+      apiFetch(`/products/?category=${encodeURIComponent(catName)}&page_size=100`, {}, TTL.NORMAL)
         .then(data => {
           const prods = data.results || data || []
           const subSet = new Set()
@@ -86,9 +92,9 @@ function Products() {
 
     const qs = new URLSearchParams(params).toString()
     
-    fetchJson(`/products/?${qs}`)
+    apiFetch(`/products/?${qs}`, {}, TTL.SHORT)
       .then(data => {
-        const prods = (data.results || []).filter(product => product.image_url)
+        const prods = (data.results || [])
         setProducts(withGroupedVariants(prods))
         setTotalCount(data.count || (data.results ? data.results.length : 0))
         setTotalPages(Math.max(1, Math.ceil((data.count || 0) / 30)))
@@ -252,7 +258,7 @@ function Products() {
                     className={`category-list-btn ${catParam === cat.slug || catParam === cat.name ? 'active' : ''}`}
                     onClick={() => handleCategorySelect(cat.slug)}
                   >
-                    <span>{cat.name}</span>
+                    <span>{cat.name === 'Homegrown' ? 'Snacks & Munchies' : cat.name}</span>
                     <span className="category-count-badge">{cat.product_count}</span>
                   </button>
                 ))}

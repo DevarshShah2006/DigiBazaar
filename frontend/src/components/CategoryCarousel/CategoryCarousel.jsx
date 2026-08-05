@@ -26,7 +26,7 @@ function CategoryCarousel({ categories }) {
             <div className="category-card__icon">
               <img
                 src={item.image_url || LOCAL_FALLBACK_ICON}
-                alt={item.name}
+                alt={item.name === 'Homegrown' ? 'Snacks & Munchies' : item.name}
                 loading="lazy"
                 onError={(e) => {
                   e.currentTarget.onerror = null
@@ -34,7 +34,7 @@ function CategoryCarousel({ categories }) {
                 }}
               />
             </div>
-            <span className="category-card__name">{item.name}</span>
+            <span className="category-card__name">{item.name === 'Homegrown' ? 'Snacks & Munchies' : item.name}</span>
             <span className="category-card__count">{item.product_count} products</span>
           </button>
         ))}

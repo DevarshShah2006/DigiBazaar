@@ -23,17 +23,56 @@ class UserSerializer(serializers.ModelSerializer):
         # Admin check first (highest priority)
         if obj.is_staff or obj.is_superuser or obj.username.startswith('admin_') or '9111111111' in obj.username or '9111111111' in (obj.email or ''):
             return 'admin'
-        # Use try/except for safe reverse FK access
-        try:
-            obj.shop_owner_profile
-            return 'shopowner'
-        except Exception:
-            pass
-        try:
-            obj.rider_profile
+        # Explicit rider check
+        if obj.username.startswith('rider_'):
             return 'rider'
+        # Explicit shop owner check
+        if obj.username.startswith('owner_'):
+            return 'shopowner'
+
+        # For user_ prefixed usernames, check their actual profile to determine role
+        # This handles OTP login where users can select their role
+        # Priority: customer > rider > shopowner (to respect login role selection)
+        if obj.username.startswith('user_'):
+            # Check if this user has a customer profile first
+            try:
+                if hasattr(obj, 'profile') and obj.profile:
+                    return 'customer'
+            except Exception:
+                pass
+            # Check if this user has a rider profile
+            try:
+                if hasattr(obj, 'rider_profile') and obj.rider_profile:
+                    return 'rider'
+            except Exception:
+                pass
+            # Check if this user has a shopowner profile (from previous shopowner login)
+            try:
+                if hasattr(obj, 'shop_owner_profile') and obj.shop_owner_profile:
+                    return 'shopowner'
+            except Exception:
+                pass
+            # Default for user_ prefix
+            return 'customer'
+        
+        # For non-standard usernames, try to determine from profiles
+        # Priority: customer > rider > shopowner
+        try:
+            if hasattr(obj, 'profile') and obj.profile:
+                return 'customer'
         except Exception:
             pass
+        try:
+            if hasattr(obj, 'rider_profile') and obj.rider_profile:
+                return 'rider'
+        except Exception:
+            pass
+        try:
+            if hasattr(obj, 'shop_owner_profile') and obj.shop_owner_profile:
+                return 'shopowner'
+        except Exception:
+            pass
+        
         return 'customer'
 
     def create(self, validated_data):
@@ -149,6 +188,30 @@ class ShopSerializer(serializers.ModelSerializer):
         return shop
 
 
+class ShopListSerializer(serializers.ModelSerializer):
+    category_details = CategorySerializer(many=True, read_only=True, source='categories')
+    product_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Shop
+        fields = (
+            'id',
+            'name',
+            'tier',
+            'rating',
+            'lat',
+            'long',
+            'address',
+            'category_details',
+            'product_count',
+            'live_inventory',
+            'reliability_score',
+            'cancellation_rate',
+            'is_open',
+            'created_at',
+        )
+
+
 class RiderSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source="user.username", read_only=True)
 
@@ -180,7 +243,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    user_name = serializers.CharField(source="user.username", read_only=True)
+    user_name = serializers.SerializerMethodField()
     user_phone = serializers.SerializerMethodField()
     shop_name = serializers.CharField(source="shop.name", read_only=True)
     shop_phone = serializers.SerializerMethodField()
@@ -196,6 +259,19 @@ class OrderSerializer(serializers.ModelSerializer):
         if obj.total_amount and obj.total_amount > 0:
             return float(obj.total_amount)
         return float(sum(item.price_at_order * item.quantity for item in obj.items.all()) + (obj.delivery_charge or 0))
+
+    def get_user_name(self, obj):
+        """Return a customer-facing name instead of an internal username."""
+        user = obj.user
+        try:
+            full_name = user.profile.full_name.strip()
+            if full_name:
+                return full_name
+        except Exception:
+            pass
+
+        full_name = user.get_full_name().strip()
+        return full_name or user.username
 
     def get_user_phone(self, obj):
         """Extract phone from username pattern user_XXXXXXXXXX"""
@@ -311,4 +387,3 @@ class DeliveryAssignmentSerializer(serializers.ModelSerializer):
             "updated_at",
             "eta",
         )
-

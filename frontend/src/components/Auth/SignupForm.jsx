@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
-import { UserPlus, ArrowRight } from 'lucide-react'
+import { UserPlus, ArrowRight, CheckCircle } from 'lucide-react'
 import './Auth.css'
 
 const SignupForm = () => {
@@ -65,7 +65,7 @@ const SignupForm = () => {
     <div className={`auth-page portal-${formData.role}`}>
       <div className="auth-card glass-card fade-in">
         <div className="auth-header">
-          <span className="auth-logo">🛒 DigiBazaar</span>
+          <span className="auth-logo">DigiBazaar</span>
           <h2>Create Account</h2>
           <p>Register using your phone number</p>
         </div>
@@ -74,7 +74,9 @@ const SignupForm = () => {
 
         {success ? (
           <div className="auth-success-box text-center">
-            <div className="success-icon-check">✓</div>
+            <div className="success-icon-check">
+              <CheckCircle size={28} />
+            </div>
             <h3>Account Created!</h3>
             <p>Welcome to DigiBazaar</p>
           </div>

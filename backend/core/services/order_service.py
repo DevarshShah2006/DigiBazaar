@@ -6,6 +6,7 @@ rerouting, cancellation, and financial calculations.
 """
 
 from decimal import Decimal
+import logging
 from django.utils import timezone
 
 from core.models import (
@@ -14,6 +15,8 @@ from core.models import (
 )
 from ml_engine.ranking import rank_shops_for_product, haversine_distance
 from ml_engine.delivery_predictor import delivery_predictor
+
+logger = logging.getLogger(__name__)
 
 
 class OrderService:
@@ -100,8 +103,8 @@ class OrderService:
                 order.delivery_mode_confidence = Decimal(str(confidence))
                 order.save(update_fields=["recommended_delivery_mode", "delivery_mode_confidence"])
                 
-        except Exception as e:
-            print(f"ML Recommendation failed to attach: {e}")
+        except Exception:
+            logger.exception("ML recommendation attach failed for order_id=%s", order.id)
 
         return order
 
