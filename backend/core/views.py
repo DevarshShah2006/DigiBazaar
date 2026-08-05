@@ -58,6 +58,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         min_price = self.request.query_params.get('min_price')
         max_price = self.request.query_params.get('max_price')
         min_rating = self.request.query_params.get('min_rating')
+        shop_id = self.request.query_params.get('shop')
 
         if query:
             queryset = queryset.filter(
@@ -85,6 +86,10 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         if min_rating:
             queryset = queryset.filter(rating__gte=min_rating)
+
+        # Customer shop view: return only products stocked by the selected shop.
+        if shop_id:
+            queryset = queryset.filter(shops__id=shop_id)
 
         ordering = self.request.query_params.get('ordering', '-review_count')
         valid_orderings = ['name', '-name', 'price', '-price',

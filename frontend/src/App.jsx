@@ -12,6 +12,8 @@ function CustomerNavbar() {
   const { user, logout, isLoggedIn } = useAuth()
   const { itemCount, setIsOpen } = useCart()
   const navigate = useNavigate()
+  const location = useLocation()
+  const activeShopId = location.pathname.match(/^\/shops\/(\d+)/)?.[1]
   
   // Location States
   const [address, setAddress] = useState(
@@ -113,16 +115,16 @@ function CustomerNavbar() {
   const handleSelectSuggestion = (text) => {
     setSearchVal(text)
     setSearchFocused(false)
-    navigate(`/products?q=${text}`)
+    navigate(activeShopId ? `/shops/${activeShopId}?q=${encodeURIComponent(text)}` : `/products?q=${encodeURIComponent(text)}`)
   }
 
   const handleSearchSubmit = (e) => {
     e.preventDefault()
     setSearchFocused(false)
     if (searchVal.trim()) {
-      navigate(`/products?q=${searchVal.trim()}`)
+      navigate(activeShopId ? `/shops/${activeShopId}?q=${encodeURIComponent(searchVal.trim())}` : `/products?q=${encodeURIComponent(searchVal.trim())}`)
     } else {
-      navigate('/products')
+      navigate(activeShopId ? `/shops/${activeShopId}` : '/products')
     }
   }
 
@@ -140,7 +142,7 @@ function CustomerNavbar() {
             type="text"
             className="nav-search-input"
             style={{ paddingLeft: '16px' }}
-            placeholder="Search products, category, shop, brand..."
+            placeholder={activeShopId ? 'Search within this shop...' : 'Search products, category, shop, brand...'}
             value={searchVal}
             onChange={e => setSearchVal(e.target.value)}
             onFocus={() => setSearchFocused(true)}
