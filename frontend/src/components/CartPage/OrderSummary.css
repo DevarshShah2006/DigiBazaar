@@ -225,3 +225,7 @@
   transform: translateY(-1px);
   box-shadow: 0 18px 30px rgba(76, 134, 49, 0.24);
 }
+
+/* Customer warm boutique palette */
+.order-summary-card { border-color: #e4d8cf; box-shadow: 0 20px 48px rgba(89, 41, 14, .08); }.order-summary-card__eyebrow, .summary-row { color: #766961; }.order-summary-card__title, .summary-row strong, .summary-total-row { color: #2d1609; }
+.promo-input, .available-promos { border-color: #e4d8cf; background: #f4f2ef; color: #2d1609; }.promo-apply-btn, .summary-proceed-btn { background: #59290e; }.promo-apply-btn:hover { background: #3d1a08; }.available-promos summary, .available-promos__menu button { color: #59290e; }.available-promos summary::after { color: #a64d22; }.available-promos__menu button { border-color: #e4d8cf; }.available-promos__menu button:hover { border-color: #a64d22; background: #f0ece5; }.summary-row--discount { border-color: #d9c6b8; background: #f0ece5; color: #59290e; }.summary-row--discount strong { color: #a64d22; }.summary-proceed-btn:not(:disabled):hover { box-shadow: 0 18px 30px rgba(89, 41, 14, .25); }

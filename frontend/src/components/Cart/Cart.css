@@ -251,3 +251,6 @@
 @media (max-width: 480px) {
   .cart-panel { width: 100vw; }
 }
+
+/* Customer warm boutique palette */
+.cart-panel { background: #fdfaf6; box-shadow: -4px 0 40px rgba(89, 41, 14, .18); }.cart-header, .cart-footer { border-color: #e4d8cf; }.cart-title, .cart-item__name, .cart-total strong { color: #2d1609; }.cart-count, .cart-empty button, .cart-checkout-btn { background: #59290e; }.cart-close { background: #f0ece5; color: #59290e; }.cart-item { background: #f4f2ef; }.cart-item__price { color: #a64d22; }.cart-item__controls button:hover { background: #f0ece5; border-color: #a64d22; }.cart-checkout-btn:hover { background: #3d1a08; box-shadow: 0 6px 20px rgba(89, 41, 14, .35); }
