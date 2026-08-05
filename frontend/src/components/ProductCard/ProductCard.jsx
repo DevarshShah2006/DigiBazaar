@@ -81,22 +81,24 @@ function ProductCard({ product, showAddToCart = true, showNewBadge = false }) {
         <h3 className="product-card__name">{product.display_name || selectedProduct.name}</h3>
         <p className="product-card__brand">{selectedProduct.brand || 'Local Brand'}</p>
 
-        {variants.length > 1 ? (
-          <select
-            className="product-card__variant-select"
-            value={selectedProduct.id}
-            onClick={e => e.stopPropagation()}
-            onChange={handleVariantChange}
-          >
-            {variants.map(variant => (
-              <option key={variant.id} value={variant.id}>
-                {variant.variant_label || getQuantityText(variant)}
-              </option>
-            ))}
-          </select>
-        ) : (
-          <span className="product-card__single-unit">{getQuantityText(selectedProduct)}</span>
-        )}
+        <div className="product-card__variant-area">
+          {variants.length > 1 ? (
+            <select
+              className="product-card__variant-select"
+              value={selectedProduct.id}
+              onClick={e => e.stopPropagation()}
+              onChange={handleVariantChange}
+            >
+              {variants.map(variant => (
+                <option key={variant.id} value={variant.id}>
+                  {variant.variant_label || getQuantityText(variant)}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <span className="product-card__single-unit">{getQuantityText(selectedProduct)}</span>
+          )}
+        </div>
 
         <div className="product-card__footer">
           <div className="product-card__price-box">

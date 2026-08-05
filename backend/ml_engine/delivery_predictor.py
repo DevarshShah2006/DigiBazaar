@@ -1,7 +1,18 @@
+import logging
 import os
-# pyrefly: ignore [missing-import]
-import joblib
-import pandas as pd
+
+try:
+    # pyrefly: ignore [missing-import]
+    import joblib
+except ImportError:  # pragma: no cover - depends on environment packages
+    joblib = None
+
+try:
+    import pandas as pd
+except ImportError:  # pragma: no cover - depends on environment packages
+    pd = None
+
+logger = logging.getLogger(__name__)
 
 class DeliveryPredictor:
     """Singleton service to load the Delivery ML model and predict optimal modes."""
@@ -16,6 +27,13 @@ class DeliveryPredictor:
         return cls._instance
 
     def _load_model(self):
+        if joblib is None or pd is None:
+            logger.warning(
+                "ML Delivery model disabled: missing optional dependencies "
+                "(joblib/pandas). Install backend requirements to enable predictions."
+            )
+            return
+
         models_dir = os.path.join(os.path.dirname(__file__), "models")
         model_path = os.path.join(models_dir, "delivery_tree.joblib")
         encoder_path = os.path.join(models_dir, "delivery_label_encoder.joblib")
@@ -24,7 +42,7 @@ class DeliveryPredictor:
             self.model = joblib.load(model_path)
             self.encoder = joblib.load(encoder_path)
         except Exception as e:
-            print(f"Failed to load ML Delivery model: {e}")
+            logger.warning("Failed to load ML Delivery model: %s", e)
 
     def predict(self, feature_dict):
         """
@@ -76,7 +94,7 @@ class DeliveryPredictor:
             return predicted_mode, confidence_score
 
         except Exception as e:
-            print(f"ML Prediction failed: {e}")
+            logger.warning("ML prediction failed: %s", e)
             return None, 0.0
 
 # Export a single instance to be imported and used globally

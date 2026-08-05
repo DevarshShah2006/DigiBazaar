@@ -54,16 +54,10 @@ const LoginForm = () => {
     setLoading(false)
     if (result.success) {
       setStep('success')
+      // Let AppRoutes handle the redirect based on user role
+      // No manual redirect here to avoid race conditions
       setTimeout(() => {
-        if (role === 'admin' || phone === '9111111111' || result.user?.role === 'admin') {
-          navigate('/admin')
-        } else if (role === 'shopowner') {
-          navigate('/dashboard')
-        } else if (role === 'rider') {
-          navigate('/rider')
-        } else {
-          navigate('/')
-        }
+        navigate('/')
       }, 1000)
     } else {
       setError(result.error || 'Your phone number is not registered. Please sign up first.')
@@ -74,7 +68,7 @@ const LoginForm = () => {
     <div className={`auth-page portal-${role}`}>
       <div className="auth-card glass-card fade-in">
         <div className="auth-header">
-          <span className="auth-logo">🛒 DigiBazaar</span>
+          <span className="auth-logo">DigiBazaar</span>
           <h2>Sign In</h2>
           <p>Passwordless phone verification</p>
         </div>
@@ -89,7 +83,7 @@ const LoginForm = () => {
                 className={`role-select-card customer ${role === 'customer' ? 'active' : ''}`}
                 onClick={() => setRole('customer')}
               >
-                <span className="role-icon">🛍️</span>
+                <span className="role-icon customer-icon">C</span>
                 <h4>Customer</h4>
                 <p>Buy from local shops</p>
               </div>
@@ -97,7 +91,7 @@ const LoginForm = () => {
                 className={`role-select-card shopowner ${role === 'shopowner' ? 'active' : ''}`}
                 onClick={() => setRole('shopowner')}
               >
-                <span className="role-icon">🏬</span>
+                <span className="role-icon shopowner-icon">S</span>
                 <h4>Shop Owner</h4>
                 <p>Manage inventory</p>
               </div>
@@ -105,7 +99,7 @@ const LoginForm = () => {
                 className={`role-select-card rider ${role === 'rider' ? 'active' : ''}`}
                 onClick={() => setRole('rider')}
               >
-                <span className="role-icon">🏍️</span>
+                <span className="role-icon rider-icon">R</span>
                 <h4>Rider</h4>
                 <p>Deliver orders</p>
               </div>
@@ -113,6 +107,7 @@ const LoginForm = () => {
                 className={`role-select-card admin ${role === 'admin' ? 'active' : ''}`}
                 onClick={() => setRole('admin')}
               >
+                <span className="role-icon admin-icon">A</span>
                 <h4>Admin</h4>
                 <p>DB Portal & System</p>
               </div>
@@ -180,7 +175,9 @@ const LoginForm = () => {
 
         {step === 'success' && (
           <div className="auth-success-box text-center">
-            <div className="success-icon-check">✓</div>
+            <div className="success-icon-check">
+              <CheckCircle size={28} />
+            </div>
             <h3>Verified Successfully!</h3>
             <p>Welcome to DigiBazaar</p>
           </div>

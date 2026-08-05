@@ -4,10 +4,135 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--background);
-  background-image: linear-gradient(135deg, var(--primary-light) 0%, var(--background) 100%);
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #f1f5f9 100%);
   padding: 40px 24px;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Override for rider portal login - use same light theme as customer */
+.auth-page.portal-rider .auth-card,
+.auth-page.portal-rider {
+  --primary: #8B4513;  /* Brown for primary color (button background) */
+  --primary-hover: #654321;  /* Darker brown for hover */
+  --primary-light: #D2B48C;  /* Light brown for logo gradient */
+  --background: #f0fdf4;
+  --card-bg: #ffffff;
+  --text-main: #1a1a1a;  /* Black color for text */
+  --text-muted: #6b7280;
+  --border: rgba(139, 69, 19, 0.1);
+  --shadow: 0 10px 30px -5px rgba(139, 69, 19, 0.08);
+}
+
+/* Rider portal specific overrides */
+.auth-page.portal-rider .auth-logo {
+  color: #8B4513 !important;
+  background: linear-gradient(135deg, #8B4513, #654321) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+.auth-page.portal-rider .auth-primary-btn {
+  background: #8B4513 !important;
+}
+
+.auth-page.portal-rider .auth-redirect a {
+  color: #000000 !important;
+}
+
+.auth-page.portal-rider .auth-redirect a:hover {
+  color: #000000 !important;
+}
+
+/* Subtle background pattern */
+.auth-page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(67, 56, 202, 0.03) 0%, transparent 20%),
+    radial-gradient(circle at 90% 80%, rgba(8, 145, 178, 0.03) 0%, transparent 20%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Modern auth card styling */
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow), 0 10px 40px rgba(0,0,0,0.05);
+  padding: 36px;
+  transition: all 0.3s ease;
+  animation: slideUp 0.4s ease-out;
+  position: relative;
+  z-index: 1;
+}
+
+.auth-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.auth-card:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.auth-logo {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.auth-header h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.auth-header p {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 400;
 }
 
 .auth-card {
@@ -57,40 +182,123 @@
   font-size: 13px;
   font-weight: 700;
   color: var(--text-main);
+  display: block;
+  margin-bottom: 6px;
+}
+
+.auth-field {
+  margin-bottom: 16px;
 }
 
 .role-grid {
   display: grid;
-  grid-template-cols: 1fr;
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 14px;
+  margin-bottom: 8px;
 }
 
 .role-select-card {
-  padding: 16px;
+  padding: 20px 16px;
   border-radius: var(--radius-md);
-  border: 2px solid rgba(0,0,0,0.05);
-  background: rgba(0,0,0,0.01);
+  border: 2px solid rgba(0,0,0,0.08);
+  background: rgba(0,0,0,0.02);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.role-select-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.08);
 }
 
 .role-select-card h4 {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
-  color: #333;
+  color: #1a1a1a;
 }
 
 .role-select-card p {
-  font-size: 11px;
-  color: #666;
+  font-size: 12px;
+  color: #555;
+}
+
+/* Rider card specific text color - brown */
+.role-select-card.rider h4,
+.role-select-card.rider p,
+.auth-page.portal-rider .role-select-card.rider h4,
+.auth-page.portal-rider .role-select-card.rider p {
+  color: #654321 !important;
+}
+
+/* Override rider card text to black when rider is selected */
+.auth-page.portal-rider .role-select-card.rider h4,
+.auth-page.portal-rider .role-select-card.rider p {
+  color: #1a1a1a !important;
+}
+
+/* Active states for role selections */
+.role-select-card.active.customer {
+  border-color: #047857;
+  background: linear-gradient(135deg, rgba(4, 120, 87, 0.12), rgba(4, 120, 87, 0.05));
+  box-shadow: 0 4px 14px rgba(4, 120, 87, 0.18);
+  transform: translateY(-2px);
+}
+
+.role-select-card.active.shopowner {
+  border-color: #0891b2;
+  background: linear-gradient(135deg, rgba(8, 145, 178, 0.12), rgba(8, 145, 178, 0.05));
+  box-shadow: 0 4px 14px rgba(8, 145, 178, 0.18);
+  transform: translateY(-2px);
+}
+
+.role-select-card.active.rider {
+  border-color: #047857;
+  background: linear-gradient(135deg, rgba(4, 120, 87, 0.12), rgba(4, 120, 87, 0.05));
+  box-shadow: 0 4px 14px rgba(4, 120, 87, 0.18);
+  transform: translateY(-2px);
+}
+
+.role-select-card.active.admin {
+  border-color: #8B4513;
+  background: linear-gradient(135deg, rgba(139, 69, 19, 0.12), rgba(139, 69, 19, 0.05));
+  box-shadow: 0 4px 14px rgba(139, 69, 19, 0.18);
+  transform: translateY(-2px);
 }
 
 .role-icon {
-  font-size: 20px;
+  font-size: 18px;
   margin-bottom: 4px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: white;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Role-specific icon colors */
+.role-icon.customer-icon {
+  background: #047857;
+}
+
+.role-icon.shopowner-icon {
+  background: #0891b2;
+}
+
+.role-icon.rider-icon {
+  background: #3b82f6;  /* Blue 500 */
+}
+
+.role-icon.admin-icon {
+  background: #3b82f6;  /* Blue for admin icon */
 }
 
 /* Active states for role selections */
@@ -103,18 +311,43 @@
   background: #ecfeff;
 }
 .role-select-card.active.rider {
-  border-color: #6366f1;
-  background: #eef2ff;
+  border-color: #8B4513;  /* Brown border for rider */
+  background: linear-gradient(135deg, rgba(139, 69, 19, 0.12), rgba(139, 69, 19, 0.05));
+  box-shadow: 0 4px 14px rgba(139, 69, 19, 0.18);
+  transform: translateY(-2px);
 }
 .role-select-card.active.admin {
-  border-color: #4338ca;
-  background: #e0e7ff;
+  border-color: #8B4513;  /* Brown border for admin */
+  background: linear-gradient(135deg, rgba(139, 69, 19, 0.12), rgba(139, 69, 19, 0.05));
+  box-shadow: 0 4px 14px rgba(139, 69, 19, 0.18);
+  transform: translateY(-2px);
 }
 
 .portal-admin {
-  --primary: #4338ca;
-  --primary-hover: #3730a3;
-  --primary-light: #e0e7ff;
+  --primary: #8B4513;
+  --primary-hover: #654321;
+  --primary-light: #D2B48C;
+}
+
+/* Admin portal specific overrides */
+.auth-page.portal-admin .auth-logo {
+  color: #8B4513 !important;
+  background: linear-gradient(135deg, #8B4513, #654321) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+.auth-page.portal-admin .auth-primary-btn {
+  background: #8B4513 !important;
+}
+
+.auth-page.portal-admin .auth-redirect a {
+  color: #000000 !important;
+}
+
+.auth-page.portal-admin .auth-redirect a:hover {
+  color: #000000 !important;
 }
 
 .phone-input-group {
@@ -123,12 +356,18 @@
   background: #f8fafc;
   border: 1px solid #cbd5e1;
   border-radius: var(--radius-md);
-  padding: 12px 16px;
+  padding: 14px 16px;
   gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.phone-input-group:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.08);
 }
 
 .phone-country {
-  font-weight: bold;
+  font-weight: 700;
   color: var(--text-main);
   font-size: 14px;
 }
@@ -141,30 +380,57 @@
   font-size: 15px;
   font-family: monospace;
   letter-spacing: 1px;
+  transition: all 0.2s ease;
 }
 
 .auth-select {
   width: 100%;
-  padding: 12px 16px;
+  padding: 14px 16px;
   background: #f8fafc;
   border: 1px solid #cbd5e1;
   border-radius: var(--radius-md);
   outline: none;
   font-size: 14px;
-  color: #333;
+  color: #1a1a1a;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
+}
+
+.auth-select:focus {
+  border-color: var(--primary);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.08);
+}
+
+.auth-select:hover {
+  border-color: #cbd5e1;
 }
 
 .auth-field input[type="text"],
-.auth-field input[type="email"] {
+.auth-field input[type="email"],
+.auth-field input[type="tel"] {
   width: 100%;
-  padding: 12px 16px;
+  padding: 14px 16px;
   background: #f8fafc;
   border: 1px solid #cbd5e1;
   border-radius: var(--radius-md);
   outline: none;
   font-size: 14px;
-  color: #333;
+  color: #1a1a1a;
   box-sizing: border-box;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.auth-field input:focus {
+  border-color: var(--primary);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.08);
 }
 
 /* OTP inputs row */
@@ -176,7 +442,7 @@
 
 .otp-inputs input {
   width: 48px;
-  height: 52px;
+  height: 56px;
   background: #f8fafc;
   border: 2px solid #cbd5e1;
   border-radius: var(--radius-md);
@@ -184,11 +450,26 @@
   font-size: 20px;
   font-weight: bold;
   outline: none;
-  transition: border-color 0.2s;
+  transition: all 0.2s ease;
+  font-family: monospace;
 }
 
 .otp-inputs input:focus {
   border-color: var(--primary);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.1);
+}
+
+.otp-inputs input::selection {
+  background: var(--primary);
+  color: white;
+}
+
+.otp-sub-text {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  text-align: center;
 }
 
 .otp-sub-text {
@@ -202,8 +483,8 @@
 }
 
 .auth-primary-btn {
-  flex: 2;
-  padding: 14px;
+  width: 100%;
+  padding: 14px 24px;
   background: var(--primary);
   color: #fff;
   border: none;
@@ -215,22 +496,28 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-.auth-primary-btn:hover {
+.auth-primary-btn:hover:not(:disabled) {
   background: var(--primary-hover);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+}
+
+.auth-primary-btn:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .auth-primary-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
 }
 
 .auth-sec-btn {
-  flex: 1;
-  padding: 14px;
+  padding: 14px 24px;
   background: #f1f5f9;
   color: #475569;
   border: 1px solid #e2e8f0;
@@ -238,22 +525,36 @@
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .auth-sec-btn:hover {
   background: #e2e8f0;
+  border-color: #cbd5e1;
+}
+
+.auth-btn-row {
+  display: flex;
+  gap: 12px;
 }
 
 .auth-error-msg {
   background: #fef2f2;
   border: 1px solid #fca5a5;
   color: #b91c1c;
-  padding: 12px;
+  padding: 12px 16px;
   border-radius: var(--radius-md);
   font-size: 13px;
   margin-bottom: 20px;
   text-align: center;
+  font-weight: 500;
+  animation: shake 0.4s ease-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
 }
 
 .auth-success-box {
@@ -274,6 +575,11 @@
   font-weight: bold;
 }
 
+.success-icon-check svg {
+  width: 28px;
+  height: 28px;
+}
+
 .auth-redirect {
   text-align: center;
   font-size: 13px;
@@ -283,10 +589,19 @@
 
 .auth-redirect a {
   color: var(--primary);
-  font-weight: bold;
+  font-weight: 600;
   text-decoration: none;
+  transition: all 0.2s ease;
 }
 
 .auth-redirect a:hover {
   text-decoration: underline;
+  color: var(--primary-hover);
+}
+
+/* Step box improvements */
+.auth-step-box {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }

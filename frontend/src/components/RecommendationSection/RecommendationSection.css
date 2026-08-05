@@ -4,13 +4,22 @@
 
 .rec-grid {
   display: flex;
+  align-items: stretch;
   gap: 20px;
   padding: 16px 8px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: x proximity;
 }
-.rec-grid > * { scroll-snap-align: start; flex: 0 0 220px }
+.rec-grid > * {
+  scroll-snap-align: start;
+  flex: 0 0 220px;
+  display: flex;
+  flex-direction: column;
+}
+.rec-grid > * .product-card {
+  flex: 1;
+}
 
 .rec-section .section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px }
 .section-title-group .section-title { font-size: 1.6rem; margin:0; color:var(--text-main) }

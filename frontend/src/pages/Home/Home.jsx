@@ -9,7 +9,8 @@ import OfferCards from '../../components/OfferCards/OfferCards'
 import NearbyShops from '../../components/NearbyShops/NearbyShops'
 import ErrorBoundary from '../../components/ErrorBoundary/ErrorBoundary'
 import CategoryWiseProducts from '../../components/CategoryWiseProducts/CategoryWiseProducts'
-import { fetchJson } from '../../api/api'
+import { apiFetch, TTL } from '../../api/api'
+import { getCategories } from '../../api/products'
 import { withGroupedVariants } from '../../utils/productVariants'
 import './Home.css'
 
@@ -50,7 +51,7 @@ function Home() {
   // Hero is provided by a dedicated component (HeroBanner)
 
   useEffect(() => {
-    fetchJson('/categories/')
+    getCategories()
       .then(data => {
         setCategories((data || []).filter(cat => Number(cat.product_count || 0) > 0))
       })
@@ -58,12 +59,20 @@ function Home() {
   }, [])
 
   useEffect(() => {
-    fetchJson('/products/new_arrivals/?page_size=8')
+    apiFetch('/categories/beauty-makeup/products/?limit=20', {}, TTL.SHORT)
       .then(data => {
-        const prods = (data.results || data || []).filter(product => product.image_url)
+        const prods = Array.isArray(data) ? data : (data.results || data || [])
         setNewArrivals(withGroupedVariants(prods).slice(0, 8))
       })
-      .catch(() => {})
+      .catch(() => {
+        // Fallback to original new arrivals
+        apiFetch('/products/new_arrivals/?page_size=20', {}, TTL.SHORT)
+          .then(data => {
+            const prods = (data.results || data || [])
+            setNewArrivals(withGroupedVariants(prods).slice(0, 8))
+          })
+          .catch(() => {})
+      })
   }, [])
 
   const handleSearch = (e) => {

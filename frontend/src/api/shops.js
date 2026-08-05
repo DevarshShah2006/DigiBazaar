@@ -1,5 +1,5 @@
-import { fetchJson } from './api'
+import { apiFetch, TTL } from './api'
 
 export function getShops() {
-  return fetchJson('/shops/')
+  return apiFetch('/shops/', {}, TTL.STATIC)
 }

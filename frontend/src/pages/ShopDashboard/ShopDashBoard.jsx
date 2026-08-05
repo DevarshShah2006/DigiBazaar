@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { getOrders, acceptOrder, rejectOrder, advanceOrder } from '../../api/orders'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
-import { fetchJson } from '../../api/api'
+import { fetchJson, apiFetch, TTL } from '../../api/api'
 import './ShopDashBoard.css'
 
 import { Line, Doughnut, Bar } from 'react-chartjs-2'
@@ -42,6 +42,9 @@ const STATUS_CONFIG = {
   delivered: { color: '#10b981', bg: '#ecfdf5', label: 'Delivered' },
   completed: { color: '#22c55e', bg: '#f0fdf4', label: 'Completed' },
   rejected: { color: '#ef4444', bg: '#fef2f2', label: 'Rejected' },
+  cancelled: { color: '#6b7280', bg: '#f3f4f6', label: 'Cancelled' },
+  cancellation_requested: { color: '#f59e0b', bg: '#fffbeb', label: 'Cancel Requested' },
+  failed: { color: '#dc2626', bg: '#fef2f2', label: 'Failed' },
 }
 
 const ADVANCE_CONFIG = {
@@ -84,7 +87,7 @@ function OrderCountdownTimer({ createdAt, onTimeout }) {
     <div className={`order-timer-badge ${timeLeft <= 20 ? 'urgent' : ''}`}>
       {timeLeft > 0
         ? <>Auto-reject in: <span className="timer-seconds font-mono">{formatTime(timeLeft)}</span></>
-        : <span style={{color:'#ef4444', fontWeight: 700}}>⏰ Timed out — routing to next shop…</span>
+        : <span style={{color:'#ef4444', fontWeight: 700}}>Timed out - routing to next shop...</span>
       }
     </div>
   )
@@ -155,7 +158,7 @@ function ShopDashboard() {
       setActiveTab(tab)
     }
     const handleStatusSync = () => {
-      fetchJson('/shops/my-products/').then(data => {
+      apiFetch('/shops/my-products/', {}, TTL.SHORT).then(data => {
         if (data) setShopInfo(data)
       }).catch(() => {})
     }
@@ -298,7 +301,7 @@ function ShopDashboard() {
     setReportsLoading(true)
     setError('')
     try {
-      const data = await fetchJson(`/shop/dashboard/reports/?period=${period}`)
+      const data = await apiFetch(`/shop/dashboard/reports/?period=${period}`, {}, TTL.SHORT)
       setReportsData(data)
     } catch {
       setError('Failed to load sales report.')
@@ -311,11 +314,12 @@ function ShopDashboard() {
     setCrmLoading(true)
     setError('')
     try {
-      const data = await fetchJson(`/shop/dashboard/customers/?page=${page}`)
-      setCrmData(data)
-      setCrmTotalCount(data.total_count || (data.customers ? data.customers.length : 0))
-      setCrmTotalPages(data.total_pages || 1)
-      setCrmPage(data.current_page || page)
+      const data = await apiFetch(`/shop/dashboard/customers/?page=${page}`, {}, TTL.SHORT)
+      const crm = data || { customers: [] }
+      setCrmData(crm)
+      setCrmTotalCount(crm.total_count || (crm.customers ? crm.customers.length : 0))
+      setCrmTotalPages(crm.total_pages || 1)
+      setCrmPage(crm.current_page || page)
     } catch {
       setError('Failed to load customer CRM data.')
     } finally {
@@ -327,7 +331,7 @@ function ShopDashboard() {
     setPromotionsLoading(true)
     setError('')
     try {
-      const data = await fetchJson('/shop/dashboard/promotions/')
+      const data = await apiFetch('/shop/dashboard/promotions/', {}, TTL.SHORT)
       setPromotionsData(data)
     } catch {
       setError('Failed to load promotions.')
@@ -340,7 +344,7 @@ function ShopDashboard() {
     setGrowthLoading(true)
     setError('')
     try {
-      const data = await fetchJson('/shop/dashboard/growth/')
+      const data = await apiFetch('/shop/dashboard/growth/', {}, TTL.SHORT)
       setGrowthData(data)
     } catch {
       setError('Failed to load growth hub data.')
@@ -353,7 +357,7 @@ function ShopDashboard() {
     setSettingsLoading(true)
     setError('')
     try {
-      const data = await fetchJson('/shop/dashboard/settings/')
+      const data = await apiFetch('/shop/dashboard/settings/', {}, TTL.SHORT)
       setSettingsData(data)
     } catch {
       setError('Failed to load store settings.')
@@ -472,24 +476,24 @@ function ShopDashboard() {
     setOverviewLoading(true)
     try {
       const [revToday, revMonth, topProds, trends, lowS, outS, expP, slowM, weather] = await Promise.all([
-        fetchJson('/shop/dashboard/revenue-today/'),
-        fetchJson('/shop/dashboard/revenue-month/'),
-        fetchJson('/shop/dashboard/top-products/'),
-        fetchJson('/shop/dashboard/search-trends/'),
-        fetchJson('/shop/dashboard/low-stock/'),
-        fetchJson('/shop/dashboard/out-of-stock/'),
-        fetchJson('/shop/dashboard/expiring-products/'),
-        fetchJson('/shop/dashboard/slow-moving/'),
-        fetchJson('/shop/dashboard/weather/'),
+        apiFetch('/shop/dashboard/revenue-today/', {}, TTL.SHORT),
+        apiFetch('/shop/dashboard/revenue-month/', {}, TTL.SHORT),
+        apiFetch('/shop/dashboard/top-products/', {}, TTL.SHORT),
+        apiFetch('/shop/dashboard/search-trends/', {}, TTL.SHORT),
+        apiFetch('/shop/dashboard/low-stock/', {}, TTL.SHORT),
+        apiFetch('/shop/dashboard/out-of-stock/', {}, TTL.SHORT),
+        apiFetch('/shop/dashboard/expiring-products/', {}, TTL.SHORT),
+        apiFetch('/shop/dashboard/slow-moving/', {}, TTL.SHORT),
+        apiFetch('/shop/dashboard/weather/', {}, TTL.WEATHER),
       ])
-      setRevenueToday(revToday)
-      setRevenueMonth(revMonth)
-      setTopProductsList(topProds)
-      setSearchTrends(trends)
-      setLowStockList(lowS)
-      setOutOfStockList(outS)
-      setExpiringProducts(expP)
-      setSlowMovingProducts(slowM)
+      setRevenueToday(revToday || null)
+      setRevenueMonth(revMonth || null)
+      setTopProductsList(Array.isArray(topProds) ? topProds : [])
+      setSearchTrends(Array.isArray(trends) ? trends : [])
+      setLowStockList(Array.isArray(lowS) ? lowS : [])
+      setOutOfStockList(Array.isArray(outS) ? outS : [])
+      setExpiringProducts(Array.isArray(expP) ? expP : [])
+      setSlowMovingProducts(Array.isArray(slowM) ? slowM : [])
       setWeatherData(weather)
     } catch (err) {
       console.error("Failed to load dashboard overview stats", err)
@@ -514,8 +518,8 @@ function ShopDashboard() {
         setOrdersTotalPages(1)
       }
       
-      // Load current shop info (like live inventory flag)
-      const shopProductsData = await fetchJson('/shops/my-products/')
+      // Load current shop info (like live inventory flag) - use cached API
+      const shopProductsData = await apiFetch('/shops/my-products/', {}, TTL.SHORT)
       setShopInfo(shopProductsData)
     } catch {
       setError('Failed to load shop orders.')
@@ -528,17 +532,18 @@ function ShopDashboard() {
     setInventoryLoading(true)
     setError('')
     try {
-      const data = await fetchJson(`/shops/my-products/?page=${page}`)
-      setMyInventory(data.products || [])
-      setShopInfo(data)
-      setInventoryTotalCount(data.total_count || (data.products ? data.products.length : 0))
-      setInventoryTotalPages(data.total_pages || 1)
-      setInventoryPage(data.current_page || page)
+      const data = await apiFetch(`/shops/my-products/?page=${page}`, {}, TTL.SHORT)
+      const inventory = data || { products: [] }
+      setMyInventory(inventory.products || [])
+      setShopInfo(inventory)
+      setInventoryTotalCount(inventory.total_count || (inventory.products ? inventory.products.length : 0))
+      setInventoryTotalPages(inventory.total_pages || 1)
+      setInventoryPage(inventory.current_page || page)
 
       // Asynchronously fetch global product catalog once for product creation without blocking inventory page rendering
       if (allProductsCatalog.length === 0) {
-        fetchJson('/products/list/').then(globalProds => {
-          setAllProductsCatalog(globalProds.results || globalProds || [])
+        apiFetch('/products/list/', {}, TTL.NORMAL).then(globalProds => {
+          setAllProductsCatalog(globalProds?.results || globalProds || [])
         }).catch(() => {})
       }
     } catch {
@@ -552,8 +557,8 @@ function ShopDashboard() {
     setAnalyticsLoading(true)
     setError('')
     try {
-      const data = await fetchJson('/shops/analytics/')
-      setAnalytics(data)
+      const data = await apiFetch('/shops/analytics/', {}, TTL.SHORT)
+      setAnalytics(data || { total_revenue: 0, total_orders: 0, status_counts: {}, sales_history: [], top_products: [] })
     } catch {
       setError('Failed to load analytics.')
     } finally {
@@ -565,8 +570,8 @@ function ShopDashboard() {
     setForecastLoading(true)
     setError('')
     try {
-      const data = await fetchJson('/shops/demand-forecast/')
-      setForecastData(data)
+      const data = await apiFetch('/shops/demand-forecast/', {}, TTL.SHORT)
+      setForecastData(data || { forecast_today: [], forecast_history: [], metrics: {} })
     } catch {
       setError('Failed to load demand forecast.')
     } finally {
@@ -577,7 +582,7 @@ function ShopDashboard() {
   const handleToggleLive = () => {
     fetchJson('/shops/toggle-live/', { method: 'POST' })
       .then(res => {
-        setShopInfo(prev => prev ? { ...prev, live_inventory: res.live_inventory } : null)
+        if (res) setShopInfo(prev => prev ? { ...prev, live_inventory: res.live_inventory } : prev)
         window.dispatchEvent(new Event('liveInventoryToggled'))
       })
       .catch(() => setError('Failed to toggle live inventory.'))
@@ -624,7 +629,7 @@ function ShopDashboard() {
     })
       .then(() => {
         loadInventory()
-        fetchJson('/shops/demand-forecast/').then(setForecastData).catch(() => {})
+        apiFetch('/shops/demand-forecast/', {}, TTL.SHORT).then(setForecastData).catch(() => {})
         setEditingItem(null)
       })
       .catch((err) => {
@@ -742,7 +747,7 @@ function ShopDashboard() {
     return (
       <div className="shop-error-container container" style={{ padding: '60px 20px', textAlign: 'center' }}>
         <div className="error-card-panel" style={{ background: '#1e293b', padding: '36px', borderRadius: '16px', border: '1px solid #334155', maxWidth: '520px', margin: '0 auto', color: '#fff' }}>
-          <h2 style={{ fontSize: '22px', color: '#f43f5e', marginBottom: '12px' }}>🚫 Access Restricted</h2>
+          <h2 style={{ fontSize: '22px', color: '#f43f5e', marginBottom: '12px' }}>Access Restricted</h2>
           <p style={{ color: '#94a3b8', fontSize: '14px', marginBottom: '20px' }}>
             You are currently logged in as <strong>{user?.username || 'Customer'}</strong> ({user?.role || 'customer'}). This section is reserved for verified Shop Owners.
           </p>
@@ -790,11 +795,13 @@ function ShopDashboard() {
               Commission Tier: <strong className="commission-badge" style={{ color: '#0891b2' }}>{shopInfo?.live_inventory ? '5% (Live)' : '10% (Standard)'}</strong>
             </p>
             {weatherData && (
-              <div className="weather-widget" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#e0f2fe', border: '1px solid #bae6fd', padding: '4px 12px', borderRadius: 16, fontSize: '0.82rem', marginTop: 8, color: '#0369a1' }}>
-                <span>Location: {weatherData.city}</span>
-                <strong style={{ color: '#0284c7' }}>{weatherData.temp}°C</strong>
+              <div className="weather-widget" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#e0f2fe', border: '1px solid #bae6fd', padding: '5px 14px', borderRadius: 16, fontSize: '0.82rem', marginTop: 8, color: '#0369a1' }}>
+                <span><strong>{weatherData.city}</strong></span>
+                <strong style={{ color: '#0284c7', fontSize: '0.95rem' }}>{weatherData.temp}°C</strong>
                 <span>• {weatherData.condition}</span>
-                {weatherData.is_raining && <span style={{ color: '#dc2626', fontWeight: 'bold' }}>Rain Expected</span>}
+                {weatherData.windspeed > 0 && <span style={{ color: '#0369a1', fontSize: '0.78rem' }}>{weatherData.windspeed} km/h wind</span>}
+                {weatherData.is_raining && <span style={{ color: '#dc2626', fontWeight: 'bold' }}>Rain Alert</span>}
+                {weatherData.source === 'fallback' && <span style={{ color: '#94a3b8', fontSize: '0.72rem' }}>(offline)</span>}
               </div>
             )}
           </div>
@@ -1081,9 +1088,11 @@ function ShopDashboard() {
                             <td>{o.items?.length || 1}</td>
                             <td>₹{parseFloat(o.total_price).toFixed(2)}</td>
                             <td>
-                              <span className="table-status-pill" style={{ color: STATUS_CONFIG[o.status].color, background: STATUS_CONFIG[o.status].bg }}>
-                                {STATUS_CONFIG[o.status].label}
-                              </span>
+                              {(() => { const scfg = STATUS_CONFIG[o.status] || { color: '#94a3b8', bg: '#f1f5f9', label: o.status || 'Unknown' }; return (
+                                <span className="table-status-pill" style={{ color: scfg.color, background: scfg.bg }}>
+                                  {scfg.label}
+                                </span>
+                               ); })()}
                             </td>
                           </tr>
                         ))}

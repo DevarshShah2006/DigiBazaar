@@ -6,8 +6,9 @@
 .category-subtitle { margin: 4px 0 0; color: #8f7f76; font-size: 0.95rem }
 .category-actions .view-all { color: #9a7f6a; font-weight:700; text-decoration:none }
 
-.category-products-grid { display:flex; gap:16px; overflow-x:auto; padding-bottom:6px }
-.category-product-wrap { flex: 0 0 240px }
+.category-products-grid { display:flex; align-items:stretch; gap:16px; overflow-x:auto; padding-bottom:6px }
+.category-product-wrap { flex: 0 0 240px; display:flex; flex-direction:column; }
+.category-product-wrap .product-card { flex: 1; }
 .category-wise-placeholder { padding: 24px; color: var(--text-muted) }
 .no-products { color: var(--text-muted); padding: 18px }
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { fetchJson } from '../../api/api'
 import { useAuth } from '../../context/AuthContext'
+import { apiFetch, TTL } from '../../api/api'
 import ProductCard from '../ProductCard/ProductCard'
 import { withGroupedVariants } from '../../utils/productVariants'
 import './RecommendationSection.css'
@@ -12,26 +12,19 @@ function RecommendationSection() {
 
   useEffect(() => {
     let cancelled = false
-    const url = user ? `/recommend/${user.id}/` : null
-    const fallback = () => fetchJson('/products/?page_size=30').then(d => (d.results || d || []))
 
     async function load() {
       try {
-        let prods = []
-        if (url) {
-          const data = await fetchJson(url)
-          prods = Array.isArray(data) ? data : (data.results || [])
-        }
-
-        // If no personalized prods, fetch general products from DB
-        if (!prods || prods.length === 0) {
-          prods = await fallback()
-        }
-
+        // Fetch products from the instant food category (request limit=20 to ensure we have enough unique products after grouping variants)
+        const data = await apiFetch('/categories/instant-food/products/?limit=20', {}, TTL.NORMAL)
+        const prods = Array.isArray(data) ? data : (data.results || data || [])
+        
         if (!cancelled) setProducts(withGroupedVariants(prods || []).slice(0, 8))
       } catch (err) {
         if (!cancelled) {
-          const prods = await fallback().catch(() => [])
+          // Fallback to recommended products API
+          const fallbackData = await apiFetch('/products/recommended/?limit=8', {}, TTL.SHORT).catch(() => [])
+          const prods = (fallbackData.results || fallbackData || [])
           setProducts(withGroupedVariants(prods || []).slice(0, 8))
         }
       } finally {
@@ -42,16 +35,16 @@ function RecommendationSection() {
     load()
 
     return () => { cancelled = true }
-  }, [user])
+  }, [])
 
   if (loading) return (
     <section className="rec-section">
       <div className="section-header" style={{ padding: '0 24px' }}>
         <div className="section-title-group">
           <h2 className="section-title">{user ? 'Recommended for You' : 'Popular Products'}</h2>
-          <p className="section-subtitle">Curated daily essentials based on your taste</p>
+          <p className="section-subtitle">Quick and delicious instant foods based on your taste</p>
         </div>
-        <div className="section-actions"><a href="/products?recommended=1" className="view-all">View All ▸</a></div>
+        <div className="section-actions"><a href="/products?category=instant-food" className="view-all">View All ▸</a></div>
       </div>
       <div className="rec-grid">
         {Array(8).fill(0).map((_, i) => <div key={i} className="skeleton-card rec-skeleton" />)}
@@ -67,10 +60,10 @@ function RecommendationSection() {
             {user ? 'Recommended for You' : '⭐ Popular Products'}
           </h2>
           <p className="section-subtitle">
-            {user ? 'Curated daily essentials based on your taste' : 'Our most loved picks'}
+            {user ? 'Quick and delicious instant foods based on your taste' : 'Quick and delicious instant foods'}
           </p>
         </div>
-        <div className="section-actions"><a href="/products?recommended=1" className="view-all">View All ▸</a></div>
+        <div className="section-actions"><a href="/products?category=instant-food" className="view-all">View All ▸</a></div>
       </div>
 
       <div className="rec-grid">
