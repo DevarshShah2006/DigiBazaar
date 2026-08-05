@@ -270,8 +270,10 @@ function ShopOwnerNavbar() {
   const [alertsOpen, setAlertsOpen] = useState(false)
   const [helpOpen, setHelpOpen] = useState(false)
   const [dynamicAlerts, setDynamicAlerts] = useState([])
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
 
   const searchRef = useRef(null)
+  const profileRef = useRef(null)
 
   const isAuthorizedShopOwner = isLoggedIn && (user?.role === 'shopowner' || user?.role === 'admin')
 
@@ -393,6 +395,16 @@ function ShopOwnerNavbar() {
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  useEffect(() => {
+    function handleProfileClickOutside(e) {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleProfileClickOutside)
+    return () => document.removeEventListener('mousedown', handleProfileClickOutside)
   }, [])
 
   const handleToggleStore = () => {
@@ -567,9 +579,37 @@ function ShopOwnerNavbar() {
           Help
         </span>
 
-        {/* Merchant Profile Avatar */}
-        <div className="shop-navbar-avatar" title="Click to Logout" onClick={() => { logout(); navigate('/'); }} style={{ cursor: 'pointer', position: 'relative' }} data-tooltip="Logout">
-          {shopName[0]?.toUpperCase() || 'M'}
+        {/* Merchant Profile Avatar with Dropdown */}
+        <div className="shop-navbar-profile-wrap" ref={profileRef}>
+          <div
+            className="shop-navbar-avatar"
+            title="Profile"
+            onClick={() => setProfileDropdownOpen(prev => !prev)}
+            style={{ cursor: 'pointer', position: 'relative' }}
+          >
+            {shopName[0]?.toUpperCase() || 'M'}
+          </div>
+
+          {profileDropdownOpen && (
+            <div className="shop-profile-dropdown">
+              <div className="shop-profile-dropdown__header">
+                <div className="shop-profile-dropdown__avatar">
+                  {shopName[0]?.toUpperCase() || 'M'}
+                </div>
+                <div>
+                  <div className="shop-profile-dropdown__name">{shopName}</div>
+                  <div className="shop-profile-dropdown__role">Shop Owner</div>
+                </div>
+              </div>
+              <div className="shop-profile-dropdown__divider" />
+              <button
+                className="shop-profile-dropdown__logout"
+                onClick={() => { logout(); navigate('/'); setProfileDropdownOpen(false) }}
+              >
+                Logout
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -762,9 +802,8 @@ function ShopOwnerSidebar() {
       <div className="sidebar-group-box">
         <span className="sidebar-group-title">Growth</span>
         <button 
-          className={`sidebar-nav-link ${activeTab === 'growth' ? 'active' : ''}`}
+          className={`sidebar-nav-link sidebar-nav-link--premium ${activeTab === 'growth' ? 'active' : ''}`}
           onClick={() => handleTabClick('growth')}
-          style={{ color: activeTab === 'growth' ? '#fff' : '#0891b2', fontWeight: '800' }}
         >
           Premium Features
         </button>

@@ -458,6 +458,8 @@ class ShopWeatherView(APIView):
                 current = data.get("current_weather", {})
                 temp = current.get("temperature", 32.5)
                 code = current.get("weathercode", 0)
+                windspeed = current.get("windspeed", 0)
+                is_day = current.get("is_day", 1)
                 condition = WEATHER_CODES.get(code, "Sunny")
                 is_raining = code in [51, 53, 55, 61, 63, 65, 80, 81, 82, 95, 96, 99]
 
@@ -465,7 +467,10 @@ class ShopWeatherView(APIView):
                     "temp": float(temp),
                     "condition": condition,
                     "is_raining": is_raining,
-                    "city": "Ahmedabad"
+                    "windspeed": float(windspeed),
+                    "is_day": bool(is_day),
+                    "city": "Ahmedabad",
+                    "source": "live"
                 })
         except Exception as e:
             # Fallback to simulated offline weather
@@ -473,7 +478,10 @@ class ShopWeatherView(APIView):
                 "temp": default_weather["temp"],
                 "condition": default_weather["condition"],
                 "is_raining": default_weather["is_raining"],
-                "city": "Ahmedabad (Offline)"
+                "windspeed": 0,
+                "is_day": True,
+                "city": "Ahmedabad (Offline)",
+                "source": "fallback"
             })
 
 
@@ -494,11 +502,21 @@ def _fetch_weather_data():
             current = data.get("current_weather", {})
             temp = current.get("temperature", 32.5)
             code = current.get("weathercode", 0)
+            windspeed = current.get("windspeed", 0)
+            is_day = current.get("is_day", 1)
             condition = WEATHER_CODES.get(code, "Sunny")
             is_raining = code in [51, 53, 55, 61, 63, 65, 80, 81, 82, 95, 96, 99]
-            return {"temp": float(temp), "condition": condition, "is_raining": is_raining, "city": "Ahmedabad"}
+            return {
+                "temp": float(temp),
+                "condition": condition,
+                "is_raining": is_raining,
+                "windspeed": float(windspeed),
+                "is_day": bool(is_day),
+                "city": "Ahmedabad",
+                "source": "live"
+            }
     except Exception:
-        return {"temp": 32.5, "condition": "Sunny", "is_raining": False, "city": "Ahmedabad (Offline)"}
+        return {"temp": 32.5, "condition": "Sunny", "is_raining": False, "windspeed": 0, "is_day": True, "city": "Ahmedabad (Offline)", "source": "fallback"}
 
 
 class ShopDashboardSummaryView(APIView):
