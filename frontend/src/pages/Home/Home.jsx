@@ -100,15 +100,15 @@ function Home() {
         </div>
       </section>
 
-      <section className="categories-section">
-        <div className="container">
-          <CategoryCarousel categories={categories} />
-        </div>
-      </section>
-
       <section className="promo-section">
         <div className="container">
           <OfferCards />
+        </div>
+      </section>
+
+      <section className="categories-section">
+        <div className="container">
+          <CategoryCarousel categories={categories} />
         </div>
       </section>
 
@@ -129,7 +129,7 @@ function Home() {
             </div>
             <div className="products-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' }}>
               {newArrivals.map(product => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard key={product.id} product={product} showNewBadge />
               ))}
             </div>
           </section>

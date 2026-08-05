@@ -8,7 +8,7 @@ const PLACEHOLDER_COLORS = [
   '#f3f9f3', '#fdf5f3', '#f2f7fd', '#fcf4ec', '#fcf3f6', '#fdfaf0',
 ]
 
-function ProductCard({ product, showAddToCart = true }) {
+function ProductCard({ product, showAddToCart = true, showNewBadge = false }) {
   const { items, addItem, updateQuantity } = useCart()
   const navigate = useNavigate()
   const variants = useMemo(() => product.variants?.length ? product.variants : [product], [product])
@@ -72,9 +72,9 @@ function ProductCard({ product, showAddToCart = true }) {
           parseFloat(selectedProduct.rating) >= 4.5 && (
             <span className="product-card__badge">Top Rated</span>
           )
-        ) : (
+        ) : showNewBadge ? (
           <span className="product-card__badge product-card__badge--new">New</span>
-        )}
+        ) : null}
       </div>
 
       <div className="product-card__body">
