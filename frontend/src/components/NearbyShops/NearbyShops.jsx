@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { apiFetch, TTL } from '../../api/api'
 import './NearbyShops.css'
 
 function NearbyShops() {
+  const navigate = useNavigate()
   const [shops, setShops] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -124,7 +126,7 @@ function NearbyShops() {
                 <button
                   type="button"
                   className="enter-store-btn"
-                  onClick={() => alert('This feature is for a future version.')}
+                  onClick={() => navigate(`/shops/${shop.id}`)}
                 >
                   Enter Store
                 </button>

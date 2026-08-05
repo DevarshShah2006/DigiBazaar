@@ -13,6 +13,7 @@ const RiderPortal = lazy(() => import('../pages/RiderPortal/RiderPortal'))
 const Checkout = lazy(() => import('../pages/Checkout/Checkout'))
 const AdminDashboard = lazy(() => import('../pages/AdminDashboard/AdminDashboard'))
 const CartPage = lazy(() => import('../pages/Cart/CartPage'))
+const ShopDetails = lazy(() => import('../pages/ShopDetails/ShopDetails'))
 const RequireAuth = lazy(() => import('../components/Auth/RequireAuth'))
 
 // Redirects logged-in users away from login/signup pages to their dashboard
@@ -101,6 +102,7 @@ function AppRoutes() {
         <Route path='/' element={<HomeOrPortal />} />
         <Route path='/products' element={<Products />} />
         <Route path='/products/:id' element={<ProductDetail />} />
+        <Route path='/shops/:id' element={<RequireAuth><ShopDetails /></RequireAuth>} />
 
         <Route path='/login' element={<GuestRoute><Login /></GuestRoute>} />
         <Route path='/signup' element={<GuestRoute><Signup /></GuestRoute>} />
