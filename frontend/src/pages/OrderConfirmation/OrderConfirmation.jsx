@@ -127,11 +127,14 @@ function OrderConfirmation() {
   const steps = ['pending', 'accepted', 'preparing', 'ready', 'picked_up', 'delivered']
   const currentStepIdx = steps.indexOf(order.status)
 
-  const getFulfillmentText = (opt) => {
-    if (opt === 'pickup') return 'Store Self-Pickup'
-    if (opt === 'shop_delivery') return 'Store Partner Delivery'
-    return 'DigiBazaar Express (15 Min)'
-  }
+  // Delivery and tax are free in checkout. The final payable amount therefore
+  // matches the cart calculation: items total less any applied promo.
+  const itemsTotal = (order.items || []).reduce(
+    (total, item) => total + (parseFloat(item.price_at_order || 0) * Number(item.quantity || 0)),
+    0
+  )
+  const discountAmount = Math.min(itemsTotal, Math.max(0, parseFloat(order.discount_amount || 0)))
+  const totalPayable = itemsTotal - discountAmount
 
   return (
     <div className="order-conf fade-in">
@@ -219,6 +222,22 @@ function OrderConfirmation() {
           <div className="bill-details-card">
             <h3>Bill Overview</h3>
             <div className="billing-rows">
+              <div className="bill-row">
+                <span>Items Total</span>
+                <span>{`₹${itemsTotal.toFixed(2)}`}</span>
+              </div>
+              {discountAmount > 0 && (
+                <div className="bill-row bill-row--discount">
+                  <span>Promo Discount</span>
+                  <span>{`- ₹${discountAmount.toFixed(2)}`}</span>
+                </div>
+              )}
+              <div className="grand-total-row">
+                <span>Total Payable</span>
+                <span>{`₹${totalPayable.toFixed(2)}`}</span>
+              </div>
+              <p className="bill-payment-method">Paid via {order.payment_method ? order.payment_method.toUpperCase() : 'UPI'}</p>
+              {false && <>
               {order.items && order.items.map(item => (
                 <div key={item.id} className="bill-row">
                   <span>{item.product_name} x {item.quantity}</span>
@@ -245,6 +264,7 @@ function OrderConfirmation() {
                 <span>Paid via {order.payment_method ? order.payment_method.toUpperCase() : 'UPI'}</span>
                 <span>₹{(order.total_amount ? parseFloat(order.total_amount) : parseFloat(order.total_price || 0)).toFixed(2)}</span>
               </div>
+              </>}
             </div>
           </div>
         </div>
