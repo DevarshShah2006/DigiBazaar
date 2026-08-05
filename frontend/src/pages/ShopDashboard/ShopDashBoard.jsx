@@ -795,11 +795,13 @@ function ShopDashboard() {
               Commission Tier: <strong className="commission-badge" style={{ color: '#0891b2' }}>{shopInfo?.live_inventory ? '5% (Live)' : '10% (Standard)'}</strong>
             </p>
             {weatherData && (
-              <div className="weather-widget" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#e0f2fe', border: '1px solid #bae6fd', padding: '4px 12px', borderRadius: 16, fontSize: '0.82rem', marginTop: 8, color: '#0369a1' }}>
-                <span>Location: {weatherData.city}</span>
-                <strong style={{ color: '#0284c7' }}>{weatherData.temp}°C</strong>
+              <div className="weather-widget" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#e0f2fe', border: '1px solid #bae6fd', padding: '5px 14px', borderRadius: 16, fontSize: '0.82rem', marginTop: 8, color: '#0369a1' }}>
+                <span><strong>{weatherData.city}</strong></span>
+                <strong style={{ color: '#0284c7', fontSize: '0.95rem' }}>{weatherData.temp}°C</strong>
                 <span>• {weatherData.condition}</span>
-                {weatherData.is_raining && <span style={{ color: '#dc2626', fontWeight: 'bold' }}>Rain Expected</span>}
+                {weatherData.windspeed > 0 && <span style={{ color: '#0369a1', fontSize: '0.78rem' }}>{weatherData.windspeed} km/h wind</span>}
+                {weatherData.is_raining && <span style={{ color: '#dc2626', fontWeight: 'bold' }}>Rain Alert</span>}
+                {weatherData.source === 'fallback' && <span style={{ color: '#94a3b8', fontSize: '0.72rem' }}>(offline)</span>}
               </div>
             )}
           </div>
