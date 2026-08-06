@@ -129,17 +129,13 @@ export default function Checkout() {
     }
   }, [items, location, total])
 
-  // Delivery charge calculations
-  const getDeliveryCharge = () => {
-    if (fulfillmentChoice === 'pickup') return 0.00
-    if (fulfillmentChoice === 'shop_delivery') return mlRecommendation?.pricing_options?.shop_delivery || 25.00
-    return mlRecommendation?.pricing_options?.digibazaar_delivery || 25.00
-  }
+  // Delivery charge calculations - FREE as requested
+  const getDeliveryCharge = () => 0.00
 
   const getETA = () => {
     if (fulfillmentChoice === 'pickup') return mlRecommendation?.estimated_delivery_time || 'Ready in 10 mins'
-    if (fulfillmentChoice === 'shop_delivery') return mlRecommendation?.estimated_delivery_time || '15-25 mins (Shop Delivery)'
-    return mlRecommendation?.estimated_delivery_time || '12-18 mins (DigiBazaar Express)'
+    if (fulfillmentChoice === 'shop_delivery') return mlRecommendation?.estimated_delivery_time || '15-25 mins'
+    return mlRecommendation?.estimated_delivery_time || '12-18 mins'
   }
 
   const handleFulfillmentChange = (choice) => {
@@ -245,7 +241,7 @@ export default function Checkout() {
                 disabled={detectingLocation}
                 style={{ border: 'none', background: '#e0f2fe', color: '#0369a1', padding: '8px 14px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
               >
-                {detectingLocation ? 'Detecting Current Location…' : '📍 Use My Current Location'}
+                {detectingLocation ? 'Detecting Current Location…' : 'Use My Current Location'}
               </button>
               <span style={{ fontSize: '12px', color: '#64748b' }}>
                 {location
