@@ -34,6 +34,12 @@
   background-clip: text !important;
 }
 
+.auth-logo img,
+.auth-logo-image {
+  max-width: 180px;
+  height: auto;
+}
+
 .auth-page.portal-rider .auth-primary-btn {
   background: #8B4513 !important;
 }

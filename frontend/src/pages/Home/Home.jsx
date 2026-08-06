@@ -127,7 +127,7 @@ function Home() {
                 <p className="section-subtitle" style={{ color: '#aaa', fontSize: '0.9rem', marginTop: '4px' }}>Just added to our shelves</p>
               </div>
             </div>
-            <div className="products-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' }}>
+            <div className="products-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '28px' }}>
               {newArrivals.map(product => (
                 <ProductCard key={product.id} product={product} showNewBadge />
               ))}

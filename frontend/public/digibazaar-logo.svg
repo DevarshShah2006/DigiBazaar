@@ -1,0 +1,7 @@
+<svg width="160" height="40" viewBox="0 0 160 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="160" height="40" rx="10" fill="#0f172a"/>
+  <circle cx="22" cy="20" r="14" fill="#38bdf8"/>
+  <text x="22" y="25" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="18" font-weight="700" fill="#ffffff">D</text>
+  <text x="60" y="26" font-family="Inter, system-ui, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">DigiBazaar</text>
+  <text x="110" y="26" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="600" fill="#38bdf8">Local</text>
+</svg>

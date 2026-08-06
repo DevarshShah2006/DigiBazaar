@@ -23,8 +23,9 @@
   gap: 20px;
 }
 
+/* Ensure main content is pushed below the fixed customer navbar */
 .customer-page-main {
-  padding-top: var(--nav-height);
+  padding-top: calc(var(--nav-height) + 12px);
 }
 
 .footer {
@@ -105,9 +106,14 @@
 .footer--rider .footer__col h4 {
   color: #7c3aed;
 }
+.footer--shop {
+  background: #f8fafc;
+  color: #1f2937;
+  border-top: none;
+}
 
-.footer--shop .footer-link:hover,
-.footer--rider .footer-link:hover {
+/* Rider footer headings should use the rider accent (warm orange) to match theme */
+.footer--rider .footer__col h4 {
   color: #c2410c;
 }
 
@@ -130,11 +136,99 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 22px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.customer-nav-logo .brand-logo-image {
+  display: block;
+  height: 36px;
+  width: auto;
+}
+
+.shop-owner-nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
   font-weight: 800;
-  color: var(--primary);
+  color: #0891b2;
   text-decoration: none;
   font-family: 'Playfair Display', serif;
+}
+
+.shop-owner-nav-logo .brand-logo-image {
+  display: block;
+  height: 32px;
+  width: auto;
+}
+
+.rider-top-logo-txt {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #8B4513;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.rider-top-logo-txt .brand-logo-image {
+  display: block;
+  height: 30px;
+  width: auto;
+}
+
+.footer__brand .footer-brand-logo {
+  display: block;
+  height: 30px;
+  width: auto;
+  margin-bottom: 12px;
+}
+
+.auth-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-logo-image {
+  display: block;
+  max-height: 36px;
+  width: auto;
+}
+
+/* Legal / Policy / Tips pages */
+.legal-page {
+  max-width: 980px;
+  margin: 28px auto;
+  padding: 0 20px 48px;
+}
+
+.legal-hero {
+  border-radius: 12px;
+  padding: 36px 24px;
+  margin-bottom: 20px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.04);
+}
+
+.legal-hero.customer { background: linear-gradient(180deg, #fffdfa 0%, #f4f2ef 100%); color: #2d1609; }
+.legal-hero.shopowner { background: linear-gradient(180deg, #f8ffff 0%, #f1fbfd 100%); color: #044e59; }
+.legal-hero.rider { background: linear-gradient(180deg, #fff7ed 0%, #fffaf5 100%); color: #4b3223; }
+
+.legal-hero-inner h1 { margin: 0 0 8px; font-size: 28px; line-height: 1.05; }
+.hero-sub { margin: 0; color: rgba(15,23,42,0.7); font-size: 15px; }
+
+.legal-content { background: #fff; border-radius: 10px; padding: 22px; box-shadow: 0 6px 18px rgba(15,23,42,0.03); }
+.legal-section { margin-bottom: 18px; }
+.legal-section h2 { margin: 0 0 8px; font-size: 16px; color: #0f172a; }
+.legal-section p, .legal-section li { color: #374151; font-size: 14px; line-height: 1.7; }
+.legal-section ul { padding-left: 18px; }
+
+@media (max-width: 640px) {
+  .legal-hero { padding: 20px 14px; }
+  .legal-hero-inner h1 { font-size: 22px; }
+  .legal-content { padding: 16px; }
 }
 
 /* Middle Search Bar with Suggestions */
@@ -721,12 +815,41 @@
 /* ── SHOP OWNER SIDEBAR LAYOUT ── */
 .shop-owner-layout-wrapper {
   display: flex;
-  position: fixed;
-  top: 64px;
+  position: relative;
+  margin-top: 64px;
   left: 0;
   right: 0;
-  bottom: 0;
-  overflow: hidden;
+  width: 100%;
+  overflow: visible;
+}
+
+.shop-owner-content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: visible;
+  background: #f8fafc;
+}
+
+.shop-owner-main-content-panel {
+  flex: 1;
+  padding: 24px;
+  overflow: visible;
+}
+
+.footer.footer--shop {
+  position: relative;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  z-index: auto;
+  box-shadow: none;
+  background: #f8fafc;
+}
+
+.footer.footer--shop .footer__inner {
+  padding: 24px 32px;
 }
 
 .shop-owner-sidebar {
@@ -737,8 +860,10 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
   overflow-y: auto;
-  height: 100%;
   flex-shrink: 0;
 }
 
@@ -811,7 +936,11 @@
   background: #f8fafc;
   padding: 24px;
   overflow-y: auto;
-  height: 100%;
+  min-height: 0;
+}
+
+.shop-owner-content-area > .footer.footer--shop {
+  flex-shrink: 0;
 }
 
 
@@ -1005,6 +1134,14 @@
   gap: 24px;
   background: rgba(255, 251, 245, 0.98);
   border-bottom-color: rgba(234, 88, 12, 0.2);
+}
+/* Make rider top navbar fixed so it stays visible across rider pages */
+.rider-top-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
 }
 .rider-top-logo-txt { display: flex; align-items: center; gap: 9px; color: #8B4513; text-decoration: none; white-space: nowrap; }
 .rider-top-logo-txt em { color: #654321; font-style: normal; }
