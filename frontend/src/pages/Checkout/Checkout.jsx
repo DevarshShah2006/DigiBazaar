@@ -104,6 +104,9 @@ export default function Checkout() {
   const [fulfillmentChoice, setFulfillmentChoice] = useState(
     localStorage.getItem('digibazaar_cart_delivery_option') || 'digibazaar_delivery'
   )
+  const [savedDeliveryCharge, setSavedDeliveryCharge] = useState(
+    parseFloat(localStorage.getItem('digibazaar_delivery_charge') || '20.00') || 20.00
+  )
 
   // Fetch ML DecisionTreeClassifier Recommendation
   useEffect(() => {
@@ -121,6 +124,10 @@ export default function Checkout() {
       }).then(data => {
         if (data && data.recommended_delivery_mode) {
           setMlRecommendation(data)
+          if (data.pricing_options?.digibazaar_delivery) {
+            setSavedDeliveryCharge(data.pricing_options.digibazaar_delivery)
+            localStorage.setItem('digibazaar_delivery_charge', data.pricing_options.digibazaar_delivery.toString())
+          }
           if (!localStorage.getItem('digibazaar_user_selected_delivery')) {
             setFulfillmentChoice(data.recommended_delivery_mode)
           }
@@ -132,7 +139,7 @@ export default function Checkout() {
   // Delivery charge calculations
   const getDeliveryCharge = () => {
     if (fulfillmentChoice === 'digibazaar_delivery' || fulfillmentChoice === 'home') {
-      return mlRecommendation?.pricing_options?.digibazaar_delivery || 20.00
+      return mlRecommendation?.pricing_options?.digibazaar_delivery ?? savedDeliveryCharge
     }
     return 0.00
   }

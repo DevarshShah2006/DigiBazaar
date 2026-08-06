@@ -38,16 +38,26 @@ function CartPage() {
   useEffect(() => {
     if (items.length > 0) {
       const shopId = items[0]?.shop_id || (items[0]?.shops && items[0]?.shops[0]?.id)
+      let coords = { lat: 23.0125, long: 72.5575 }
+      try {
+        const saved = JSON.parse(localStorage.getItem('digibazaar_customer_location'))
+        if (saved && Number.isFinite(saved.lat) && Number.isFinite(saved.long)) coords = saved
+      } catch (e) {}
+
       fetchJson('/orders/recommend-delivery/', {
         method: 'POST',
         body: JSON.stringify({
           shop_id: shopId,
           order_value: total,
+          lat: coords.lat,
+          long: coords.long
         })
       }).then(data => {
         if (data) {
           if (data.pricing_options?.digibazaar_delivery) {
-            setDigiBazaarCharge(data.pricing_options.digibazaar_delivery)
+            const charge = data.pricing_options.digibazaar_delivery
+            setDigiBazaarCharge(charge)
+            localStorage.setItem('digibazaar_delivery_charge', charge.toString())
           }
           if (data.recommended_delivery_mode) {
             let mode = data.recommended_delivery_mode
@@ -55,6 +65,7 @@ function CartPage() {
             setRecommendedMode(mode)
             if (!localStorage.getItem('digibazaar_user_selected_delivery')) {
               setDeliveryOption(mode)
+              localStorage.setItem('digibazaar_cart_delivery_option', mode)
             }
           }
         }
