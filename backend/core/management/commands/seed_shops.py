@@ -194,18 +194,11 @@ class Command(BaseCommand):
         )
 
     def _pick_products(self, rng, all_products, shop_categories, target):
-        """Pick products matching shop categories, then fill remainder."""
+        """Pick products matching shop categories exclusively."""
         cat_ids = {c.id for c in shop_categories}
         matching = [p for p in all_products if p.category_id in cat_ids]
         rng.shuffle(matching)
-
-        selected = matching[:target]
-        if len(selected) < target:
-            remainder = [p for p in all_products if p not in selected]
-            rng.shuffle(remainder)
-            selected += remainder[: target - len(selected)]
-
-        return selected
+        return matching[:target]
 
     def _seed_test_data(self, rng):
         """Create test customer, rider, and a sample order."""
