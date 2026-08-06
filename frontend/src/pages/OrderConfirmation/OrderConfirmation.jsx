@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { fetchJson, apiFetch, TTL } from '../../api/api'
 import RouteMap from '../../components/RouteMap/RouteMap'
+import RecommendedProductCard from '../../components/CartPage/RecommendedProductCard'
 import TaxInvoiceModal from '../../components/TaxInvoice/TaxInvoiceModal'
 import './OrderConfirmation.css'
 
