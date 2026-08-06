@@ -494,7 +494,7 @@ class CategoryProductsView(APIView):
 
 
 class RecommendedProductsView(APIView):
-    """Get recommended products for home page, order page and cart (excludes clothing/fashion, prioritizes munchies, snacks, dairy)"""
+    """Get recommended products for home page, order page and cart (excludes clothing and pet/cat food, prioritizes snacks, munchies, beverages, dairy)"""
     permission_classes = [permissions.AllowAny]
     
     def get(self, request):
@@ -505,16 +505,22 @@ class RecommendedProductsView(APIView):
             status='active',
         )
         
-        # Exclude clothing / apparel / fashion products
-        clothing_keywords = ['cloth', 'clothing', 'apparel', 'fashion', 'wear', 't-shirt', 'shirt', 'jeans', 'pant', 'dress', 'top']
-        clothing_q = Q()
-        for kw in clothing_keywords:
-            clothing_q |= Q(category__name__icontains=kw) | Q(category__slug__icontains=kw) | Q(name__icontains=kw)
+        # Exclude clothing / apparel / fashion and pet food / cat food / pet care products
+        excluded_keywords = [
+            'cloth', 'clothing', 'apparel', 'fashion', 'wear', 't-shirt', 'shirt', 'jeans', 'pant', 'dress', 'top',
+            'pet', 'cat food', 'dog food', 'pet food', 'cat care', 'dog care', 'whiskas', 'pedigree', 'drools', 'me-o', 'kitten', 'puppy'
+        ]
+        excluded_q = Q()
+        for kw in excluded_keywords:
+            excluded_q |= Q(category__name__icontains=kw) | Q(category__slug__icontains=kw) | Q(name__icontains=kw)
         
-        base_qs = base_qs.exclude(clothing_q)
+        base_qs = base_qs.exclude(excluded_q)
         
-        # Prioritize Munchies, Snacks, Dairy, Bakery, Beverages, Sweets, Instant Food
-        food_keywords = ['munchies', 'snack', 'biscuit', 'dairy', 'bakery', 'sweet', 'chocolat', 'beverage', 'tea', 'coffee', 'namkeen', 'chips', 'food', 'instant', 'juice']
+        # Prioritize Munchies, Snacks, Beverages, Dairy, Bakery, Sweets, Instant Food
+        food_keywords = [
+            'munchies', 'snack', 'biscuit', 'beverage', 'drink', 'juice', 'cola', 'soda', 'dairy', 'bakery', 'sweet',
+            'chocolat', 'tea', 'coffee', 'namkeen', 'chips', 'food', 'instant', 'crisps', 'cookie'
+        ]
         food_q = Q()
         for kw in food_keywords:
             food_q |= Q(category__name__icontains=kw) | Q(category__slug__icontains=kw) | Q(name__icontains=kw)

@@ -286,8 +286,8 @@ function OrderConfirmation() {
           <section className="order-conf-recommended">
             <div className="order-conf-recommended__header">
               <div>
-                <p className="order-conf-eyebrow">🍿 Quick Snacks & Munchies</p>
-                <h2 className="order-conf-heading">Recommended Munchies, Snacks & Dairy</h2>
+                <p className="order-conf-eyebrow">🍿 Quick Snacks & Beverages</p>
+                <h2 className="order-conf-heading">Recommended Snacks, Munchies & Beverages</h2>
               </div>
             </div>
             <div className="order-conf-recommended__grid">

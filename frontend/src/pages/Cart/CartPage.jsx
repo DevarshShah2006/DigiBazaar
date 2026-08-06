@@ -448,8 +448,8 @@ function CartPage() {
       <section className="recommended-section container">
         <div className="recommended-header">
           <div>
-            <p className="cart-eyebrow">🍿 Quick Add Munchies & Dairy</p>
-            <h2 className="section-heading">Recommended Munchies, Snacks & Dairy</h2>
+            <p className="cart-eyebrow">🍿 Quick Add Snacks & Beverages</p>
+            <h2 className="section-heading">Recommended Snacks, Munchies & Beverages</h2>
           </div>
         </div>
         <div className="recommended-grid">
