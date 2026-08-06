@@ -386,32 +386,29 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                {/* AI / ML DecisionTreeClassifier Performance Card */}
-                <div className="admin-table-card" style={{ padding: '24px', marginBottom: '28px', background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)', border: '1px solid #7dd3fc', borderRadius: '14px' }}>
+                {/* Delivery Analytics Card */}
+                <div className="admin-table-card" style={{ padding: '24px', marginBottom: '28px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{ fontSize: '20px' }}>🤖</span>
-                      <div>
-                        <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0c4a6e' }}>
-                          AI DecisionTreeClassifier Engine Performance
-                        </h3>
-                        <p style={{ margin: 0, fontSize: '13px', color: '#0369a1' }}>
-                          Scikit-Learn Multi-Factor Delivery Optimization & Fulfillment Recommendation Model
-                        </p>
-                      </div>
+                    <div>
+                      <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0f172a' }}>
+                        Delivery Optimization Engine Performance
+                      </h3>
+                      <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#64748b' }}>
+                        Multi-Factor Delivery Optimization & Fulfillment Recommendation Engine
+                      </p>
                     </div>
-                    <span style={{ background: '#0284c7', color: '#fff', padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: 700 }}>
-                      Model Accuracy: 97.5%
+                    <span style={{ background: '#59290e', color: '#fff', padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: 700 }}>
+                      Accuracy: 97.5%
                     </span>
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginTop: '16px' }}>
-                    <div style={{ background: '#ffffff', padding: '14px 18px', borderRadius: '10px', border: '1px solid #bae6fd' }}>
-                      <div style={{ fontSize: '12px', color: '#0369a1', fontWeight: 600 }}>TARGET CLASSES</div>
+                    <div style={{ background: '#f8fafc', padding: '14px 18px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                      <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>DELIVERY OPTIONS</div>
                       <div style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a', marginTop: '4px' }}>
-                        ⚡ DigiBazaar Express<br />
-                        🚚 Shop Delivery<br />
-                        🏬 Store Pickup
+                        • Home Delivery<br />
+                        • Shop Delivery<br />
+                        • Store Pickup
                       </div>
                     </div>
                     <div style={{ background: '#ffffff', padding: '14px 18px', borderRadius: '10px', border: '1px solid #bae6fd' }}>

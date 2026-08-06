@@ -255,100 +255,25 @@ export default function Checkout() {
             </div>
           </div>
 
-          {/* ML DecisionTreeClassifier Delivery Recommendation */}
-          {mlRecommendation && (
-            <div className="checkout-card ml-recommendation-card" style={{ background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)', border: '1px solid #7dd3fc', borderRadius: '12px', padding: '16px', marginBottom: '20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', tracking: '0.05em', color: '#0369a1', background: '#bae6fd', padding: '3px 8px', borderRadius: '6px' }}>
-                  🤖 ML DecisionTreeClassifier Recommendation
-                </span>
-                <span style={{ fontSize: '12px', fontWeight: 600, color: '#0284c7' }}>
-                  {mlRecommendation.delivery_mode_confidence}% Accuracy Match
-                </span>
-              </div>
-              <h4 style={{ margin: '6px 0', color: '#0c4a6e', fontSize: '16px', fontWeight: 700 }}>
-                Recommended: {mlRecommendation.recommended_label}
-              </h4>
-              <p style={{ margin: '4px 0 10px', fontSize: '13px', color: '#0369a1', lineHeight: '1.4' }}>
-                {mlRecommendation.decision_tree_explanation}
-              </p>
-              <div style={{ fontSize: '12px', color: '#0284c7', background: 'rgba(255,255,255,0.7)', padding: '6px 10px', borderRadius: '6px' }}>
-                ⏱ Estimated Time: <strong>{mlRecommendation.estimated_delivery_time}</strong> · Model: {mlRecommendation.model_type}
-              </div>
-            </div>
-          )}
-
-          {/* Fulfillment Options Selector */}
+          {/* Delivery Summary */}
           <div className="checkout-card delivery-card clean-card">
             <div className="card-header-icon">
               <div>
-                <h3>Select Delivery Method</h3>
+                <h3>Delivery Method</h3>
               </div>
-              <span className="delivery-badge" style={{ background: '#0284c7', color: '#ffffff' }}>
-                {fulfillmentChoice === 'digibazaar_delivery' ? 'DigiBazaar Express ⚡' : fulfillmentChoice === 'shop_delivery' ? 'Shop Delivery 🚚' : 'Store Pickup 🏬'}
+              <span className="delivery-badge" style={{ background: '#59290e', color: '#ffffff' }}>
+                {fulfillmentChoice === 'pickup' ? 'Store Pickup' : fulfillmentChoice === 'shop_delivery' ? 'Shop Delivery' : 'Home Delivery'}
               </span>
             </div>
-
-            <div className="fulfillment-options-list" style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '12px' }}>
-              <label className={`fulfillment-option-row ${fulfillmentChoice === 'digibazaar_delivery' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', border: `2px solid ${fulfillmentChoice === 'digibazaar_delivery' ? '#0284c7' : '#e2e8f0'}`, borderRadius: '10px', cursor: 'pointer', background: fulfillmentChoice === 'digibazaar_delivery' ? '#f0f9ff' : '#fff' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <input
-                    type="radio"
-                    name="fulfillment"
-                    value="digibazaar_delivery"
-                    checked={fulfillmentChoice === 'digibazaar_delivery'}
-                    onChange={() => handleFulfillmentChange('digibazaar_delivery')}
-                  />
-                  <div>
-                    <div style={{ fontWeight: 700, color: '#0f172a' }}>⚡ DigiBazaar Express {mlRecommendation?.recommended_delivery_mode === 'digibazaar_delivery' && <span style={{ fontSize: '11px', background: '#dbeafe', color: '#1d4ed8', padding: '2px 6px', borderRadius: '4px', marginLeft: '6px' }}>AI Recommended</span>}</div>
-                    <div style={{ fontSize: '12px', color: '#64748b' }}>Automated nearest rider assignment (Base ₹20 + ₹5/km)</div>
-                  </div>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontWeight: 700, color: '#0284c7' }}>₹{mlRecommendation?.pricing_options?.digibazaar_delivery || 25}</div>
-                  <div style={{ fontSize: '11px', color: '#64748b' }}>~12-18 mins</div>
-                </div>
-              </label>
-
-              <label className={`fulfillment-option-row ${fulfillmentChoice === 'shop_delivery' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', border: `2px solid ${fulfillmentChoice === 'shop_delivery' ? '#0284c7' : '#e2e8f0'}`, borderRadius: '10px', cursor: 'pointer', background: fulfillmentChoice === 'shop_delivery' ? '#f0f9ff' : '#fff' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <input
-                    type="radio"
-                    name="fulfillment"
-                    value="shop_delivery"
-                    checked={fulfillmentChoice === 'shop_delivery'}
-                    onChange={() => handleFulfillmentChange('shop_delivery')}
-                  />
-                  <div>
-                    <div style={{ fontWeight: 700, color: '#0f172a' }}>🚚 Shop Delivery {mlRecommendation?.recommended_delivery_mode === 'shop_delivery' && <span style={{ fontSize: '11px', background: '#dbeafe', color: '#1d4ed8', padding: '2px 6px', borderRadius: '4px', marginLeft: '6px' }}>AI Recommended</span>}</div>
-                    <div style={{ fontSize: '12px', color: '#64748b' }}>Delivered directly by shop's own delivery staff (Min ₹50 order)</div>
-                  </div>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontWeight: 700, color: '#0284c7' }}>₹{mlRecommendation?.pricing_options?.shop_delivery || 25}</div>
-                  <div style={{ fontSize: '11px', color: '#64748b' }}>~15-25 mins</div>
-                </div>
-              </label>
-
-              <label className={`fulfillment-option-row ${fulfillmentChoice === 'pickup' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', border: `2px solid ${fulfillmentChoice === 'pickup' ? '#0284c7' : '#e2e8f0'}`, borderRadius: '10px', cursor: 'pointer', background: fulfillmentChoice === 'pickup' ? '#f0f9ff' : '#fff' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <input
-                    type="radio"
-                    name="fulfillment"
-                    value="pickup"
-                    checked={fulfillmentChoice === 'pickup'}
-                    onChange={() => handleFulfillmentChange('pickup')}
-                  />
-                  <div>
-                    <div style={{ fontWeight: 700, color: '#0f172a' }}>🏬 Self Store Pickup {mlRecommendation?.recommended_delivery_mode === 'pickup' && <span style={{ fontSize: '11px', background: '#dbeafe', color: '#1d4ed8', padding: '2px 6px', borderRadius: '4px', marginLeft: '6px' }}>AI Recommended</span>}</div>
-                    <div style={{ fontSize: '12px', color: '#64748b' }}>Collect directly from the store (Zero delivery fee)</div>
-                  </div>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontWeight: 700, color: '#16a34a' }}>FREE</div>
-                  <div style={{ fontSize: '11px', color: '#64748b' }}>~10 mins</div>
-                </div>
-              </label>
+            <div className="delivery-summary-card compact" style={{ marginTop: '12px', padding: '12px 16px', background: '#f8fafc', borderRadius: '10px' }}>
+              <div className="delivery-summary-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span style={{ fontSize: '13px', color: '#64748b' }}>Estimated Time</span>
+                <strong style={{ fontSize: '13px', color: '#0f172a' }}>{getETA()}</strong>
+              </div>
+              <div className="delivery-summary-row" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '13px', color: '#64748b' }}>Delivery Fee</span>
+                <strong style={{ fontSize: '13px', color: '#16a34a' }}>FREE</strong>
+              </div>
             </div>
           </div>
 

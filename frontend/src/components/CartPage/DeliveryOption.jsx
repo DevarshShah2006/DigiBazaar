@@ -6,7 +6,13 @@ function DeliveryOption({ option, selected, onSelect }) {
       type="button"
       className={`delivery-option${selected ? ' delivery-option--selected' : ''}`}
       onClick={onSelect}
+      style={{ position: 'relative' }}
     >
+      {option.isRecommended && (
+        <span className="delivery-option__rec-tag">
+          Recommended
+        </span>
+      )}
       <div>
         <p className="delivery-option__label">{option.title}</p>
         <p className="delivery-option__subtext">{option.subtitle}</p>

@@ -12,6 +12,7 @@ import './CartPage.css'
 
 const DELIVERY_OPTIONS = [
   { id: 'home', title: 'Home Delivery', subtitle: 'Today, 5-7 PM', label: 'FREE' },
+  { id: 'shop_delivery', title: 'Shop Delivery', subtitle: 'Delivered by shop', label: 'FREE' },
   { id: 'pickup', title: 'Pickup', subtitle: 'Ready in 20m', label: 'FREE' }
 ]
 
@@ -31,6 +32,29 @@ function CartPage() {
   const [deliveryOption, setDeliveryOption] = useState(
     localStorage.getItem('digibazaar_cart_delivery_option') || 'home'
   )
+  const [recommendedMode, setRecommendedMode] = useState('home')
+
+  useEffect(() => {
+    if (items.length > 0) {
+      const shopId = items[0]?.shop_id || (items[0]?.shops && items[0]?.shops[0]?.id)
+      fetchJson('/orders/recommend-delivery/', {
+        method: 'POST',
+        body: JSON.stringify({
+          shop_id: shopId,
+          order_value: total,
+        })
+      }).then(data => {
+        if (data && data.recommended_delivery_mode) {
+          let mode = data.recommended_delivery_mode
+          if (mode === 'digibazaar_delivery') mode = 'home'
+          setRecommendedMode(mode)
+          if (!localStorage.getItem('digibazaar_user_selected_delivery')) {
+            setDeliveryOption(mode)
+          }
+        }
+      }).catch(() => {})
+    }
+  }, [items, total])
   const [address, setAddress] = useState(
     localStorage.getItem('digibazaar_cart_delivery_address') || localStorage.getItem('delivery_address') || DEFAULT_ADDRESS
   )
@@ -345,7 +369,10 @@ function CartPage() {
                 {DELIVERY_OPTIONS.map(option => (
                   <DeliveryOption
                     key={option.id}
-                    option={option}
+                    option={{
+                      ...option,
+                      isRecommended: recommendedMode === option.id
+                    }}
                     selected={deliveryOption === option.id}
                     onSelect={() => handleDeliveryChange(option.id)}
                   />

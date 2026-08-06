@@ -202,25 +202,16 @@ function OrderConfirmation() {
 
         {/* Right column: Delivery partner & Bill details */}
         <div className="tracking-side-column">
-          {/* ML DecisionTreeClassifier Recommendation Summary */}
+          {/* Delivery Method Summary */}
           {order.ml_decision_tree_details && (
-            <div className="delivery-partner-card ml-decision-tree-card" style={{ background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)', border: '1px solid #7dd3fc', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+            <div className="delivery-partner-card ml-decision-tree-card" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#0369a1', background: '#bae6fd', padding: '3px 8px', borderRadius: '6px' }}>
-                  🤖 ML DecisionTreeClassifier
-                </span>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: '#0284c7' }}>
-                  {order.ml_decision_tree_details.confidence}% Match
+                <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#59290e', background: '#f0ece5', padding: '3px 8px', borderRadius: '6px' }}>
+                  Recommended Delivery Method
                 </span>
               </div>
-              <h4 style={{ margin: '6px 0', color: '#0c4a6e', fontSize: '15px', fontWeight: 700 }}>
-                AI Recommended: {order.ml_decision_tree_details.recommended_label}
-              </h4>
-              <p style={{ margin: '4px 0 8px', fontSize: '12px', color: '#0369a1', lineHeight: '1.4' }}>
-                {order.ml_decision_tree_details.explanation}
-              </p>
-              <div style={{ fontSize: '12px', color: '#0f172a', fontWeight: 600 }}>
-                Selected Mode: <span style={{ color: '#0284c7' }}>{order.fulfillment_option === 'digibazaar_delivery' ? 'DigiBazaar Express ⚡' : order.fulfillment_option === 'shop_delivery' ? 'Shop Delivery 🚚' : 'Store Pickup 🏬'}</span>
+              <div style={{ fontSize: '13px', color: '#2d1609', fontWeight: 600 }}>
+                Selected Option: <span style={{ color: '#a64d22' }}>{order.fulfillment_option === 'digibazaar_delivery' ? 'Home Delivery' : order.fulfillment_option === 'shop_delivery' ? 'Shop Delivery' : 'Store Pickup'}</span>
               </div>
             </div>
           )}

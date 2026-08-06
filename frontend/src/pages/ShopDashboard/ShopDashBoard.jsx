@@ -1222,11 +1222,10 @@ function ShopDashboard() {
                         </p>
                         <p><strong>Fulfillment:</strong> <span className="fulfill-badge">{order.fulfillment_option?.replace(/_/g, ' ')}</span></p>
 
-                        {/* ML DecisionTreeClassifier Recommendation info */}
+                        {/* Recommended delivery info */}
                         {order.ml_decision_tree_details && (
-                          <div style={{ margin: '8px 0', padding: '8px 12px', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '6px', fontSize: '0.8rem', color: '#0369a1' }}>
-                            <strong>🤖 AI DecisionTree Recommendation:</strong> {order.ml_decision_tree_details.recommended_label} ({order.ml_decision_tree_details.confidence}% match)
-                            <div style={{ fontSize: '0.75rem', color: '#0284c7', marginTop: '2px' }}>{order.ml_decision_tree_details.explanation}</div>
+                          <div style={{ margin: '8px 0', padding: '8px 12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '0.8rem', color: '#0f172a' }}>
+                            <strong>Recommended Delivery Method:</strong> {order.ml_decision_tree_details.recommended_label?.replace(/⚡|🚚|🏬/g, '')}
                           </div>
                         )}
 
