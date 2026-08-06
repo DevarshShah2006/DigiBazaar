@@ -32,7 +32,7 @@ function CartPage() {
   const [deliveryOption, setDeliveryOption] = useState(
     localStorage.getItem('digibazaar_cart_delivery_option') || 'home'
   )
-  const [recommendedMode, setRecommendedMode] = useState('home')
+  const [digiBazaarCharge, setDigiBazaarCharge] = useState(20.00)
 
   useEffect(() => {
     if (items.length > 0) {
@@ -44,17 +44,29 @@ function CartPage() {
           order_value: total,
         })
       }).then(data => {
-        if (data && data.recommended_delivery_mode) {
-          let mode = data.recommended_delivery_mode
-          if (mode === 'digibazaar_delivery') mode = 'home'
-          setRecommendedMode(mode)
-          if (!localStorage.getItem('digibazaar_user_selected_delivery')) {
-            setDeliveryOption(mode)
+        if (data) {
+          if (data.pricing_options?.digibazaar_delivery) {
+            setDigiBazaarCharge(data.pricing_options.digibazaar_delivery)
+          }
+          if (data.recommended_delivery_mode) {
+            let mode = data.recommended_delivery_mode
+            if (mode === 'digibazaar_delivery') mode = 'home'
+            setRecommendedMode(mode)
+            if (!localStorage.getItem('digibazaar_user_selected_delivery')) {
+              setDeliveryOption(mode)
+            }
           }
         }
       }).catch(() => {})
     }
   }, [items, total])
+
+  const deliveryOptionsList = useMemo(() => [
+    { id: 'home', title: 'Delivery by DigiBazaar', subtitle: '12-18 mins fast delivery', label: `₹${digiBazaarCharge.toFixed(0)}` },
+    { id: 'shop_delivery', title: 'Delivery by Shop', subtitle: 'Delivered by shop', label: 'FREE' },
+    { id: 'pickup', title: 'Pickup', subtitle: 'Ready in 20m', label: 'FREE' }
+  ], [digiBazaarCharge])
+
   const [address, setAddress] = useState(
     localStorage.getItem('digibazaar_cart_delivery_address') || localStorage.getItem('delivery_address') || DEFAULT_ADDRESS
   )
@@ -85,7 +97,7 @@ function CartPage() {
   const [hasPreviousOrders, setHasPreviousOrders] = useState(null)
 
   const itemsTotal = useMemo(() => total, [total])
-  const deliveryFee = (deliveryOption === 'home' || deliveryOption === 'digibazaar_delivery') ? 20 : 0
+  const deliveryFee = (deliveryOption === 'home' || deliveryOption === 'digibazaar_delivery') ? digiBazaarCharge : 0
   const smallOrderCharge = deliveryOption === 'home' && itemsTotal > 0 && itemsTotal < SMALL_ORDER_THRESHOLD
     ? SMALL_ORDER_FEE
     : 0
@@ -366,7 +378,7 @@ function CartPage() {
                 </div>
               </div>
               <div className="delivery-options">
-                {DELIVERY_OPTIONS.map(option => (
+                {deliveryOptionsList.map(option => (
                   <DeliveryOption
                     key={option.id}
                     option={{

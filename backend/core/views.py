@@ -1762,7 +1762,7 @@ class DeliveryRecommendationView(APIView):
         )
 
         express_charge = max(20.0, round(20.0 + (distance_km * 5.0), 2))
-        shop_charge = float(shop.delivery_charge_flat or 25.0)
+        shop_charge = 0.0
 
         return Response({
             "recommended_delivery_mode": predicted_mode,
