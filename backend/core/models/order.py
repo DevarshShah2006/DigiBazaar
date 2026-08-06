@@ -192,10 +192,10 @@ class Order(models.Model):
     # ── Status Transition Rules ─────────────────────────────
     ALLOWED_TRANSITIONS = {
         "pending": ["accepted", "rejected", "cancelled"],
-        "accepted": ["preparing", "cancelled"],
-        "preparing": ["ready", "cancelled"],
-        "ready": ["picked_up", "out_for_delivery", "completed", "cancelled"],
-        "picked_up": ["out_for_delivery", "cancelled"],
+        "accepted": ["preparing", "ready", "completed", "cancelled"],
+        "preparing": ["ready", "completed", "cancelled"],
+        "ready": ["picked_up", "out_for_delivery", "completed", "delivered", "cancelled"],
+        "picked_up": ["out_for_delivery", "delivered", "completed", "cancelled"],
         "out_for_delivery": ["delivered", "completed", "cancelled"],
         "delivered": ["completed"],
         "completed": [],
@@ -206,7 +206,7 @@ class Order(models.Model):
     NEXT_STATUS = {
         "accepted": "preparing",
         "preparing": "ready",
-        "ready": "picked_up",
+        "ready": "completed",
         "picked_up": "out_for_delivery",
         "out_for_delivery": "delivered",
         "delivered": "completed",
@@ -233,6 +233,9 @@ class Order(models.Model):
         self.status = new_status
         now = timezone.now()
 
+        if new_status in ["delivered", "completed"]:
+            self.invoice_generated = True
+
         # Stamp the timeline
         timestamp_map = {
             "accepted": "accepted_at",
@@ -240,6 +243,7 @@ class Order(models.Model):
             "ready": "ready_at",
             "picked_up": "picked_up_at",
             "delivered": "delivered_at",
+            "completed": "delivered_at",
             "cancelled": "cancelled_at",
         }
         field = timestamp_map.get(new_status)
@@ -250,7 +254,7 @@ class Order(models.Model):
         if new_status == "ready" and self.accepted_at:
             delta = now - self.accepted_at
             self.preparation_time_mins = int(delta.total_seconds() / 60)
-        if new_status == "delivered" and self.picked_up_at:
+        if new_status in ["delivered", "completed"] and self.picked_up_at:
             delta = now - self.picked_up_at
             self.delivery_time_mins = int(delta.total_seconds() / 60)
 

@@ -183,13 +183,7 @@ export default function TaxInvoiceModal({ order, onClose }) {
           </div>
 
           {/* Footer & Digital Verification */}
-          <div className="invoice-footer">
-            <div className="footer-qr-stub">
-              <div className="qr-code-placeholder">
-                <div className="qr-symbol">QR</div>
-              </div>
-              <span className="qr-caption">Scan to verify invoice authenticity</span>
-            </div>
+          <div className="invoice-footer" style={{ justifyContent: 'flex-end' }}>
             <div className="footer-signature-stub">
               <div className="stamp-box">
                 <span>COMPUTERS GENERATED TAX INVOICE</span>

@@ -136,9 +136,18 @@ function OrderConfirmation() {
     )
   }
 
-  // Get active steps
-  const steps = ['pending', 'accepted', 'preparing', 'ready', 'picked_up', 'delivered']
-  const currentStepIdx = steps.indexOf(order.status)
+  // Dynamic step index mapping supporting all 6 stages through 'completed'
+  const getStepProgressIndex = (status) => {
+    if (status === 'completed' || status === 'delivered') return 5
+    if (status === 'out_for_delivery' || status === 'picked_up') return 4
+    if (status === 'ready') return 3
+    if (status === 'preparing') return 2
+    if (status === 'accepted') return 1
+    return 0
+  }
+
+  const currentStepIdx = getStepProgressIndex(order.status)
+  const steps = ['pending', 'accepted', 'preparing', 'ready', 'out_for_delivery', 'delivered']
 
   // Delivery and tax are free in checkout. The final payable amount therefore
   // matches the cart calculation: items total less any applied promo.
@@ -169,15 +178,17 @@ function OrderConfirmation() {
             <h3>Fulfillment Progress</h3>
             <div className="order-stepper">
               {steps.map((st, idx) => {
-                // If it is pickup, skip picked_up step
-                if (order.fulfillment_option === 'pickup' && st === 'picked_up') return null
-
                 const isCompleted = idx <= currentStepIdx
                 const isActive = idx === currentStepIdx
 
                 let label = st.charAt(0).toUpperCase() + st.slice(1)
                 if (st === 'pending') label = 'Placed'
-                if (st === 'picked_up') label = 'Out for Delivery'
+                if (st === 'out_for_delivery') {
+                  label = order.fulfillment_option === 'pickup' ? 'Ready for Pickup' : 'Out for Delivery'
+                }
+                if (st === 'delivered') {
+                  label = order.fulfillment_option === 'pickup' ? 'Picked Up' : 'Delivered'
+                }
 
                 return (
                   <div key={st} className={`step-node ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}`}>

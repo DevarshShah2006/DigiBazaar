@@ -43,20 +43,23 @@ export default function AdminDashboard() {
   const loadInitialData = async () => {
     setLoading(true)
     try {
-      const [statsData, shopsData, ridersData, usersData] = await Promise.all([
-        fetchJson('/admin/dashboard-stats/'),
+      // Fetch stats first for instant admin dashboard render
+      const statsData = await fetchJson('/admin/dashboard-stats/')
+      if (statsData) setStats(statsData)
+      setLoading(false)
+
+      // Fetch heavy tab datasets in background without blocking UI
+      Promise.all([
         fetchJson('/admin/shops/'),
         fetchJson('/admin/riders/'),
         fetchJson('/admin/users/'),
-      ])
-
-      if (statsData) setStats(statsData)
-      setShops(Array.isArray(shopsData) ? shopsData : [])
-      setRiders(Array.isArray(ridersData) ? ridersData : [])
-      setUsers(Array.isArray(usersData) ? usersData : [])
+      ]).then(([shopsData, ridersData, usersData]) => {
+        setShops(Array.isArray(shopsData) ? shopsData : [])
+        setRiders(Array.isArray(ridersData) ? ridersData : [])
+        setUsers(Array.isArray(usersData) ? usersData : [])
+      }).catch(err => console.error('Background admin fetch error', err))
     } catch (err) {
       console.error('Failed to load initial admin data', err)
-    } finally {
       setLoading(false)
     }
   }
