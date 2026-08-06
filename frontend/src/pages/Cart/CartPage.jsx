@@ -33,6 +33,7 @@ function CartPage() {
     localStorage.getItem('digibazaar_cart_delivery_option') || 'home'
   )
   const [digiBazaarCharge, setDigiBazaarCharge] = useState(20.00)
+  const [recommendedMode, setRecommendedMode] = useState('home')
 
   useEffect(() => {
     if (items.length > 0) {
