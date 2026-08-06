@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { fetchJson } from '../../api/api'
 import { useCart } from '../../context/CartContext'
+import TaxInvoiceModal from '../../components/TaxInvoice/TaxInvoiceModal'
 import './MyOrders.css'
 
 const STATUS_CONFIG = {
@@ -19,6 +20,7 @@ const STATUS_CONFIG = {
 function MyOrders() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
+  const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState(null)
   const { addItem } = useCart()
   const navigate = useNavigate()
 
@@ -96,12 +98,19 @@ function MyOrders() {
                     {cfg.label}
                   </span>
                   
-                  <div className="order-row__actions">
+                  <div className="order-row__actions" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     <button 
                       className="order-row__track-btn"
                       onClick={() => navigate(`/order-confirmation/${order.id}`)}
                     >
                       Track Order
+                    </button>
+                    <button 
+                      className="order-row__invoice-btn"
+                      onClick={() => setSelectedInvoiceOrder(order)}
+                      style={{ background: '#059669', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}
+                    >
+                      Download Invoice
                     </button>
                     <button 
                       className="order-row__reorder-btn"
@@ -115,6 +124,10 @@ function MyOrders() {
             )
           })}
         </div>
+      )}
+
+      {selectedInvoiceOrder && (
+        <TaxInvoiceModal order={selectedInvoiceOrder} onClose={() => setSelectedInvoiceOrder(null)} />
       )}
     </div>
   )

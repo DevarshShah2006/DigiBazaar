@@ -1,0 +1,374 @@
+.tax-invoice-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(6px);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.tax-invoice-modal-container {
+  background: #ffffff;
+  width: 100%;
+  max-width: 850px;
+  max-height: 90vh;
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tax-invoice-controls {
+  background: #1e293b;
+  color: #ffffff;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #334155;
+}
+
+.tax-invoice-controls h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.tax-invoice-controls p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.controls-btn-group {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-print-invoice {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  transition: all 0.2s ease;
+}
+
+.btn-print-invoice:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+}
+
+.btn-close-invoice {
+  background: #334155;
+  color: #e2e8f0;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn-close-invoice:hover {
+  background: #475569;
+}
+
+.tax-invoice-sheet {
+  padding: 36px;
+  overflow-y: auto;
+  color: #0f172a;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: #ffffff;
+}
+
+.invoice-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.company-branding .brand-logo {
+  font-size: 26px;
+  font-weight: 800;
+  margin: 0;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.company-legal {
+  font-weight: 700;
+  font-size: 13px;
+  margin: 4px 0 2px;
+  color: #334155;
+}
+
+.company-address, .company-gstin {
+  font-size: 12px;
+  margin: 2px 0;
+  color: #64748b;
+}
+
+.invoice-meta-box {
+  text-align: right;
+  background: #f8fafc;
+  padding: 14px 18px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.tax-invoice-badge {
+  display: inline-block;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.meta-line {
+  margin: 3px 0;
+  font-size: 12px;
+  color: #334155;
+}
+
+.divider-line {
+  border: none;
+  border-top: 2px solid #e2e8f0;
+  margin: 20px 0;
+}
+
+.billing-parties-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.party-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.party-box h4 {
+  margin: 0 0 8px 0;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.05em;
+}
+
+.party-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: #0f172a;
+  margin: 0 0 4px;
+}
+
+.party-detail {
+  font-size: 12px;
+  color: #475569;
+  margin: 2px 0;
+}
+
+.invoice-table-wrapper {
+  margin-bottom: 24px;
+}
+
+.invoice-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.invoice-items-table th {
+  background: #f1f5f9;
+  color: #334155;
+  font-weight: 700;
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 2px solid #cbd5e1;
+  font-size: 12px;
+}
+
+.invoice-items-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #1e293b;
+}
+
+.invoice-summary-layout {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.words-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  margin: 0 0 4px;
+}
+
+.words-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 14px;
+}
+
+.gst-declaration-box {
+  background: #fffbeb;
+  border: 1px solid #fef08a;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  color: #854d0e;
+  line-height: 1.4;
+}
+
+.summary-right-totals {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.summary-line {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #475569;
+}
+
+.summary-line.discount {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.summary-line.tax-line {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.summary-line.grand-total {
+  border-top: 2px solid #cbd5e1;
+  padding-top: 8px;
+  margin-top: 4px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.invoice-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 20px;
+}
+
+.footer-qr-stub {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.qr-code-placeholder {
+  width: 50px;
+  height: 50px;
+  border: 2px solid #0f172a;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  background: #f8fafc;
+}
+
+.qr-symbol {
+  font-weight: 900;
+  font-size: 12px;
+  color: #0f172a;
+}
+
+.qr-caption {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.footer-signature-stub {
+  text-align: right;
+}
+
+.stamp-box {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  border: 2px dashed #059669;
+  padding: 6px 14px;
+  border-radius: 6px;
+  color: #059669;
+  font-size: 10px;
+  font-weight: 800;
+  transform: rotate(-2deg);
+}
+
+.signature-caption {
+  font-size: 11px;
+  color: #64748b;
+  margin: 6px 0 0;
+}
+
+/* Native Printable PDF Styles */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .tax-invoice-sheet, .tax-invoice-sheet * {
+    visibility: visible;
+  }
+  .tax-invoice-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    padding: 0;
+    overflow: visible;
+  }
+  .tax-invoice-modal-container {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .noprint {
+    display: none !important;
+  }
+  .tax-invoice-sheet {
+    padding: 20px;
+  }
+}

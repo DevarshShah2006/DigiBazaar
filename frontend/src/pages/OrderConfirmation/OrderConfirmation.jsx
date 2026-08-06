@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { fetchJson, apiFetch, TTL } from '../../api/api'
 import RouteMap from '../../components/RouteMap/RouteMap'
-import RecommendedProductCard from '../../components/CartPage/RecommendedProductCard'
+import TaxInvoiceModal from '../../components/TaxInvoice/TaxInvoiceModal'
 import './OrderConfirmation.css'
 
 function AnimatedDeliveryMap({ order, status, fulfillment }) {
@@ -69,6 +69,7 @@ function OrderConfirmation() {
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(true)
   const [recommended, setRecommended] = useState([])
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false)
   const pollInterval = useRef(null)
 
   useEffect(() => {
@@ -191,7 +192,10 @@ function OrderConfirmation() {
 
           {/* Action buttons */}
           <div className="tracking-actions-row">
-            <button className="btn btn--primary" onClick={() => navigate('/my-orders')}>
+            <button className="btn btn--primary" onClick={() => setShowInvoiceModal(true)} style={{ background: '#059669', color: '#fff' }}>
+              Download Tax Invoice (PDF)
+            </button>
+            <button className="btn btn--secondary" onClick={() => navigate('/my-orders')}>
               View Order History
             </button>
             <button className="btn btn--secondary" onClick={() => navigate('/')}>
@@ -311,6 +315,10 @@ function OrderConfirmation() {
             </div>
           </section>
         </div>
+      )}
+
+      {showInvoiceModal && (
+        <TaxInvoiceModal order={order} onClose={() => setShowInvoiceModal(false)} />
       )}
     </div>
   )
