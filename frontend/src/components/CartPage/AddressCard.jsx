@@ -3,7 +3,7 @@ import './CartPageShared.css'
 function AddressCard({ address, coordinates, onChange }) {
   return (
     <div className="address-card">
-      <div className="address-card__icon">🏠</div>
+      <div className="address-card__icon"></div>
       <div className="address-card__content">
         <p className="address-card__title">Delivery Address</p>
         <p className="address-card__text">

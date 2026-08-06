@@ -617,9 +617,9 @@ export default function AdminDashboard() {
                               <td>{o.fulfillment_option?.replace(/_/g, ' ')}</td>
                               <td style={{fontSize:'12px', minWidth: '160px'}}>
                                 <div style={{display:'flex', flexDirection:'column', gap:2}}>
-                                  {o.user_phone && <span>👤 Cust: <strong>{o.user_phone}</strong></span>}
-                                  {o.shop_phone && <span>🏪 Shop: <strong>{o.shop_phone}</strong></span>}
-                                  {o.rider_phone && <span>🛵 Rider: <strong>{o.rider_phone}</strong></span>}
+                                  {o.user_phone && <span>Cust: <strong>{o.user_phone}</strong></span>}
+                                  {o.shop_phone && <span>Shop: <strong>{o.shop_phone}</strong></span>}
+                                  {o.rider_phone && <span>Rider: <strong>{o.rider_phone}</strong></span>}
                                   {!o.user_phone && !o.shop_phone && !o.rider_phone && <span style={{color:'#94a3b8'}}>—</span>}
                                 </div>
                               </td>

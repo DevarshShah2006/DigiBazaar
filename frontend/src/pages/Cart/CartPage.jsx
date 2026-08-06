@@ -501,7 +501,7 @@ function CartPage() {
       <section className="recommended-section container">
         <div className="recommended-header">
           <div>
-            <p className="cart-eyebrow">🍿 Quick Add Snacks & Beverages</p>
+            <p className="cart-eyebrow">Quick Add Snacks & Beverages</p>
             <h2 className="section-heading">Recommended Snacks, Munchies & Beverages</h2>
           </div>
         </div>

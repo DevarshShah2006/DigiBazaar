@@ -17,10 +17,10 @@ const normalizePoint = (p) => {
 const buildMarker = (icon, color) =>
   L.divIcon({
     className: 'route-map-marker',
-    html: `<span style="--marker-color:${color || '#0891b2'}">${icon || '📍'}</span>`,
-    iconSize: [34, 34],
-    iconAnchor: [17, 17],
-    popupAnchor: [0, -18],
+    html: `<span style="--marker-color:${color || '#0891b2'}; width: 24px; height: 24px; border-radius: 50%; background: ${color || '#0891b2'}; border: 3px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: block;"></span>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -12],
   })
 
 async function fetchRoute(origin, destination) {
@@ -73,17 +73,17 @@ function RouteMap({ origin, destination, rider, height = 320, showSummary = true
 
     const a = from ?? to ?? FALLBACK_COORD
     originMarkerRef.current = L.marker([a.lat, a.lon], {
-      icon: buildMarker(origin?.icon || '🛒', origin?.color),
+      icon: buildMarker('', origin?.color || '#0891b2'),
     }).addTo(map)
     originMarkerRef.current.bindPopup(String(origin?.label || 'Shop'))
 
     destinationMarkerRef.current = L.marker([a.lat, a.lon], {
-      icon: buildMarker(destination?.icon || '🏠', destination?.color),
+      icon: buildMarker('', destination?.color || '#10b981'),
     }).addTo(map)
     destinationMarkerRef.current.bindPopup(String(destination?.label || 'Home'))
 
     riderMarkerRef.current = L.marker([a.lat, a.lon], {
-      icon: buildMarker('🛵', '#6366f1'),
+      icon: buildMarker('', '#6366f1'),
     }).addTo(map)
     riderMarkerRef.current.bindPopup('Rider (You)')
 
@@ -117,13 +117,13 @@ function RouteMap({ origin, destination, rider, height = 320, showSummary = true
 
     if (originMarkerRef.current) {
       originMarkerRef.current.setLatLng([a.lat, a.lon])
-      originMarkerRef.current.setIcon(buildMarker(origin?.icon || '🛒', origin?.color))
+      originMarkerRef.current.setIcon(buildMarker('', origin?.color || '#0891b2'))
       originMarkerRef.current.setPopupContent(String(origin?.label || 'Shop'))
     }
 
     if (destinationMarkerRef.current) {
       destinationMarkerRef.current.setLatLng([b.lat, b.lon])
-      destinationMarkerRef.current.setIcon(buildMarker(destination?.icon || '🏠', destination?.color))
+      destinationMarkerRef.current.setIcon(buildMarker('', destination?.color || '#10b981'))
       destinationMarkerRef.current.setPopupContent(String(destination?.label || 'Home'))
     }
 
