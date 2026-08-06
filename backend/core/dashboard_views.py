@@ -28,13 +28,50 @@ WEATHER_CODES = {
 }
 
 
-def seed_starter_inventory(shop, limit=12):
+def seed_starter_inventory(shop, limit=15):
     if not shop or Inventory.objects.filter(shop=shop).exists():
         return
 
-    products = Product.objects.filter(status='active', visibility=True).order_by('id')[:limit]
+    shop_type = getattr(shop, 'shop_type', 'kirana') or 'kirana'
+
+    # Filter categories appropriate for shop_type
+    type_keywords = {
+        'medical': ['health', 'pharma', 'baby', 'bath', 'grooming', 'beauty', 'personal care', 'hygiene'],
+        'snacks': ['snack', 'biscuit', 'sweet', 'chocolat', 'beverage', 'drink', 'tea', 'coffee', 'bakery', 'namkeen'],
+        'kirana': ['grocery', 'dairy', 'bakery', 'produce', 'fruit', 'vegetable', 'spice', 'dry fruit', 'pantry', 'instant', 'frozen', 'oil', 'ghee', 'flour', 'rice', 'grain', 'pulse', 'lentil', 'sugar', 'salt'],
+        'clothing': ['clothing', 'fashion', 'footwear', 'wear', 'apparel'],
+        'household': ['home & living', 'home-living', 'household', 'cleaning', 'electronics', 'stationery', 'kitchen'],
+        'pet': ['pet']
+    }
+
+    exclusions = {
+        'medical': ['cloth', 'fashion', 'footwear', 'home & living', 'home-living', 'snack', 'biscuit', 'sweet', 'chocolat', 'grocery'],
+        'snacks': ['cloth', 'fashion', 'footwear', 'home & living', 'home-living', 'health', 'pharma', 'baby'],
+        'kirana': ['cloth', 'fashion', 'footwear', 'health', 'pharma', 'home & living', 'home-living', 'pet'],
+        'clothing': ['grocery', 'health', 'pharma', 'snack', 'beverage', 'home & living', 'home-living', 'pet'],
+        'household': ['cloth', 'fashion', 'footwear', 'health', 'pharma', 'fresh produce', 'pet'],
+    }
+
+    kw_list = type_keywords.get(shop_type, ['grocery'])
+    exc_list = exclusions.get(shop_type, [])
+
+    q = Q(status='active', visibility=True)
+
+    # Apply category pattern filter
+    cat_q = Q()
+    for kw in kw_list:
+        cat_q |= Q(category__name__icontains=kw) | Q(category__slug__icontains=kw)
+    q &= cat_q
+
+    # Exclude banned category patterns
+    for exc in exc_list:
+        q &= ~Q(category__name__icontains=exc) & ~Q(category__slug__icontains=exc)
+
+    products = list(Product.objects.filter(q).order_by('id')[:limit])
+
     if not products:
-        products = Product.objects.all().order_by('id')[:limit]
+        # Fallback if specific search yielded empty
+        products = list(Product.objects.filter(status='active', visibility=True).exclude(category__name__icontains='clothing')[:limit])
 
     for idx, product in enumerate(products):
         price = product.effective_price or product.price or product.selling_price or 0
