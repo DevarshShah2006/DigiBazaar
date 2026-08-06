@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { fetchJson } from '../../api/api'
+import { fetchJson, apiFetch, TTL } from '../../api/api'
 import RouteMap from '../../components/RouteMap/RouteMap'
+import RecommendedProductCard from '../../components/CartPage/RecommendedProductCard'
 import './OrderConfirmation.css'
 
 function AnimatedDeliveryMap({ order, status, fulfillment }) {
@@ -67,7 +68,17 @@ function OrderConfirmation() {
   const navigate = useNavigate()
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [recommended, setRecommended] = useState([])
   const pollInterval = useRef(null)
+
+  useEffect(() => {
+    apiFetch('/products/recommended/?limit=4', {}, TTL.NORMAL)
+      .then(data => {
+        const products = data || []
+        setRecommended(products.slice(0, 4))
+      })
+      .catch(() => setRecommended([]))
+  }, [])
 
   const fetchOrderDetails = () => {
     fetchJson(`/orders/${orderId}/`)
@@ -269,6 +280,24 @@ function OrderConfirmation() {
           </div>
         </div>
       </div>
+
+      {recommended.length > 0 && (
+        <div className="container" style={{ marginTop: '40px' }}>
+          <section className="order-conf-recommended">
+            <div className="order-conf-recommended__header">
+              <div>
+                <p className="order-conf-eyebrow">🍿 Quick Snacks & Munchies</p>
+                <h2 className="order-conf-heading">Recommended Munchies, Snacks & Dairy</h2>
+              </div>
+            </div>
+            <div className="order-conf-recommended__grid">
+              {recommended.map(product => (
+                <RecommendedProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   )
 }

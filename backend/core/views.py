@@ -494,16 +494,39 @@ class CategoryProductsView(APIView):
 
 
 class RecommendedProductsView(APIView):
-    """Get recommended products for home page and cart"""
+    """Get recommended products for home page, order page and cart (excludes clothing/fashion, prioritizes munchies, snacks, dairy)"""
     permission_classes = [permissions.AllowAny]
     
     def get(self, request):
         limit = int(request.query_params.get('limit', 8))
         
-        products = Product.objects.select_related('category', 'subcategory').filter(
+        base_qs = Product.objects.select_related('category', 'subcategory').filter(
             visibility=True,
             status='active',
-        ).order_by('-discount_percent', '-review_count', '-rating', '-created_at')[:limit]
+        )
+        
+        # Exclude clothing / apparel / fashion products
+        clothing_keywords = ['cloth', 'clothing', 'apparel', 'fashion', 'wear', 't-shirt', 'shirt', 'jeans', 'pant', 'dress', 'top']
+        clothing_q = Q()
+        for kw in clothing_keywords:
+            clothing_q |= Q(category__name__icontains=kw) | Q(category__slug__icontains=kw) | Q(name__icontains=kw)
+        
+        base_qs = base_qs.exclude(clothing_q)
+        
+        # Prioritize Munchies, Snacks, Dairy, Bakery, Beverages, Sweets, Instant Food
+        food_keywords = ['munchies', 'snack', 'biscuit', 'dairy', 'bakery', 'sweet', 'chocolat', 'beverage', 'tea', 'coffee', 'namkeen', 'chips', 'food', 'instant', 'juice']
+        food_q = Q()
+        for kw in food_keywords:
+            food_q |= Q(category__name__icontains=kw) | Q(category__slug__icontains=kw) | Q(name__icontains=kw)
+        
+        food_products = list(base_qs.filter(food_q).order_by('-discount_percent', '-review_count', '-rating', '-created_at')[:limit])
+        
+        if len(food_products) < limit:
+            existing_ids = [p.id for p in food_products]
+            other_products = list(base_qs.exclude(id__in=existing_ids).order_by('-discount_percent', '-review_count', '-rating', '-created_at')[:limit - len(food_products)])
+            products = food_products + other_products
+        else:
+            products = food_products
         
         serializer = ProductSerializer(products, many=True)
         response = Response(serializer.data)
