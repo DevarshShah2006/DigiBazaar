@@ -192,9 +192,15 @@ function OrderConfirmation() {
 
           {/* Action buttons */}
           <div className="tracking-actions-row">
-            <button className="btn btn--primary" onClick={() => setShowInvoiceModal(true)} style={{ background: '#059669', color: '#fff' }}>
-              Download Tax Invoice (PDF)
-            </button>
+            {(order.status === 'delivered' || order.status === 'completed') ? (
+              <button className="btn btn--primary" onClick={() => setShowInvoiceModal(true)} style={{ background: '#059669', color: '#fff' }}>
+                Download Tax Invoice (PDF)
+              </button>
+            ) : (
+              <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: '10px 14px', borderRadius: '8px', fontSize: '13px', color: '#475569', width: '100%', textAlign: 'center', fontWeight: 600 }}>
+                🔒 Tax Invoice will be available once your order is Delivered
+              </div>
+            )}
             <button className="btn btn--secondary" onClick={() => navigate('/my-orders')}>
               View Order History
             </button>

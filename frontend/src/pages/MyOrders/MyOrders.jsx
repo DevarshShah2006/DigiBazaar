@@ -105,13 +105,15 @@ function MyOrders() {
                     >
                       Track Order
                     </button>
-                    <button 
-                      className="order-row__invoice-btn"
-                      onClick={() => setSelectedInvoiceOrder(order)}
-                      style={{ background: '#059669', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}
-                    >
-                      Download Invoice
-                    </button>
+                    {(order.status === 'delivered' || order.status === 'completed') && (
+                      <button 
+                        className="order-row__invoice-btn"
+                        onClick={() => setSelectedInvoiceOrder(order)}
+                        style={{ background: '#059669', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}
+                      >
+                        Download Invoice
+                      </button>
+                    )}
                     <button 
                       className="order-row__reorder-btn"
                       onClick={() => handleReorder(order)}

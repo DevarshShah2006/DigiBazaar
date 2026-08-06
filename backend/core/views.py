@@ -661,19 +661,13 @@ class CheckoutView(APIView):
             if fulfillment_option == 'pickup':
                 charge = Decimal('0.00')
             elif fulfillment_option == 'shop_delivery':
-                charge = shop.delivery_charge_flat or Decimal('25.00')
+                charge = Decimal('0.00')
             elif fulfillment_option == 'digibazaar_delivery':
                 raw = max(20.0, 20.0 + (distance_km * 5.0))
                 charge = Decimal(str(round(raw, 2)))
 
             # ── Calculate totals ─────────────────────────────────────────────
             subtotal = sum(i['price'] * i['quantity'] for i in group['items'])
-
-            # ── BUSINESS RULE: Shop Delivery minimum ₹50 ────────────────────
-            if fulfillment_option == 'shop_delivery' and subtotal < Decimal('50.00'):
-                return Response({
-                    'detail': f'Minimum order for Shop Delivery is ₹50. Your subtotal is ₹{subtotal:.2f}.'
-                }, status=status.HTTP_400_BAD_REQUEST)
 
             tax_amount = round(subtotal * Decimal('0.05'), 2)
             total_amount = max(Decimal('0.00'), subtotal + charge + tax_amount - discount_amount)
