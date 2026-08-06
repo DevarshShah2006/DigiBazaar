@@ -175,6 +175,8 @@ function CartPage() {
 
   const handleDeliveryChange = (optionId) => {
     setDeliveryOption(optionId)
+    localStorage.setItem('digibazaar_cart_delivery_option', optionId)
+    localStorage.setItem('digibazaar_user_selected_delivery', 'true')
   }
 
   const handleApplyDiscount = async () => {

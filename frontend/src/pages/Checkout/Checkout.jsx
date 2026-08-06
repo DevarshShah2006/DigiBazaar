@@ -160,7 +160,7 @@ export default function Checkout() {
     setLoading(true)
     try {
       // Pre-check: DigiExpress + multi-store warning
-      const fulfillment = fulfillmentChoice
+      const fulfillment = fulfillmentChoice === 'home' ? 'digibazaar_delivery' : fulfillmentChoice
       if (fulfillment === 'digibazaar_delivery') {
         const shopIds = new Set(items.map(i => i.shop_id || (i.shops && i.shops[0]?.id)).filter(Boolean))
         if (shopIds.size > 1) {
@@ -227,7 +227,7 @@ export default function Checkout() {
 
   const subtotal = total
   const deliveryFee = getDeliveryCharge()
-  const smallOrderCharge = deliveryOption === 'home' && subtotal > 0 && subtotal < 100 ? 49.00 : 0.00
+  const smallOrderCharge = (fulfillmentChoice === 'home' || fulfillmentChoice === 'digibazaar_delivery') && subtotal > 0 && subtotal < 100 ? 49.00 : 0.00
   const grandTotal = subtotal + deliveryFee + smallOrderCharge - discountAmount
 
   return (
