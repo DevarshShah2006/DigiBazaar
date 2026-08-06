@@ -84,10 +84,31 @@ def main():
                 to_remove.append(row['sp_id'])
 
         if to_remove:
+            # Get the actual product IDs to remove
+            product_ids_to_remove = [
+                row['product_id'] for row in shop_prods
+                if row['sp_id'] in to_remove
+            ]
+            # Build a lookup set for fast check
+            remove_sp_ids_set = set(to_remove)
+            product_ids_to_remove = [
+                row['product_id'] for row in shop_prods
+                if not category_allowed(row['cat_name'], row['cat_slug'], shop_type)
+            ]
+
             placeholders = ','.join('?' * len(to_remove))
             cur.execute(f"DELETE FROM core_shopproduct WHERE id IN ({placeholders})", to_remove)
+
+            # Also remove Inventory records for these products in this shop
+            if product_ids_to_remove:
+                inv_placeholders = ','.join('?' * len(product_ids_to_remove))
+                cur.execute(f"""
+                    DELETE FROM core_inventory
+                    WHERE shop_id = ? AND product_id IN ({inv_placeholders})
+                """, [shop_id] + product_ids_to_remove)
+
             total_removed += len(to_remove)
-            print(f"  [{shop_type}] {shop_name}: removed {len(to_remove)} wrong products")
+            print(f"  [{shop_type}] {shop_name}: removed {len(to_remove)} wrong products + inventory")
         else:
             print(f"  [{shop_type}] {shop_name}: OK - {len(shop_prods)} products all valid")
 
