@@ -7,34 +7,45 @@ import TaxInvoiceModal from '../../components/TaxInvoice/TaxInvoiceModal'
 import './OrderConfirmation.css'
 
 function AnimatedDeliveryMap({ order, status, fulfillment }) {
-  // Live OpenStreetMap route between the shop and the customer's home.
-  // The rider marker is interpolated along the route based on order status.
   const shopLat = Number(order?.shop_lat)
   const shopLon = Number(order?.shop_long)
   const homeLat = Number(order?.lat)
   const homeLon = Number(order?.long)
 
+  const isPickup = fulfillment === 'pickup'
+
   let riderPosPct = 0
-  if (fulfillment === 'digibazaar_delivery' || fulfillment === 'shop_delivery') {
+  if (!isPickup) {
     if (status === 'accepted') riderPosPct = 10
     else if (status === 'preparing') riderPosPct = 25
     else if (status === 'ready') riderPosPct = 40
-    else if (status === 'picked_up') riderPosPct = 70
-    else if (status === 'delivered') riderPosPct = 100
+    else if (status === 'picked_up' || status === 'out_for_delivery') riderPosPct = 70
+    else if (status === 'delivered' || status === 'completed') riderPosPct = 100
   }
 
-  const riderPos =
-    Number.isFinite(shopLat) && Number.isFinite(homeLat)
-      ? {
-          lat: shopLat + (homeLat - shopLat) * (riderPosPct / 100),
-          long: shopLon + (homeLon - shopLon) * (riderPosPct / 100),
-        }
-      : null
+  // Pass rider position ONLY for delivery modes (NO rider for Store Pickup!)
+  const riderPos = (!isPickup && Number.isFinite(shopLat) && Number.isFinite(homeLat))
+    ? {
+        lat: shopLat + (homeLat - shopLat) * (riderPosPct / 100),
+        long: shopLon + (homeLon - shopLon) * (riderPosPct / 100),
+      }
+    : null
+
+  let statusText = `Delivery status: ${status.replace('_', ' ').toUpperCase()}`
+  if (isPickup) {
+    if (status === 'ready' || status === 'out_for_delivery') {
+      statusText = 'Ready for Store Pickup'
+    } else if (status === 'completed' || status === 'delivered') {
+      statusText = 'Order Picked Up successfully'
+    } else {
+      statusText = 'Shop is preparing your pickup order'
+    }
+  }
 
   return (
     <div className="live-tracker-map">
       <div className="map-title-row">
-        <span>{order?.shop_name || 'Shop'} → Your Home · Live Route</span>
+        <span>{isPickup ? `Store Pickup Location · ${order?.shop_name || 'Shop'}` : `${order?.shop_name || 'Shop'} → Your Home · Live Route`}</span>
         <span className="live-dot-indicator"></span>
       </div>
 
@@ -43,22 +54,22 @@ function AnimatedDeliveryMap({ order, status, fulfillment }) {
         origin={{
           lat: shopLat,
           long: shopLon,
-          label: order?.shop_name || 'Shop',
-          icon: '🛒',
-          color: '#0891b2',
+          label: order?.shop_name || 'Store Location',
+          icon: '',
+          color: '#59290e',
         }}
         destination={{
           lat: homeLat,
           long: homeLon,
-          label: 'Your Home',
-          icon: '🏠',
+          label: 'Your Location',
+          icon: '',
           color: '#10b981',
         }}
         rider={riderPos}
       />
 
       <div className="map-coordinates-info">
-        <span>Rider status: <strong className="status-highlight">{status.replace('_', ' ')}</strong></span>
+        <span><strong className="status-highlight">{statusText}</strong></span>
       </div>
     </div>
   )
@@ -210,7 +221,7 @@ function OrderConfirmation() {
               </button>
             ) : (
               <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: '10px 14px', borderRadius: '8px', fontSize: '13px', color: '#475569', width: '100%', textAlign: 'center', fontWeight: 600 }}>
-                🔒 Tax Invoice will be available once your order is Delivered
+                Tax Invoice will be available once your order is Delivered
               </div>
             )}
             <button className="btn btn--secondary" onClick={() => navigate('/my-orders')}>
@@ -322,7 +333,7 @@ function OrderConfirmation() {
           <section className="order-conf-recommended">
             <div className="order-conf-recommended__header">
               <div>
-                <p className="order-conf-eyebrow">🍿 Quick Snacks & Beverages</p>
+                <p className="order-conf-eyebrow">Quick Snacks & Beverages</p>
                 <h2 className="order-conf-heading">Recommended Snacks, Munchies & Beverages</h2>
               </div>
             </div>

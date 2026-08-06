@@ -15,7 +15,7 @@ function OfferCards() {
           <p className="offer-card__title">Free Delivery</p>
           <p className="offer-card__subtitle">On all orders above ₹99 today</p>
         </div>
-        <span className="offer-icon">🚚</span>
+        <span className="offer-badge">FREE DELIVERY</span>
       </div>
     </section>
   )

@@ -775,7 +775,7 @@ function ShopDashboard() {
             You are currently logged in as <strong>{user?.username || 'Customer'}</strong> ({user?.role || 'customer'}). This section is reserved for verified Shop Owners.
           </p>
           <div style={{ background: '#0f172a', padding: '16px', borderRadius: '10px', textAlign: 'left', marginBottom: '24px', fontSize: '13px', border: '1px solid #334155' }}>
-            <p style={{ fontWeight: 'bold', color: '#38bdf8', marginBottom: '6px' }}>💡 How to log in as a Shop Owner:</p>
+            <p style={{ fontWeight: 'bold', color: '#38bdf8', marginBottom: '6px' }}>How to log in as a Shop Owner:</p>
             <p style={{ color: '#cbd5e1', margin: '4px 0' }}>• Click <strong>Log In as Shop Owner</strong> below</p>
             <p style={{ color: '#cbd5e1', margin: '4px 0' }}>• Use Phone Number: <strong style={{ color: '#f59e0b' }}>9000000037</strong> (H&M Satellite)</p>
             <p style={{ color: '#cbd5e1', margin: '4px 0' }}>• OTP: <strong style={{ color: '#f59e0b' }}>123456</strong></p>
@@ -1139,14 +1139,14 @@ function ShopDashboard() {
                             lat: o.shop_lat,
                             long: o.shop_long,
                             label: o.shop_name || 'Shop',
-                            icon: '🛒',
+                            icon: '',
                             color: '#0891b2',
                           }}
                           destination={{
                             lat: o.lat,
                             long: o.long,
                             label: o.user_name || 'Customer',
-                            icon: '🏠',
+                            icon: '',
                             color: '#10b981',
                           }}
                           rider={{
@@ -1373,11 +1373,11 @@ function ShopDashboard() {
                             </div>
                             {fc.reorder_recommended > 0 ? (
                               <div style={{ color: '#ffaa00', fontWeight: 'bold', marginTop: 4 }}>
-                                ⚠️ Reorder Recommended: {fc.reorder_recommended}
+                                Reorder Recommended: {fc.reorder_recommended}
                               </div>
                             ) : (
                               <div style={{ color: '#10b981', fontSize: '0.75rem', marginTop: 4 }}>
-                                ✓ Stock is sufficient
+                                Stock is sufficient
                               </div>
                             )}
                           </div>
@@ -1544,7 +1544,7 @@ function ShopDashboard() {
           <div className="shop-reports-section">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
               <div>
-                <h3 style={{ margin: 0, fontSize: '1.4rem' }}>📊 Sales & Tax Financial Ledger</h3>
+                <h3 style={{ margin: 0, fontSize: '1.4rem' }}>Sales & Tax Financial Ledger</h3>
                 <p className="text-muted" style={{ margin: '4px 0 0 0', fontSize: '0.85rem' }}>Comprehensive revenue reporting, GST tax breakdown, and anomaly detection.</p>
               </div>
               <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
@@ -1560,7 +1560,7 @@ function ShopDashboard() {
                   <option value="365d">Year-to-Date (365 Days)</option>
                 </select>
                 <button className="add-to-inv-btn" onClick={handleDownloadCSVReport} style={{ padding: '8px 16px' }}>
-                  📥 Export Report (CSV)
+                  Export Report (CSV)
                 </button>
               </div>
             </div>
@@ -1658,7 +1658,7 @@ function ShopDashboard() {
         {activeTab === 'customers' && (
           <div className="shop-customers-section">
             <div style={{ marginBottom: 20 }}>
-              <h3 style={{ margin: 0, fontSize: '1.4rem' }}>👥 Customer Intelligence & CRM</h3>
+              <h3 style={{ margin: 0, fontSize: '1.4rem' }}>Customer Intelligence & CRM</h3>
               <p className="text-muted" style={{ margin: '4px 0 0 0', fontSize: '0.85rem' }}>Track buyer loyalty, RFM segmentation, customer lifetime value, and churn risks.</p>
             </div>
 
@@ -1743,7 +1743,7 @@ function ShopDashboard() {
                             {c.dispatched_coupon ? (
                               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                                 <span className="table-status-pill" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid #10b981', fontSize: '0.75rem', textAlign: 'center' }}>
-                                  ✓ 15% OFF Dispatched
+                                  15% OFF Dispatched
                                 </span>
                                 <span style={{ fontSize: '0.68rem', color: '#94a3b8', textAlign: 'center' }}>
                                   Code: <strong style={{ color: '#38bdf8' }}>{c.dispatched_coupon.code}</strong>
@@ -1755,7 +1755,7 @@ function ShopDashboard() {
                                 onClick={() => handleSendCustomerOffer(c.id, 15)}
                                 style={{ padding: '6px 10px', fontSize: '0.75rem' }}
                               >
-                                🎁 Dispatch 15% Platform Coupon
+                                Dispatch 15% Platform Coupon
                               </button>
                             )}
                           </td>
@@ -2124,7 +2124,7 @@ function ShopDashboard() {
                   </div>
 
                   <div className="modal-span-2" style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 16, marginTop: 8 }}>
-                    <h4 style={{ margin: '0 0 12px 0', color: '#a78bfa' }}>📜 Legal & Business Compliance</h4>
+                    <h4 style={{ margin: '0 0 12px 0', color: '#a78bfa' }}>Legal & Business Compliance</h4>
                   </div>
 
                   <div>
@@ -2215,7 +2215,7 @@ function ShopDashboard() {
                 </div>
 
                 <button type="submit" className="add-to-inv-btn" disabled={settingsSaving} style={{ padding: '12px 24px', alignSelf: 'flex-start', marginTop: 10 }}>
-                  {settingsSaving ? 'Saving Changes...' : '💾 Save Store Profile Settings'}
+                  {settingsSaving ? 'Saving Changes...' : 'Save Store Profile Settings'}
                 </button>
               </form>
             )}

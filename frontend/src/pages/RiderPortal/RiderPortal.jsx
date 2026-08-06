@@ -295,14 +295,14 @@ export default function RiderPortal() {
                   lat: active.order_details.shop_lat,
                   long: active.order_details.shop_long,
                   label: active.order_details.shop_name || 'Pickup (Shop)',
-                  icon: '🛒',
+                  icon: '',
                   color: '#0891b2',
                 }}
                 destination={{
                   lat: active.order_details.lat,
                   long: active.order_details.long,
                   label: active.order_details.user_name || 'Drop (Home)',
-                  icon: '🏠',
+                  icon: '',
                   color: '#10b981',
                 }}
                 rider={riderLocation}
@@ -313,7 +313,7 @@ export default function RiderPortal() {
                 <p className="sub"><strong>Drop:</strong> {active.order_details.delivery_address}</p>
                 {riderLocation ? (
                   <p className="sub" style={{ marginTop: 6, color: '#6366f1' }}>
-                    🛵 Your live location is marked on the map.
+                    Your live location is marked on the map.
                   </p>
                 ) : (
                   <p className="sub" style={{ marginTop: 6 }}>Enable location permission to show your live rider position.</p>

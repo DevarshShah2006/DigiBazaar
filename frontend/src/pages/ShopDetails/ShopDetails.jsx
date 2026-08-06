@@ -7,7 +7,7 @@ import { withGroupedVariants } from '../../utils/productVariants'
 import './ShopDetails.css'
 
 const FALLBACK_BANNER = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1600&q=80'
-const categoryIcons = ['🥬', '🍎', '🥛', '🥖', '🍿', '🥤', '🧊', '🧺', '🧴', '🌿']
+const categoryIcons = ['', '', '', '', '', '', '', '', '', '']
 
 function ShopDetails() {
   const { id } = useParams()
