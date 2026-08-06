@@ -1214,8 +1214,22 @@ function ShopDashboard() {
                       )}
 
                       <div className="card-middle-details">
-                        <p><strong>Customer:</strong> {order.user_name} {order.user_phone && <span style={{color:'#64748b', fontSize:'0.85rem'}}>({order.user_phone})</span>}</p>
+                        <p>
+                          <strong>Customer:</strong> {order.user_name} {order.user_phone && <span style={{color:'#64748b', fontSize:'0.85rem'}}>({order.user_phone})</span>}
+                          <span style={{ fontSize: '0.75rem', background: order.shop_live_inventory ? '#dcfce7' : '#fef9c3', color: order.shop_live_inventory ? '#15803d' : '#a16207', padding: '2px 8px', borderRadius: '4px', marginLeft: '8px', fontWeight: 600 }}>
+                            {order.shop_live_inventory ? 'Live Inventory' : 'Manual Inventory'}
+                          </span>
+                        </p>
                         <p><strong>Fulfillment:</strong> <span className="fulfill-badge">{order.fulfillment_option?.replace(/_/g, ' ')}</span></p>
+
+                        {/* ML DecisionTreeClassifier Recommendation info */}
+                        {order.ml_decision_tree_details && (
+                          <div style={{ margin: '8px 0', padding: '8px 12px', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '6px', fontSize: '0.8rem', color: '#0369a1' }}>
+                            <strong>🤖 AI DecisionTree Recommendation:</strong> {order.ml_decision_tree_details.recommended_label} ({order.ml_decision_tree_details.confidence}% match)
+                            <div style={{ fontSize: '0.75rem', color: '#0284c7', marginTop: '2px' }}>{order.ml_decision_tree_details.explanation}</div>
+                          </div>
+                        )}
+
                         {order.delivery_address && <p style={{fontSize:'0.82rem', color:'#64748b'}}><strong>Address:</strong> {order.delivery_address}</p>}
                         {order.rider_details && (
                           <p style={{fontSize:'0.82rem', color:'#3b82f6'}}>
