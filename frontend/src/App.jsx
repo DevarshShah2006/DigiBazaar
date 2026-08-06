@@ -921,8 +921,15 @@ function ShopOwnerSidebar() {
 
 // ── 3. RIDER TOP & BOTTOM PORTAL NAVBARS (TEXT ONLY) ──
 function RiderTopNavbar() {
+  const { logout } = useAuth()
+  const navigate = useNavigate()
   const [online, setOnline] = useState(true)
-  const [theme, setTheme] = useState(localStorage.getItem('rider_theme') || 'light')
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem('rider_theme')
+    return savedTheme === 'dark' ? 'dark' : 'light'
+  })
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+  const profileMenuRef = useRef(null)
 
   useEffect(() => {
     const handleStatusUpdate = () => {
@@ -936,8 +943,33 @@ function RiderTopNavbar() {
   useEffect(() => {
     document.body.classList.toggle('rider-dark-theme', theme === 'dark')
     localStorage.setItem('rider_theme', theme)
-    return () => document.body.classList.remove('rider-dark-theme')
   }, [theme])
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setProfileMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const openProfileTab = () => {
+    setProfileMenuOpen(false)
+    localStorage.setItem('active_rider_tab', 'profile')
+    window.dispatchEvent(new Event('riderTabChanged'))
+  }
+
+  const handleProfileDoubleClick = () => {
+    openProfileTab()
+  }
+
+  const handleLogout = () => {
+    logout()
+    setProfileMenuOpen(false)
+    navigate('/')
+  }
 
   return (
     <header className="rider-top-navbar">
@@ -973,10 +1005,27 @@ function RiderTopNavbar() {
         >
           {theme === 'light' ? 'Dark' : 'Light'}
         </button>
-        <button className="rider-nav-avatar" aria-label="Open profile" onClick={() => {
-          localStorage.setItem('active_rider_tab', 'profile')
-          window.dispatchEvent(new Event('riderTabChanged'))
-        }}>R</button>
+        <div className="rider-profile-menu-wrap" ref={profileMenuRef}>
+          <button
+            className="rider-nav-avatar"
+            aria-label="Open profile menu"
+            title="Open profile menu"
+            onClick={() => setProfileMenuOpen(prev => !prev)}
+            onDoubleClick={handleProfileDoubleClick}
+          >
+            R
+          </button>
+          {profileMenuOpen && (
+            <div className="rider-profile-dropdown" role="menu">
+              <div className="rider-profile-dropdown__header">
+                <strong>Rider account</strong>
+                <span>Quick actions</span>
+              </div>
+              <button className="rider-profile-dropdown__item" onClick={openProfileTab}>View profile</button>
+              <button className="rider-profile-dropdown__item rider-profile-dropdown__item--danger" onClick={handleLogout}>Logout</button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   )
@@ -1211,6 +1260,109 @@ function AdminTopNavbar() {
 }
 
 // ── MAIN APPLICATION WRAPPER ──
+function CustomerFooter() {
+  return (
+    <footer className="footer footer--customer">
+      <div className="footer__inner footer__inner--grid">
+        <div className="footer__brand">
+          <strong>DigiBazaar</strong>
+          <p>Local shopping made better for customers, shop owners, and rider partners.</p>
+        </div>
+        <div className="footer__col">
+          <h4>Marketplace</h4>
+          <Link className="footer-link" to="/">Home</Link>
+          <Link className="footer-link" to="/products">Products</Link>
+          <Link className="footer-link" to="/cart">My Cart</Link>
+        </div>
+        <div className="footer__col">
+          <h4>Account</h4>
+          <Link className="footer-link" to="/my-orders">My Orders</Link>
+          <Link className="footer-link" to="/login">Login</Link>
+          <Link className="footer-link" to="/signup">Sign Up</Link>
+        </div>
+        <div className="footer__col">
+          <h4>Support</h4>
+          <a className="footer-link" href="mailto:support@digibazaar.in">support@digibazaar.in</a>
+          <a className="footer-link" href="/">Investor Updates</a>
+          <a className="footer-link" href="/">Privacy Policy</a>
+        </div>
+      </div>
+    </footer>
+  )
+}
+
+function ShopOwnerFooter() {
+  const handleDashboardTab = (tabName) => {
+    localStorage.setItem('active_shop_tab', tabName)
+    window.dispatchEvent(new Event('shopTabChanged'))
+  }
+
+  return (
+    <footer className="footer footer--shop">
+      <div className="footer__inner footer__inner--grid">
+        <div className="footer__brand">
+          <strong>DigiBazaar Shop</strong>
+          <p>Tools for store owners to manage orders, inventory, promotions, and growth.</p>
+        </div>
+        <div className="footer__col">
+          <h4>Quick Links</h4>
+          <Link className="footer-link" to="/dashboard" onClick={() => handleDashboardTab('dashboard')}>Overview</Link>
+          <Link className="footer-link" to="/dashboard" onClick={() => handleDashboardTab('orders')}>Orders</Link>
+          <Link className="footer-link" to="/dashboard" onClick={() => handleDashboardTab('inventory')}>Inventory</Link>
+        </div>
+        <div className="footer__col">
+          <h4>Growth</h4>
+          <Link className="footer-link" to="/dashboard" onClick={() => handleDashboardTab('analytics')}>Analytics</Link>
+          <Link className="footer-link" to="/dashboard" onClick={() => handleDashboardTab('promotions')}>Promotions</Link>
+          <Link className="footer-link" to="/dashboard" onClick={() => handleDashboardTab('customers')}>Customers</Link>
+        </div>
+        <div className="footer__col">
+          <h4>Resources</h4>
+          <a className="footer-link" href="mailto:partner-support@digibazaar.in">partner-support@digibazaar.in</a>
+          <a className="footer-link" href="/">Seller Help Center</a>
+          <a className="footer-link" href="/">Terms of Service</a>
+        </div>
+      </div>
+    </footer>
+  )
+}
+
+function RiderFooter() {
+  const handleRiderTab = (tabName) => {
+    localStorage.setItem('active_rider_tab', tabName)
+    window.dispatchEvent(new Event('riderTabChanged'))
+  }
+
+  return (
+    <footer className="footer footer--rider">
+      <div className="footer__inner footer__inner--grid">
+        <div className="footer__brand">
+          <strong>DigiBazaar Rider</strong>
+          <p>Fast, friendly delivery partner tools built for your route, earnings, and safety.</p>
+        </div>
+        <div className="footer__col">
+          <h4>Go To</h4>
+          <Link className="footer-link" to="/rider" onClick={() => handleRiderTab('home')}>Dashboard</Link>
+          <Link className="footer-link" to="/rider" onClick={() => handleRiderTab('deliveries')}>Deliveries</Link>
+          <Link className="footer-link" to="/rider" onClick={() => handleRiderTab('map')}>Live Map</Link>
+        </div>
+        <div className="footer__col">
+          <h4>Partner</h4>
+          <Link className="footer-link" to="/rider" onClick={() => handleRiderTab('history')}>Delivery History</Link>
+          <Link className="footer-link" to="/rider" onClick={() => handleRiderTab('profile')}>My Profile</Link>
+          <a className="footer-link" href="mailto:rider-support@digibazaar.in">rider-support@digibazaar.in</a>
+        </div>
+        <div className="footer__col">
+          <h4>Support</h4>
+          <a className="footer-link" href="/">Safe Delivery Tips</a>
+          <a className="footer-link" href="/">Partner Terms</a>
+          <a className="footer-link" href="/">Payout Schedule</a>
+        </div>
+      </div>
+    </footer>
+  )
+}
+
 function AppInner() {
   const location = useLocation()
   const { user, authChecked } = useAuth()
@@ -1255,6 +1407,7 @@ function AppInner() {
             <AppRoutes />
           </main>
         </div>
+        <ShopOwnerFooter />
       </>
     )
   }
@@ -1266,6 +1419,7 @@ function AppInner() {
         <main className="rider-layout-wrapper-panel">
           <AppRoutes />
         </main>
+        <RiderFooter />
       </>
     )
   }
@@ -1275,15 +1429,10 @@ function AppInner() {
     <>
       <CustomerNavbar />
       <Cart />
-      <main>
+      <main className="customer-page-main">
         <AppRoutes />
       </main>
-      <footer className="footer">
-        <div className="footer__inner">
-          <span>DigiBazaar — AI-Powered Local Shopping</span>
-          <span style={{ color: '#888', fontSize: '13px' }}>Built in Paldi, Ahmedabad, Gujarat</span>
-        </div>
-      </footer>
+      <CustomerFooter />
     </>
   )
 }
