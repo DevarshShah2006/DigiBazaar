@@ -168,11 +168,13 @@ def main():
                 custom_price = mrp
 
             stock_qty = rng.randint(15, 120)
-
+            now_str = '2026-08-06 12:00:00'
             sp_rows.append((shop_id, prod_id, custom_price, 1))
             inv_rows.append((
                 shop_id, prod_id, stock_qty, 0, 0, 10, 5, 500,
-                round(custom_price * 0.75, 2), custom_price
+                f"BATCH-{rng.randint(1000, 9999)}", "Default Supplier",
+                round(custom_price * 0.75, 2), custom_price,
+                "Main Rack", now_str, now_str
             ))
 
         cur.executemany("""
@@ -184,8 +186,9 @@ def main():
         cur.executemany("""
             INSERT OR IGNORE INTO core_inventory
             (shop_id, product_id, current_stock, reserved_stock, incoming_stock,
-             reorder_level, min_stock, max_stock, purchase_price, selling_price)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             reorder_level, min_stock, max_stock, batch_number, supplier_name,
+             purchase_price, selling_price, warehouse_location, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, inv_rows)
         total_inv_created += len(inv_rows)
 
