@@ -131,7 +131,9 @@ export default function Checkout() {
 
   // Delivery charge calculations
   const getDeliveryCharge = () => {
-    if (fulfillmentChoice === 'digibazaar_delivery' || fulfillmentChoice === 'home') return 20.00
+    if (fulfillmentChoice === 'digibazaar_delivery' || fulfillmentChoice === 'home') {
+      return mlRecommendation?.pricing_options?.digibazaar_delivery || 20.00
+    }
     return 0.00
   }
 
