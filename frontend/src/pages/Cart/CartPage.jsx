@@ -11,8 +11,8 @@ import RecommendedProductCard from '../../components/CartPage/RecommendedProduct
 import './CartPage.css'
 
 const DELIVERY_OPTIONS = [
-  { id: 'home', title: 'Home Delivery', subtitle: 'Today, 5-7 PM', label: 'FREE' },
-  { id: 'shop_delivery', title: 'Shop Delivery', subtitle: 'Delivered by shop', label: 'FREE' },
+  { id: 'home', title: 'Delivery by DigiBazaar', subtitle: '12-18 mins fast delivery', label: '₹20' },
+  { id: 'shop_delivery', title: 'Delivery by Shop', subtitle: 'Delivered by shop', label: 'FREE' },
   { id: 'pickup', title: 'Pickup', subtitle: 'Ready in 20m', label: 'FREE' }
 ]
 
@@ -85,7 +85,7 @@ function CartPage() {
   const [hasPreviousOrders, setHasPreviousOrders] = useState(null)
 
   const itemsTotal = useMemo(() => total, [total])
-  const deliveryFee = 0
+  const deliveryFee = (deliveryOption === 'home' || deliveryOption === 'digibazaar_delivery') ? 20 : 0
   const smallOrderCharge = deliveryOption === 'home' && itemsTotal > 0 && itemsTotal < SMALL_ORDER_THRESHOLD
     ? SMALL_ORDER_FEE
     : 0

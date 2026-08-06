@@ -129,8 +129,11 @@ export default function Checkout() {
     }
   }, [items, location, total])
 
-  // Delivery charge calculations - FREE as requested
-  const getDeliveryCharge = () => 0.00
+  // Delivery charge calculations
+  const getDeliveryCharge = () => {
+    if (fulfillmentChoice === 'digibazaar_delivery' || fulfillmentChoice === 'home') return 20.00
+    return 0.00
+  }
 
   const getETA = () => {
     if (fulfillmentChoice === 'pickup') return mlRecommendation?.estimated_delivery_time || 'Ready in 10 mins'
@@ -258,7 +261,7 @@ export default function Checkout() {
                 <h3>Delivery Method</h3>
               </div>
               <span className="delivery-badge" style={{ background: '#59290e', color: '#ffffff' }}>
-                {fulfillmentChoice === 'pickup' ? 'Store Pickup' : fulfillmentChoice === 'shop_delivery' ? 'Shop Delivery' : 'Home Delivery'}
+                {fulfillmentChoice === 'pickup' ? 'Store Pickup' : fulfillmentChoice === 'shop_delivery' ? 'Delivery by Shop' : 'Delivery by DigiBazaar'}
               </span>
             </div>
             <div className="delivery-summary-card compact" style={{ marginTop: '12px', padding: '12px 16px', background: '#f8fafc', borderRadius: '10px' }}>
@@ -268,7 +271,9 @@ export default function Checkout() {
               </div>
               <div className="delivery-summary-row" style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: '13px', color: '#64748b' }}>Delivery Fee</span>
-                <strong style={{ fontSize: '13px', color: '#16a34a' }}>FREE</strong>
+                <strong style={{ fontSize: '13px', color: deliveryFee === 0 ? '#16a34a' : '#0f172a' }}>
+                  {deliveryFee === 0 ? 'FREE' : `₹${deliveryFee.toFixed(2)}`}
+                </strong>
               </div>
             </div>
           </div>
