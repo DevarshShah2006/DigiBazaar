@@ -1,7 +1,11 @@
+import random
+import math
 from decimal import Decimal
+from datetime import timedelta
 from django.utils import timezone
 from django.contrib.auth import authenticate, get_user_model
-from django.db.models import Count, OuterRef, Q, Subquery
+from django.db.models import Count, OuterRef, Q, Subquery, Sum, F, Min, Avg
+from django.db.models.functions import TruncDate
 from rest_framework import generics, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -9,7 +13,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Shop, Product, Order, OrderItem, ShopOwner, Wishlist, Rider, DeliveryAssignment, Category, Subcategory, Inventory, DemandForecast, ShopProduct, OrderTimeline, InventoryLog
+from .models import Shop, Product, Order, OrderItem, ShopOwner, UserProfile, Wishlist, Rider, DeliveryAssignment, Category, Subcategory, Inventory, DemandForecast, ShopProduct, OrderTimeline, InventoryLog, PhoneOTP
 from .services.order_service import OrderService
 from .serializers import (
     ShopSerializer,
@@ -24,6 +28,7 @@ from .serializers import (
 
 from .permissions import IsAdminOrReadOnly, IsShopOwnerOrReadOnly
 from ml_engine.ranking import get_ranked_shops, rank_shops_for_product, haversine_distance
+from ml_engine.delivery_predictor import delivery_predictor
 from rest_framework.pagination import PageNumberPagination
 
 User = get_user_model()
@@ -273,11 +278,6 @@ class MeView(APIView):
         return Response({'user': UserSerializer(request.user).data})
 
 # OTP Authentication Views
-import random
-from datetime import timedelta
-from django.utils import timezone
-from .models import PhoneOTP
-
 class SendOTPView(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -330,7 +330,6 @@ class VerifyOTPView(APIView):
             else:
                 user = User.objects.filter(username=f"rider_{phone}").first()
         elif requested_role == 'shopowner':
-            from .models import ShopOwner
             owner_prof = ShopOwner.objects.filter(phone=phone).first()
             if owner_prof:
                 user = owner_prof.user
@@ -339,7 +338,6 @@ class VerifyOTPView(APIView):
         else:
             user = User.objects.filter(username=f"user_{phone}").first()
             if not user:
-                from .models import UserProfile
                 u_prof = UserProfile.objects.filter(phone=phone).first()
                 if u_prof:
                     user = u_prof.user
@@ -370,13 +368,11 @@ class VerifyOTPView(APIView):
 
         # If user explicitly logged in as shopowner, ensure ShopOwner profile & Shop exist
         if requested_role == 'shopowner':
-            from .models import ShopOwner, Shop
             so, _ = ShopOwner.objects.get_or_create(user=user, defaults={'phone': phone})
             # Ensure a shop exists for this owner
             if not Shop.objects.filter(owner=so).exists():
                 first_cat = Category.objects.first()
                 shop_name = f"Merchant Store #{phone[-4:]}" if len(phone) >= 4 else "New Partner Store"
-                from decimal import Decimal
                 new_shop = Shop.objects.create(
                     owner=so,
                     name=shop_name,
@@ -835,7 +831,6 @@ class ShopOrdersView(APIView):
         except (ValueError, TypeError):
             page = 1
 
-        import math
         total_pages = math.ceil(total_count / page_size) if total_count > 0 else 1
         page = max(1, min(page, total_pages))
         start = (page - 1) * page_size
@@ -884,7 +879,6 @@ class AcceptOrderView(APIView):
             shop = order.shop
             distance_km = 1.0
             if shop.lat and shop.long:
-                from ml_engine.ranking import haversine_distance
                 distance_km = haversine_distance(user_lat, user_long, float(shop.lat), float(shop.long))
 
             online_riders = Rider.objects.filter(is_online=True)
@@ -975,7 +969,6 @@ class RejectOrderView(APIView):
                         )
                     # If DigiBazaar delivery and new shop is live, assign rider
                     if new_order.fulfillment_option == 'digibazaar_delivery' and next_shop.live_inventory and not new_order.rider:
-                        from ml_engine.ranking import haversine_distance
                         distance_km = 1.0
                         if next_shop.lat and next_shop.long:
                             distance_km = haversine_distance(user_lat, user_long, float(next_shop.lat), float(next_shop.long))
@@ -1170,10 +1163,6 @@ class OrderTimeoutView(APIView):
         })
 
 
-from django.db.models import Min, Sum, F
-from django.db.models.functions import TruncDate
-
-
 class ProductShopsView(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -1198,7 +1187,10 @@ class OrderDetailView(generics.RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Order.objects.all()
+        # Admin can see all orders; customers can only access their own
+        if self.request.user.is_staff or self.request.user.is_superuser:
+            return Order.objects.all()
+        return Order.objects.filter(user=self.request.user)
 
 
 class WishlistViewSet(viewsets.ModelViewSet):
@@ -1318,7 +1310,6 @@ class ShopProductsListView(APIView):
         except (ValueError, TypeError):
             page = 1
 
-        import math
         total_pages = math.ceil(total_inventories / page_size) if total_inventories > 0 else 1
         page = max(1, min(page, total_pages))
         start = (page - 1) * page_size
@@ -1502,14 +1493,24 @@ class ShopToggleLiveInventoryView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        owner = getattr(request.user, "shop_owner_profile", None)
-        if owner is None:
-            return Response({"detail": "Not a shop owner"}, status=status.HTTP_403_FORBIDDEN)
-        
-        shop = Shop.objects.filter(owner=owner).first()
+        # Only admin (staff/superuser) can toggle live inventory
+        if not (request.user.is_staff or request.user.is_superuser):
+            return Response(
+                {"detail": "Only admins can enable or disable Live Inventory for a shop."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Admin passes shop_id; if omitted fall back to their own shop
+        shop_id = request.data.get("shop_id")
+        if shop_id:
+            shop = Shop.objects.filter(pk=shop_id).first()
+        else:
+            owner = getattr(request.user, "shop_owner_profile", None)
+            shop = Shop.objects.filter(owner=owner).first() if owner else None
+
         if not shop:
             return Response({"detail": "Shop not found"}, status=status.HTTP_404_NOT_FOUND)
-            
+
         shop.live_inventory = not shop.live_inventory
         shop.save()
         return Response({"live_inventory": shop.live_inventory, "shop_name": shop.name})
@@ -1633,8 +1634,6 @@ class UpdateDeliveryAssignmentView(APIView):
         
         return Response(DeliveryAssignmentSerializer(assignment).data)
 
-
-from ml_engine.delivery_predictor import delivery_predictor
 
 class DeliveryRecommendationView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -1786,16 +1785,112 @@ class DeliveryRecommendationView(APIView):
         })
 
 
+class TrendingProductsView(APIView):
+    """Returns trending products based on recent order volume."""
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        hours = int(request.query_params.get('hours', 24))
+        limit = int(request.query_params.get('limit', 10))
+        cutoff = timezone.now() - timedelta(hours=hours)
+
+        trending_ids = list(
+            OrderItem.objects
+            .filter(order__created_at__gte=cutoff)
+            .exclude(order__status='cancelled')
+            .values('product_id')
+            .annotate(order_count=Count('product_id'))
+            .order_by('-order_count')
+            .values_list('product_id', flat=True)[:limit]
+        )
+
+        if trending_ids:
+            products_qs = Product.objects.filter(
+                id__in=trending_ids, visibility=True, status='active'
+            ).select_related('category', 'subcategory')
+            id_order = {pid: idx for idx, pid in enumerate(trending_ids)}
+            products = sorted(products_qs, key=lambda p: id_order.get(p.id, 9999))
+        else:
+            # Fallback: most reviewed active products
+            products = list(Product.objects.filter(
+                visibility=True, status='active'
+            ).select_related('category', 'subcategory').order_by('-review_count', '-rating')[:limit])
+
+        serializer = ProductSerializer(products, many=True)
+        response = Response(serializer.data)
+        response['Cache-Control'] = 'max-age=300, stale-while-revalidate=600'
+        return response
+
+
+class RecommendProductsView(APIView):
+    """Returns personalised product recommendations for a user (or popular products for anonymous)."""
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, user_id=None):
+        limit = int(request.query_params.get('limit', 10))
+
+        # Resolve target user
+        target_user = None
+        if user_id:
+            try:
+                target_user = User.objects.get(pk=user_id)
+            except User.DoesNotExist:
+                pass
+        elif request.user.is_authenticated:
+            target_user = request.user
+
+        if target_user:
+            bought_category_ids = list(
+                OrderItem.objects
+                .filter(order__user=target_user)
+                .exclude(order__status='cancelled')
+                .values_list('product__category_id', flat=True)
+                .distinct()
+            )
+            bought_product_ids = list(
+                OrderItem.objects
+                .filter(order__user=target_user)
+                .values_list('product_id', flat=True)
+                .distinct()
+            )
+
+            if bought_category_ids:
+                products = list(Product.objects.filter(
+                    category_id__in=bought_category_ids,
+                    visibility=True, status='active'
+                ).exclude(id__in=bought_product_ids)
+                .select_related('category', 'subcategory')
+                .order_by('-review_count', '-rating')[:limit])
+
+                if len(products) < limit:
+                    seen_ids = bought_product_ids + [p.id for p in products]
+                    extra = list(Product.objects.filter(
+                        visibility=True, status='active'
+                    ).exclude(id__in=seen_ids)
+                    .select_related('category', 'subcategory')
+                    .order_by('-review_count', '-rating')[:limit - len(products)])
+                    products += extra
+            else:
+                products = list(Product.objects.filter(
+                    visibility=True, status='active'
+                ).select_related('category', 'subcategory')
+                .order_by('-review_count', '-rating')[:limit])
+        else:
+            products = list(Product.objects.filter(
+                visibility=True, status='active'
+            ).select_related('category', 'subcategory')
+            .order_by('-review_count', '-rating')[:limit])
+
+        serializer = ProductSerializer(products, many=True)
+        response = Response(serializer.data)
+        response['Cache-Control'] = 'max-age=60, stale-while-revalidate=120'
+        return response
+
+
 class ShopDemandForecastView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        from django.utils import timezone
-        from datetime import timedelta
-        from django.db.models import Sum, Avg
-        import numpy as np
-        import math
-
         owner = getattr(request.user, 'shop_owner_profile', None)
         if not owner:
             return Response({'detail': 'Not a shop owner'}, status=status.HTTP_403_FORBIDDEN)

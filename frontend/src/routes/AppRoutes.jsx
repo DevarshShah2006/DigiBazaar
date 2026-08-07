@@ -14,7 +14,7 @@ const Checkout = lazy(() => import('../pages/Checkout/Checkout'))
 const AdminDashboard = lazy(() => import('../pages/AdminDashboard/AdminDashboard'))
 const CartPage = lazy(() => import('../pages/Cart/CartPage'))
 const ShopDetails = lazy(() => import('../pages/ShopDetails/ShopDetails'))
-const RequireAuth = lazy(() => import('../components/Auth/RequireAuth'))
+import RequireAuth from '../components/Auth/RequireAuth'
 
 // Redirects logged-in users away from login/signup pages to their dashboard
 function GuestRoute({ children }) {

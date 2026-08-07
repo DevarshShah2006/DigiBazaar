@@ -10,7 +10,7 @@ import { fetchJson, apiFetch, clearCache, TTL } from './api/api'
 // ── 1. CUSTOMER NAVBAR (TEXT ONLY) ──
 function CustomerNavbar() {
   const { user, logout, isLoggedIn } = useAuth()
-  const { itemCount, setIsOpen } = useCart()
+  const { itemCount } = useCart()
   const navigate = useNavigate()
   const location = useLocation()
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup'
@@ -47,24 +47,29 @@ function CustomerNavbar() {
   const searchRef = useRef(null)
   const profileRef = useRef(null)
 
-  // Autocomplete Suggestions List
-  const suggestionList = [
-    { text: 'Milk', type: 'Product' },
-    { text: 'Amul Butter', type: 'Product' },
-    { text: 'Fresh Vegetables', type: 'Category' },
-    { text: 'Patel Dairy', type: 'Shop' },
-    { text: 'Medical Store', type: 'Shop' },
-    { text: 'Eggs', type: 'Product' },
-    { text: 'Fresh Bread', type: 'Product' },
-    { text: 'Apples', type: 'Product' },
-    { text: 'Banana', type: 'Product' },
-    { text: 'Aloe Vera Shampoo', type: 'Product' }
-  ]
+  // Autocomplete Suggestions from backend API (debounced)
+  const [suggestions, setSuggestions] = useState([])
 
-  // Filtered Suggestions
-  const filteredSuggestions = searchVal.trim() === ''
-    ? suggestionList.slice(0, 5)
-    : suggestionList.filter(s => s.text.toLowerCase().includes(searchVal.toLowerCase()))
+  useEffect(() => {
+    if (searchVal.trim() === '') {
+      setSuggestions([])
+      return
+    }
+    const timer = setTimeout(() => {
+      fetchJson(`/products/search/?q=${encodeURIComponent(searchVal.trim())}&page_size=5`)
+        .then(data => {
+          if (Array.isArray(data)) {
+            setSuggestions(data.map(p => ({ text: p.name, type: 'Product' })))
+          } else if (data?.results) {
+            setSuggestions(data.results.map(p => ({ text: p.name, type: 'Product' })))
+          } else {
+            setSuggestions([])
+          }
+        })
+        .catch(() => setSuggestions([]))
+    }, 250)
+    return () => clearTimeout(timer)
+  }, [searchVal])
 
   // Detect clicks outside
   useEffect(() => {
@@ -204,12 +209,12 @@ function CustomerNavbar() {
             />
           </form>
 
-          {searchFocused && (
+          {searchFocused && suggestions.length > 0 && (
             <div className="search-suggestions-dropdown">
               <div className="suggestion-header">
-                {searchVal.trim() === '' ? 'Try Searching For' : 'Matching Results'}
+                Matching Results
               </div>
-              {filteredSuggestions.map((s, idx) => (
+              {suggestions.map((s, idx) => (
                 <div 
                   key={idx} 
                   className="suggestion-item" 
@@ -318,7 +323,7 @@ function CustomerNavbar() {
                   <h4>{user?.username}</h4>
                   <p>{user?.email || 'Registered Account'}</p>
                 </div>
-                {(user?.role === 'admin' || user?.username?.includes('admin') || user?.username?.includes('9111111111')) && (
+                {user?.role === 'admin' && (
                   <Link to="/admin" className="profile-dropdown-link" style={{ background: '#e0e7ff', color: '#4338ca', fontWeight: 'bold' }} onClick={() => setProfileOpen(false)}>
                     Admin Portal
                   </Link>
