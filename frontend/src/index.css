@@ -94,7 +94,8 @@ body:has(.customer-navbar) .footer {
   background: #F4F2EF;
   color: #2D1609;
 }
-body:has(.customer-navbar) .footer__inner {
+/* Keep customer-site footer inner layout but do not override grid variant */
+body:has(.customer-navbar) .footer__inner:not(.footer__inner--grid) {
   max-width: 1200px;
   display: flex;
   justify-content: space-between;
@@ -139,7 +140,7 @@ body:has(.customer-navbar) .view-all:hover { color: #A64D22 !important; }
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 32px;
 }
 
 /* Glassmorphism card utility */

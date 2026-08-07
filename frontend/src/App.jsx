@@ -7,6 +7,8 @@ import Cart from './components/Cart/Cart'
 import './App.css'
 import { fetchJson, apiFetch, clearCache, TTL } from './api/api'
 
+const LOGO_SRC = 'logo.png'
+
 // ── 1. CUSTOMER NAVBAR (TEXT ONLY) ──
 function CustomerNavbar() {
   const { user, logout, isLoggedIn } = useAuth()
@@ -191,7 +193,7 @@ function CustomerNavbar() {
     <header className="customer-navbar">
       {/* Left Logo */}
       <Link to="/" className="customer-nav-logo" style={{ textDecoration: 'none' }}>
-        <span>DigiBazaar</span>
+        <img src={LOGO_SRC} alt="DigiBazaar" className="brand-logo-image" />
       </Link>
 
       {/* Middle Search Bar with Suggestions Popover */}
@@ -361,7 +363,7 @@ function ShopOwnerNavbar() {
   const [revenue, setRevenue] = useState(0)
   // Initialize shop name immediately from stored data, fall back to user info
   const [shopName, setShopName] = useState(() => {
-    return 'My Store'
+    return 'DigiBazaar'
   })
 
   // Search, Alerts & Help Modals
@@ -529,7 +531,8 @@ function ShopOwnerNavbar() {
   return (
     <header className="shop-owner-navbar">
       <Link to="/dashboard" className="shop-owner-nav-logo">
-        {shopName}
+        <img src={LOGO_SRC} alt="DigiBazaar" className="brand-logo-image" />
+        <span>{shopName}</span>
       </Link>
 
       {/* Light-Themed Search Container */}
@@ -982,7 +985,7 @@ function RiderTopNavbar() {
         localStorage.setItem('active_rider_tab', 'home')
         window.dispatchEvent(new Event('riderTabChanged'))
       }}>
-        <span className="rider-brand-mark">D</span>
+        <img src={LOGO_SRC} alt="DigiBazaar" className="brand-logo-image" />
         <span>DigiBazaar <em>Rider</em></span>
       </Link>
       <nav className="rider-desktop-nav" aria-label="Rider navigation">
@@ -1124,6 +1127,7 @@ function AdminTopNavbar() {
       {/* Brand & Badge */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
         <Link to="/admin" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <img src={LOGO_SRC} alt="DigiBazaar" className="brand-logo-image" />
           <span style={{ fontSize: '20px', fontWeight: '800', color: '#8B4513', letterSpacing: '-0.5px' }}>
             DigiBazaar <span style={{ color: '#654321' }}>Admin</span>
           </span>
@@ -1270,7 +1274,7 @@ function CustomerFooter() {
     <footer className="footer footer--customer">
       <div className="footer__inner footer__inner--grid">
         <div className="footer__brand">
-          <strong>DigiBazaar</strong>
+          <img src={LOGO_SRC} alt="DigiBazaar" className="footer-brand-logo" />
           <p>Local shopping made better for customers, shop owners, and rider partners.</p>
         </div>
         <div className="footer__col">
@@ -1288,8 +1292,7 @@ function CustomerFooter() {
         <div className="footer__col">
           <h4>Support</h4>
           <a className="footer-link" href="mailto:support@digibazaar.in">support@digibazaar.in</a>
-          <a className="footer-link" href="/">Investor Updates</a>
-          <a className="footer-link" href="/">Privacy Policy</a>
+          <Link className="footer-link" to="/privacy-policy">Privacy Policy</Link>
         </div>
       </div>
     </footer>
@@ -1306,6 +1309,7 @@ function ShopOwnerFooter() {
     <footer className="footer footer--shop">
       <div className="footer__inner footer__inner--grid">
         <div className="footer__brand">
+          <img src={LOGO_SRC} alt="DigiBazaar" className="footer-brand-logo" />
           <strong>DigiBazaar Shop</strong>
           <p>Tools for store owners to manage orders, inventory, promotions, and growth.</p>
         </div>
@@ -1323,9 +1327,9 @@ function ShopOwnerFooter() {
         </div>
         <div className="footer__col">
           <h4>Resources</h4>
-          <a className="footer-link" href="mailto:partner-support@digibazaar.in">partner-support@digibazaar.in</a>
-          <a className="footer-link" href="/">Seller Help Center</a>
-          <a className="footer-link" href="/">Terms of Service</a>
+          <Link className="footer-link" to="/dashboard">Dashboard Help</Link>
+          <Link className="footer-link" to="/dashboard/terms-of-service">Terms of Service</Link>
+          <Link className="footer-link" to="/dashboard/privacy-policy">Privacy Policy</Link>
         </div>
       </div>
     </footer>
@@ -1342,26 +1346,26 @@ function RiderFooter() {
     <footer className="footer footer--rider">
       <div className="footer__inner footer__inner--grid">
         <div className="footer__brand">
+          <img src={LOGO_SRC} alt="DigiBazaar" className="footer-brand-logo" />
           <strong>DigiBazaar Rider</strong>
           <p>Fast, friendly delivery partner tools built for your route, earnings, and safety.</p>
         </div>
         <div className="footer__col">
-          <h4>Go To</h4>
+          <h4>Navigate</h4>
           <Link className="footer-link" to="/rider" onClick={() => handleRiderTab('home')}>Dashboard</Link>
           <Link className="footer-link" to="/rider" onClick={() => handleRiderTab('deliveries')}>Deliveries</Link>
           <Link className="footer-link" to="/rider" onClick={() => handleRiderTab('map')}>Live Map</Link>
         </div>
         <div className="footer__col">
-          <h4>Partner</h4>
+          <h4>Delivery Partner</h4>
           <Link className="footer-link" to="/rider" onClick={() => handleRiderTab('history')}>Delivery History</Link>
           <Link className="footer-link" to="/rider" onClick={() => handleRiderTab('profile')}>My Profile</Link>
           <a className="footer-link" href="mailto:rider-support@digibazaar.in">rider-support@digibazaar.in</a>
         </div>
         <div className="footer__col">
-          <h4>Support</h4>
-          <a className="footer-link" href="/">Safe Delivery Tips</a>
-          <a className="footer-link" href="/">Partner Terms</a>
-          <a className="footer-link" href="/">Payout Schedule</a>
+          <h4>Help</h4>
+          <Link className="footer-link" to="/privacy-policy">Privacy Policy</Link>
+          <Link className="footer-link" to="/safe-delivery-tips">Safe Delivery Tips</Link>
         </div>
       </div>
     </footer>
@@ -1408,11 +1412,13 @@ function AppInner() {
         <ShopOwnerNavbar />
         <div className="shop-owner-layout-wrapper">
           <ShopOwnerSidebar />
-          <main className="shop-owner-main-content-panel">
-            <AppRoutes />
-          </main>
+          <div className="shop-owner-content-area">
+            <main className="shop-owner-main-content-panel">
+              <AppRoutes />
+            </main>
+            <ShopOwnerFooter />
+          </div>
         </div>
-        <ShopOwnerFooter />
       </>
     )
   }

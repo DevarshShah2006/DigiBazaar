@@ -796,69 +796,71 @@ function ShopDashboard() {
   return (
     <div className="shop-dashboard fade-in">
       <div className="container">
-        {/* Banner with Store Info */}
-        <div className="shop-info-banner">
-          <div className="banner-details">
-            <span className="shop-tag">PARTNER SHOP</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4, flexWrap: 'wrap' }}>
-              <h2 style={{ margin: 0 }}>{shopInfo?.shop_name || 'Your Local Store'}</h2>
-              <span style={{
-                background: shopInfo?.live_inventory ? '#dcfce7' : '#f1f5f9',
-                color: shopInfo?.live_inventory ? '#15803d' : '#64748b',
-                padding: '4px 12px',
-                borderRadius: '16px',
-                fontSize: '0.78rem',
-                fontWeight: '700',
-                border: `1px solid ${shopInfo?.live_inventory ? '#86efac' : '#cbd5e1'}`
-              }}>
-                Live Inventory Status: {shopInfo?.live_inventory ? 'On' : 'Off'}
-              </span>
-            </div>
-            <p style={{ margin: '6px 0 0 0', color: '#64748b', fontSize: '0.88rem' }}>
-              Commission Tier: <strong className="commission-badge" style={{ color: '#0891b2' }}>{shopInfo?.commission_pct ? `${shopInfo.commission_pct}% (${shopInfo.tier === 'premium' ? 'Gold' : shopInfo.live_inventory ? 'Live' : 'Standard'})` : '...'}</strong>
-            </p>
-            {weatherData && (
-              <div className="weather-widget" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#e0f2fe', border: '1px solid #bae6fd', padding: '5px 14px', borderRadius: 16, fontSize: '0.82rem', marginTop: 8, color: '#0369a1' }}>
-                <span><strong>{weatherData.city}</strong></span>
-                <strong style={{ color: '#0284c7', fontSize: '0.95rem' }}>{weatherData.temp}°C</strong>
-                <span>• {weatherData.condition}</span>
-                {weatherData.windspeed > 0 && <span style={{ color: '#0369a1', fontSize: '0.78rem' }}>{weatherData.windspeed} km/h wind</span>}
-                {weatherData.is_raining && <span style={{ color: '#dc2626', fontWeight: 'bold' }}>Rain Alert</span>}
-                {weatherData.source === 'fallback' && <span style={{ color: '#94a3b8', fontSize: '0.72rem' }}>(offline)</span>}
+        {/* Sticky header with banner and tabs */}
+        <div className="shop-dashboard-sticky-header">
+          <div className="shop-info-banner">
+            <div className="banner-details">
+              <span className="shop-tag">PARTNER SHOP</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4, flexWrap: 'wrap' }}>
+                <h2 style={{ margin: 0 }}>{shopInfo?.shop_name || 'Your Local Store'}</h2>
+                <span style={{
+                  background: shopInfo?.live_inventory ? '#dcfce7' : '#f1f5f9',
+                  color: shopInfo?.live_inventory ? '#15803d' : '#64748b',
+                  padding: '4px 12px',
+                  borderRadius: '16px',
+                  fontSize: '0.78rem',
+                  fontWeight: '700',
+                  border: `1px solid ${shopInfo?.live_inventory ? '#86efac' : '#cbd5e1'}`
+                }}>
+                  Live Inventory Status: {shopInfo?.live_inventory ? 'On' : 'Off'}
+                </span>
               </div>
-            )}
+              <p style={{ margin: '6px 0 0 0', color: '#64748b', fontSize: '0.88rem' }}>
+                Commission Tier: <strong className="commission-badge" style={{ color: '#0891b2' }}>{shopInfo?.commission_pct ? `${shopInfo.commission_pct}% (${shopInfo.tier === 'premium' ? 'Gold' : shopInfo.live_inventory ? 'Live' : 'Standard'})` : '...'}</strong>
+              </p>
+              {weatherData && (
+                <div className="weather-widget" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#e0f2fe', border: '1px solid #bae6fd', padding: '5px 14px', borderRadius: 16, fontSize: '0.82rem', marginTop: 8, color: '#0369a1' }}>
+                  <span><strong>{weatherData.city}</strong></span>
+                  <strong style={{ color: '#0284c7', fontSize: '0.95rem' }}>{weatherData.temp}°C</strong>
+                  <span>• {weatherData.condition}</span>
+                  {weatherData.windspeed > 0 && <span style={{ color: '#0369a1', fontSize: '0.78rem' }}>{weatherData.windspeed} km/h wind</span>}
+                  {weatherData.is_raining && <span style={{ color: '#dc2626', fontWeight: 'bold' }}>Rain Alert</span>}
+                  {weatherData.source === 'fallback' && <span style={{ color: '#94a3b8', fontSize: '0.72rem' }}>(offline)</span>}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* Tab selector */}
-        <div className="shop-tabs" style={{ flexWrap: 'wrap', gap: 8 }}>
-          <button className={`shop-tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => handleTabClick('dashboard')}>
-            Overview
-          </button>
-          <button className={`shop-tab-btn ${activeTab === 'orders' ? 'active' : ''}`} onClick={() => handleTabClick('orders')}>
-            Orders ({ordersTotalCount || orders.length})
-          </button>
-          <button className={`shop-tab-btn ${activeTab === 'inventory' ? 'active' : ''}`} onClick={() => handleTabClick('inventory')}>
-            Inventory
-          </button>
-          <button className={`shop-tab-btn ${activeTab === 'analytics' ? 'active' : ''}`} onClick={() => handleTabClick('analytics')}>
-            Analytics
-          </button>
-          <button className={`shop-tab-btn ${activeTab === 'reports' ? 'active' : ''}`} onClick={() => handleTabClick('reports')}>
-            Sales Reports
-          </button>
-          <button className={`shop-tab-btn ${activeTab === 'customers' ? 'active' : ''}`} onClick={() => handleTabClick('customers')}>
-            Customer CRM
-          </button>
-          <button className={`shop-tab-btn ${activeTab === 'promotions' ? 'active' : ''}`} onClick={() => handleTabClick('promotions')}>
-            Promotions
-          </button>
-          <button className={`shop-tab-btn ${activeTab === 'growth' ? 'active' : ''}`} onClick={() => handleTabClick('growth')}>
-            Growth Hub
-          </button>
-          <button className={`shop-tab-btn ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => handleTabClick('settings')}>
-            Settings
-          </button>
+          {/* Tab selector */}
+          <div className="shop-tabs" style={{ flexWrap: 'wrap', gap: 8 }}>
+            <button className={`shop-tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => handleTabClick('dashboard')}>
+              Overview
+            </button>
+            <button className={`shop-tab-btn ${activeTab === 'orders' ? 'active' : ''}`} onClick={() => handleTabClick('orders')}>
+              Orders ({ordersTotalCount || orders.length})
+            </button>
+            <button className={`shop-tab-btn ${activeTab === 'inventory' ? 'active' : ''}`} onClick={() => handleTabClick('inventory')}>
+              Inventory
+            </button>
+            <button className={`shop-tab-btn ${activeTab === 'analytics' ? 'active' : ''}`} onClick={() => handleTabClick('analytics')}>
+              Analytics
+            </button>
+            <button className={`shop-tab-btn ${activeTab === 'reports' ? 'active' : ''}`} onClick={() => handleTabClick('reports')}>
+              Sales Reports
+            </button>
+            <button className={`shop-tab-btn ${activeTab === 'customers' ? 'active' : ''}`} onClick={() => handleTabClick('customers')}>
+              Customer CRM
+            </button>
+            <button className={`shop-tab-btn ${activeTab === 'promotions' ? 'active' : ''}`} onClick={() => handleTabClick('promotions')}>
+              Promotions
+            </button>
+            <button className={`shop-tab-btn ${activeTab === 'growth' ? 'active' : ''}`} onClick={() => handleTabClick('growth')}>
+              Growth Hub
+            </button>
+            <button className={`shop-tab-btn ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => handleTabClick('settings')}>
+              Settings
+            </button>
+          </div>
         </div>
 
         {activeTab === 'dashboard' && (

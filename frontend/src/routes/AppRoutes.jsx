@@ -10,6 +10,10 @@ const ProductDetail = lazy(() => import('../pages/ProductDetail/ProductDetail'))
 const MyOrders = lazy(() => import('../pages/MyOrders/MyOrders'))
 const OrderConfirmation = lazy(() => import('../pages/OrderConfirmation/OrderConfirmation'))
 const RiderPortal = lazy(() => import('../pages/RiderPortal/RiderPortal'))
+const PrivacyPolicy = lazy(() => import('../pages/PrivacyPolicy/PrivacyPolicy'))
+const SafeDeliveryTips = lazy(() => import('../pages/SafeDeliveryTips/SafeDeliveryTips'))
+const ShopPrivacyPolicy = lazy(() => import('../pages/ShopPrivacyPolicy/ShopPrivacyPolicy'))
+const TermsOfService = lazy(() => import('../pages/TermsOfService/TermsOfService'))
 const Checkout = lazy(() => import('../pages/Checkout/Checkout'))
 const AdminDashboard = lazy(() => import('../pages/AdminDashboard/AdminDashboard'))
 const CartPage = lazy(() => import('../pages/Cart/CartPage'))
@@ -112,6 +116,10 @@ function AppRoutes() {
         <Route path='/admin' element={<AdminRoute><AdminDashboard /></AdminRoute>} />
 
         <Route path='/checkout' element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+        <Route path='/privacy-policy' element={<PrivacyPolicy />} />
+        <Route path='/safe-delivery-tips' element={<SafeDeliveryTips />} />
+        <Route path='/dashboard/privacy-policy' element={<ShopOwnerRoute><ShopPrivacyPolicy /></ShopOwnerRoute>} />
+        <Route path='/dashboard/terms-of-service' element={<ShopOwnerRoute><TermsOfService /></ShopOwnerRoute>} />
         <Route path='/my-orders' element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
         <Route path='/order-confirmation/:orderId' element={<ProtectedRoute><OrderConfirmation /></ProtectedRoute>} />
         <Route path='/cart' element={<ProtectedRoute><CartPage /></ProtectedRoute>} />
