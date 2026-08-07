@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Heart, ShoppingBag, Clock, CheckCircle2, Star } from 'lucide-react'
+import { Heart, ShoppingBag, CheckCircle2, Star } from 'lucide-react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { apiFetch, TTL } from '../../api/api'
 import { useCart } from '../../context/CartContext'
@@ -162,7 +162,6 @@ function ProductDetail() {
 
             {variants.length > 1 && <div className="pd-variant-area"><span>Select Quantity</span><div className="pd-variants">{variants.map(variant => <button key={variant.id} className={String(variant.id) === String(product.id) ? 'active' : ''} onClick={() => navigate(`/products/${variant.id}`)}>{getQuantityText(variant)}</button>)}</div></div>}
 
-            <div className="pd-delivery"><Clock size={20} /><div><strong>Delivery in 10–15 mins</strong><span>To your saved delivery location · Free on orders above ₹499</span></div></div>
             {shops.length > 0 && <section className="pd-shops" aria-label="Available shops"><h2>Available at</h2><div className="pd-shops-list">{shops.slice(0, 4).map(shop => <button key={shop.id} className={String(shop.id) === String(selectedShopId) ? 'active' : ''} onClick={() => setSelectedShopId(shop.id)}><span><strong>{valueOrNA(shop.name)}</strong><small>{valueOrNA(shop.address)}</small></span><em>{Number.isFinite(Number(shop.rating)) ? `★ ${Number(shop.rating).toFixed(1)}` : 'N/A'}</em></button>)}</div></section>}
             <div className="pd-actions">{cartQuantity > 0 ? <div className="pd-quantity-control"><span>Added to Cart</span><div><button onClick={() => updateQuantity(product.id, cartQuantity - 1)} aria-label="Decrease quantity">−</button><strong>{cartQuantity}</strong><button onClick={() => updateQuantity(product.id, cartQuantity + 1)} aria-label="Increase quantity">+</button></div></div> : <button className="pd-add-btn" onClick={() => addItem({ ...product, shop_id: selectedShop?.id || null, shop_name: selectedShop?.name || null })}><ShoppingBag size={18} /> Add to Cart</button>}<button className={`pd-wishlist ${saved ? 'is-saved' : ''}`} onClick={() => setSaved(!saved)} aria-label="Save product"><Heart size={20} fill={saved ? 'currentColor' : 'none'} /></button></div>
             <div className="pd-highlights"><h2>Product Highlights</h2><div>{highlights.map(item => <span key={item}><CheckCircle2 size={14} /> {item}</span>)}</div></div>
