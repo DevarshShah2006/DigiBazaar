@@ -1597,9 +1597,9 @@ class RiderDashboardView(APIView):
         
         completed_assignments_count = len(completed_qs)
         
-        # Calculate dynamic sum of payouts from actual delivered assignments
+        # Calculate dynamic sum of payouts strictly matching actual delivery charges paid by customers
         sum_payouts = sum(
-            float(da.order.delivery_charge) if (da.order and da.order.delivery_charge and da.order.delivery_charge > 0) else 45.0
+            float(da.order.delivery_charge) if (da.order and da.order.delivery_charge is not None) else 0.0
             for da in completed_qs
         )
 
@@ -1610,7 +1610,7 @@ class RiderDashboardView(APIView):
         
         recent_history = []
         for da in completed_qs[:25]:
-            earning_val = float(da.order.delivery_charge) if (da.order and da.order.delivery_charge and da.order.delivery_charge > 0) else 45.0
+            earning_val = float(da.order.delivery_charge) if (da.order and da.order.delivery_charge is not None) else 0.0
             recent_history.append({
                 "id": da.id,
                 "order_id": da.order.id if da.order else da.id,
@@ -1667,9 +1667,9 @@ class UpdateDeliveryAssignmentView(APIView):
             order.status = 'delivered'
             order.save()
 
-            # Dynamically increment rider profile stats when order is marked delivered for the first time
+            # Dynamically increment rider profile stats with exact delivery charge paid by customer
             if old_status != 'delivered':
-                payout = order.delivery_charge if (order and order.delivery_charge and order.delivery_charge > 0) else Decimal('45.00')
+                payout = order.delivery_charge if (order and order.delivery_charge is not None) else Decimal('0.00')
                 rider_profile.total_deliveries += 1
                 rider_profile.total_earnings = Decimal(str(rider_profile.total_earnings or 0)) + payout
                 rider_profile.save(update_fields=['total_deliveries', 'total_earnings'])
