@@ -78,7 +78,7 @@ function ShopDetails() {
           <div className="shop-hero__logo">{shop.logo_url ? <img src={shop.logo_url} alt={`${name} logo`} /> : <span>{name.charAt(0)}</span>}</div>
           <div className="shop-hero__summary"><div className="shop-title-row"><h1>{name}</h1><button className={`shop-heart ${favorite ? 'active' : ''}`} onClick={() => setFavorite(!favorite)} aria-label="Save shop">{favorite ? '♥' : '♡'}</button></div>
             <p>{shop.description || `Your neighbourhood source for carefully selected ${shop.shop_type || 'grocery'} essentials.`}</p>
-            <div className="shop-quick-meta"><span>★ {Number(shop.rating || 4.5).toFixed(1)} ({shop.review_count || 'New'} reviews)</span><span>◷ {shop.avg_preparation_time_mins || 15}–{(shop.avg_preparation_time_mins || 15) + 10} mins</span><span>⌖ {distance}</span><span className={shop.is_open === false ? 'closed' : 'open'}>● {shop.is_open === false ? 'Closed' : 'Open'}</span></div>
+            <div className="shop-quick-meta"><span>★ {Number(shop.rating || 4.5).toFixed(1)} ({shop.review_count || 'New'} reviews)</span><span className={shop.is_open === false ? 'closed' : 'open'}>● {shop.is_open === false ? 'Closed' : 'Open'}</span></div>
           </div>
         </div>
         <div className="shop-hero__details"><span><b>Categories</b>{categories.map(c => c.name).join(' · ') || 'Everyday essentials'}</span><span><b>Minimum order</b>₹{Number(shop.min_order_amount || 0).toFixed(0)}</span><span><b>Store timings</b>{shop.opening_time || '9:00 AM'} – {shop.closing_time || '9:00 PM'}</span><span><b>Contact</b>{shop.address || 'Contact shop for details'}</span></div>

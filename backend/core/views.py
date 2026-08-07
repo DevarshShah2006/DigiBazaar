@@ -63,7 +63,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         min_price = self.request.query_params.get('min_price')
         max_price = self.request.query_params.get('max_price')
         min_rating = self.request.query_params.get('min_rating')
-        shop_id = self.request.query_params.get('shop')
+        shop_id = self.request.query_params.get('shop_id') or self.request.query_params.get('shop')
 
         if query:
             queryset = queryset.filter(
@@ -96,12 +96,14 @@ class ProductViewSet(viewsets.ModelViewSet):
         if shop_id:
             queryset = queryset.filter(shops__id=shop_id)
 
-        ordering = self.request.query_params.get('ordering', '-review_count')
+        ordering = self.request.query_params.get('ordering')
         valid_orderings = ['name', '-name', 'price', '-price',
                            'rating', '-rating', '-created_at',
-                           '-review_count', '-discount_percent']
+                           '-review_count', '-discount_percent', 'id', '-id']
         if ordering in valid_orderings:
             queryset = queryset.order_by(ordering)
+        elif shop_id:
+            queryset = queryset.order_by('id')
         else:
             queryset = queryset.order_by('-review_count', '-discount_percent', '-rating', 'name')
 
@@ -1177,7 +1179,7 @@ class ProductShopsView(APIView):
             return Response([])
 
         ranked_shops = rank_shops_for_product(product, user_lat=user_lat, user_long=user_long)
-        serializer = ShopSerializer(ranked_shops, many=True)
+        serializer = ShopListSerializer(ranked_shops, many=True)
         return Response(serializer.data)
 
 

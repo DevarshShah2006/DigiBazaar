@@ -8,54 +8,43 @@ function NearbyShops() {
   const [shops, setShops] = useState([])
   const [loading, setLoading] = useState(true)
 
-  const parseDistance = value => {
-    if (typeof value === 'number') return value
-    if (typeof value === 'string') {
-      const match = value.match(/\d+(\.\d+)?/)
-      return match ? parseFloat(match[0]) : null
-    }
-    return null
-  }
-
-  const USER_LAT = 23.0125
-  const USER_LONG = 72.5575
-
-  const calculateDistance = (lat1, lon1, lat2, lon2) => {
-    if (!lat1 || !lon1 || !lat2 || !lon2) return null
-    const R = 6371 // Radius of Earth in km
-    const dLat = (lat2 - lat1) * (Math.PI / 180)
-    const dLon = (lon2 - lon1) * (Math.PI / 180)
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2)
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-    return R * c
-  }
-
-  const getShopDistance = shop => {
-    const raw = parseDistance(shop?.distance || shop?.distance_km)
-    if (raw !== null) return raw
-    if (shop?.lat && shop?.long) {
-      const computed = calculateDistance(USER_LAT, USER_LONG, parseFloat(shop.lat), parseFloat(shop.long))
-      if (computed !== null && !isNaN(computed)) return computed
-    }
-    return 1.8
-  }
-
   useEffect(() => {
-    apiFetch('/shops/', {}, TTL.STATIC)
-      .then(data => {
+    let isMounted = true
+
+    async function loadShopsAndPreviews() {
+      try {
+        const data = await apiFetch('/shops/', {}, TTL.STATIC)
         const items = Array.isArray(data) ? data : (data.results || data || [])
-        const withDist = items.map(shop => ({
-          ...shop,
-          computed_distance: getShopDistance(shop)
-        }))
-        const nearby = withDist.filter(s => s.computed_distance <= 10).slice(0, 4)
-        setShops(nearby.length ? nearby : withDist.slice(0, 4))
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false))
+        const targetShops = items.slice(0, 4)
+
+        // Fetch top 3 preview products for each shop dynamically in parallel
+        const shopsWithPreviews = await Promise.all(
+          targetShops.map(async (shop) => {
+            try {
+              const res = await apiFetch(`/products/?shop_id=${shop.id}&page_size=3`, {}, TTL.SHORT)
+              const products = Array.isArray(res) ? res : (res?.results || [])
+              return { ...shop, previewProducts: products.slice(0, 3) }
+            } catch {
+              return { ...shop, previewProducts: [] }
+            }
+          })
+        )
+
+        if (isMounted) {
+          setShops(shopsWithPreviews)
+        }
+      } catch {
+        if (isMounted) setShops([])
+      } finally {
+        if (isMounted) setLoading(false)
+      }
+    }
+
+    loadShopsAndPreviews()
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   if (loading) return (
@@ -82,12 +71,8 @@ function NearbyShops() {
       <div className="nearby-grid">
         {shops.map(shop => {
           const ratingNum = Number((shop && shop.rating) || 0)
-          const ratingDisplay = Number.isFinite(ratingNum) ? ratingNum.toFixed(1) : '0.0'
-          const estTime = shop?.estimated_time || '25 mins'
-          const distVal = shop.computed_distance !== undefined ? shop.computed_distance : getShopDistance(shop)
-          const distanceLabel = distVal ? `${distVal.toFixed(1)} km` : '1.8 km'
-          const previewProducts = Array.isArray(shop?.product_details) ? shop.product_details.slice(0, 3) : []
-          const nextDelivery = shop?.next_delivery || 'Today, 2PM'
+          const ratingDisplay = Number.isFinite(ratingNum) && ratingNum > 0 ? ratingNum.toFixed(1) : '4.5'
+          const previewProducts = Array.isArray(shop?.previewProducts) ? shop.previewProducts : []
           const badge = shop?.badge || (shop?.is_best_seller ? 'Bestseller' : null)
 
           return (
@@ -98,31 +83,51 @@ function NearbyShops() {
                     <h3>{shop.name}</h3>
                     <div className="shop-card__meta">
                       <span className="shop-rating">{ratingDisplay} ★</span>
-                      <span>{estTime}</span>
-                      <span>{distanceLabel}</span>
+                      {shop.category_details?.[0]?.name && (
+                        <span className="shop-category-tag">{shop.category_details[0].name}</span>
+                      )}
                     </div>
                   </div>
                   {badge && <span className="shop-badge">{badge}</span>}
                 </div>
 
                 <div className="shop-gallery">
-                  {previewProducts.length > 0 ? previewProducts.map((product, idx) => (
-                    <img
-                      key={idx}
-                      src={product.image_url || '/placeholder-product.svg'}
-                      alt={product.name || `product-${idx}`}
-                    />
-                  )) : (
-                    <div className="shop-gallery__empty">No preview available</div>
-                  )}
+                  {[0, 1, 2].map((idx) => {
+                    const product = previewProducts[idx]
+                    if (product && product.image_url) {
+                      return (
+                        <div key={product.id || idx} className="shop-gallery__item" title={product.name}>
+                          <img
+                            src={product.image_url}
+                            alt={product.name}
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none'
+                              e.currentTarget.nextSibling.style.display = 'flex'
+                            }}
+                          />
+                          <div className="shop-gallery__fallback" style={{ display: 'none' }}>
+                            {product.name?.charAt(0) || 'P'}
+                          </div>
+                        </div>
+                      )
+                    }
+                    if (product) {
+                      return (
+                        <div key={product.id || idx} className="shop-gallery__item shop-gallery__fallback" title={product.name}>
+                          {product.name?.charAt(0) || 'P'}
+                        </div>
+                      )
+                    }
+                    return (
+                      <div key={idx} className="shop-gallery__item shop-gallery__empty-slot">
+                        <span style={{ fontSize: '11px', color: '#999' }}>Stocking</span>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
 
               <div className="shop-card__right">
-                <div className="next-delivery">
-                  <span>NEXT DELIVERY</span>
-                  <strong>{nextDelivery}</strong>
-                </div>
                 <button
                   type="button"
                   className="enter-store-btn"

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Heart, ShoppingBag, Clock, CheckCircle2, Star } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { fetchJson } from '../../api/api'
+import { apiFetch, TTL } from '../../api/api'
 import { useCart } from '../../context/CartContext'
 import { getProductBaseName, getProductGroupKey, getQuantityText } from '../../utils/productVariants'
 import './ProductDetail.css'
@@ -33,52 +33,73 @@ function ProductDetail() {
   useEffect(() => {
     let cancelled = false
     setLoading(true)
+    setProduct(null)
+    setShops([])
+    setVariants([])
+    setRelatedProducts([])
     setSelectedImage(0)
     setImageFailed(false)
 
     async function loadProduct() {
       try {
-        const [prod, rankedShops] = await Promise.all([
-          fetchJson(`/products/detail/${id}/`),
-          fetchJson(`/products/${id}/shops/`).catch(() => null),
-        ])
+        // Step 1: Fetch main product details first
+        const prod = await apiFetch(`/products/detail/${id}/`, {}, TTL.NORMAL).catch(() => null)
         if (cancelled) return
-        setProduct(prod)
-        const availableShops = rankedShops?.results || rankedShops || []
-        setShops(availableShops)
-        setSelectedShopId(availableShops[0]?.id || null)
-        if (!prod) return
 
+        if (!prod || !prod.id || prod.detail) {
+          setProduct(null)
+          setLoading(false)
+          return
+        }
+
+        // Render main product details INSTANTLY
+        setProduct(prod)
+        setLoading(false)
+
+        // Step 2: Fetch shops, variants, and related products in background without blocking main view
         const baseName = getProductBaseName(prod) || prod.name
         const category = prod.category_slug || prod.category_name || prod.category
-        const [variantData, categoryData] = await Promise.all([
-          fetchJson(`/products/?search=${encodeURIComponent(baseName)}&page_size=30`).catch(() => null),
-          category ? fetchJson(`/products/?category=${encodeURIComponent(category)}&page_size=12`).catch(() => null) : Promise.resolve(null),
+
+        const [rankedShops, variantData, categoryData] = await Promise.all([
+          apiFetch(`/products/${id}/shops/`, {}, TTL.SHORT).catch(() => null),
+          baseName ? apiFetch(`/products/?search=${encodeURIComponent(baseName)}&page_size=30`, {}, TTL.SHORT).catch(() => null) : Promise.resolve(null),
+          category ? apiFetch(`/products/?category=${encodeURIComponent(category)}&page_size=12`, {}, TTL.SHORT).catch(() => null) : Promise.resolve(null),
         ])
         if (cancelled) return
 
+        const availableShops = Array.isArray(rankedShops) ? rankedShops : (rankedShops?.results || [])
+        setShops(availableShops)
+        setSelectedShopId(availableShops[0]?.id || null)
+
         const groupKey = getProductGroupKey(prod)
-        const matchingVariants = (variantData?.results || variantData || [])
-          .filter(item => getProductGroupKey(item) === groupKey)
+        const matchingVariants = (variantData?.results || (Array.isArray(variantData) ? variantData : []) || [])
+          .filter(item => item && item.id && getProductGroupKey(item) === groupKey)
           .sort((a, b) => Number(a.price || 0) - Number(b.price || 0))
         setVariants(matchingVariants.length > 1 ? matchingVariants : [])
-        setRelatedProducts((categoryData?.results || categoryData || []).filter(item => String(item.id) !== String(prod.id)).slice(0, 4))
+
+        const categoryList = categoryData?.results || (Array.isArray(categoryData) ? categoryData : []) || []
+        setRelatedProducts(categoryList.filter(item => item && item.id && String(item.id) !== String(prod.id)).slice(0, 4))
       } catch {
-        if (!cancelled) setProduct(null)
-      } finally {
-        if (!cancelled) setLoading(false)
+        if (!cancelled) {
+          setProduct(null)
+          setLoading(false)
+        }
       }
     }
 
     loadProduct()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [id])
 
   const images = useMemo(() => {
     const allImages = Array.isArray(product?.images) ? product.images.filter(Boolean) : []
     return [...new Set([product?.image_url, ...allImages].filter(Boolean))]
   }, [product])
-  const categoryName = valueOrNA(product?.category_name)
+  const rawCatName = product?.category_name
+  const displayCategory = (rawCatName && String(rawCatName).toLowerCase() === 'homegrown') ? 'Snacks & Munchies' : rawCatName
+  const categoryName = valueOrNA(displayCategory)
   const isGrocery = String(product?.category_name || product?.category_slug || '').toLowerCase() === 'grocery'
   const price = numberOrNA(product?.price, 2)
   const mrp = numberOrNA(product?.mrp, 2)
@@ -89,7 +110,19 @@ function ProductDetail() {
   const cartQuantity = cartItem?.quantity || 0
 
   if (loading) return <div className="product-detail container"><div className="pd-skeleton" /></div>
-  if (!product) return <div className="product-detail container"><p>Product not found.</p><button onClick={() => navigate('/products')}>Back to Products</button></div>
+  if (!product || !product.id) return (
+    <div className="product-detail container" style={{ padding: '60px 20px', textAlign: 'center' }}>
+      <h2>Product not found</h2>
+      <p style={{ color: '#666', marginTop: '8px', marginBottom: '24px' }}>The product you are looking for does not exist or has been removed.</p>
+      <button 
+        className="pd-add-btn" 
+        style={{ margin: '0 auto', maxWidth: '200px' }} 
+        onClick={() => navigate('/products')}
+      >
+        Back to Products
+      </button>
+    </div>
+  )
 
   const activeImage = images[selectedImage]
   const highlights = [
