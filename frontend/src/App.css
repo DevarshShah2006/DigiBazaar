@@ -145,6 +145,14 @@
   }
 }
 
+.brand-logo-image {
+  display: block;
+  height: 36px;
+  max-height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
 .customer-nav-logo {
   display: flex;
   align-items: center;

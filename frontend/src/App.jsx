@@ -1128,7 +1128,7 @@ function AdminTopNavbar() {
       {/* Brand & Badge */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
         <Link to="/admin" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <img src={LOGO_SRC} alt="DigiBazaar" className="brand-logo-image" />
+          <img src={LOGO_SRC} alt="DigiBazaar" className="brand-logo-image" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
           <span style={{ fontSize: '20px', fontWeight: '800', color: '#8B4513', letterSpacing: '-0.5px' }}>
             DigiBazaar <span style={{ color: '#654321' }}>Admin</span>
           </span>

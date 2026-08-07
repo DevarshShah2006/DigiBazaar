@@ -3,7 +3,9 @@ import { cachedFetch, clearCache, TTL } from './cache'
 export { clearCache, TTL }
 
 const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost'
-const API_BASE = import.meta.env.VITE_API_BASE || `http://${hostname}:8000/api`
+const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1'
+const DEFAULT_API = isLocal ? `http://${hostname}:8000/api` : 'https://devarshshah.pythonanywhere.com/api'
+const API_BASE = import.meta.env.VITE_API_BASE || DEFAULT_API
 
 function getToken() {
   return localStorage.getItem('access_token')
