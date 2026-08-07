@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Heart, ShoppingBag, Clock, CheckCircle2, Star } from 'lucide-react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { apiFetch, TTL } from '../../api/api'
 import { useCart } from '../../context/CartContext'
 import { getProductBaseName, getProductGroupKey, getQuantityText } from '../../utils/productVariants'
@@ -19,12 +19,14 @@ const numberOrNA = (value, digits = 0) => {
 function ProductDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
+  const navShopId = location.state?.shopId
   const { items, addItem, updateQuantity } = useCart()
   const [product, setProduct] = useState(null)
   const [variants, setVariants] = useState([])
   const [relatedProducts, setRelatedProducts] = useState([])
   const [shops, setShops] = useState([])
-  const [selectedShopId, setSelectedShopId] = useState(null)
+  const [selectedShopId, setSelectedShopId] = useState(navShopId || null)
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState(0)
   const [imageFailed, setImageFailed] = useState(false)
@@ -69,7 +71,8 @@ function ProductDetail() {
 
         const availableShops = Array.isArray(rankedShops) ? rankedShops : (rankedShops?.results || [])
         setShops(availableShops)
-        setSelectedShopId(availableShops[0]?.id || null)
+        const matchedNavShop = navShopId ? availableShops.find(s => String(s.id) === String(navShopId)) : null
+        setSelectedShopId(matchedNavShop?.id || availableShops[0]?.id || navShopId || null)
 
         const groupKey = getProductGroupKey(prod)
         const matchingVariants = (variantData?.results || (Array.isArray(variantData) ? variantData : []) || [])

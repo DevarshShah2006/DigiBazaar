@@ -8,7 +8,7 @@ const PLACEHOLDER_COLORS = [
   '#f3f9f3', '#fdf5f3', '#f2f7fd', '#fcf4ec', '#fcf3f6', '#fdfaf0',
 ]
 
-function ProductCard({ product, showAddToCart = true, showNewBadge = false }) {
+function ProductCard({ product, showAddToCart = true, showNewBadge = false, shopId, shopName }) {
   const { items, addItem, updateQuantity } = useCart()
   const navigate = useNavigate()
   const variants = useMemo(() => product.variants?.length ? product.variants : [product], [product])
@@ -18,10 +18,6 @@ function ProductCard({ product, showAddToCart = true, showNewBadge = false }) {
   const cartItem = items.find(item => String(item.id) === String(selectedProduct?.id))
   const cartQuantity = cartItem?.quantity || 0
 
-  // Product data can contain an expired or placeholder image URL.  Do not
-  // remove the entire card when that image fails: every home-page collection
-  // uses this component, so a failed image would otherwise make the whole
-  // collection appear empty.
   if (!selectedProduct) return null
 
   const colorIndex = selectedProduct.id % PLACEHOLDER_COLORS.length
@@ -32,7 +28,11 @@ function ProductCard({ product, showAddToCart = true, showNewBadge = false }) {
 
   const handleAdd = (e) => {
     e.stopPropagation()
-    addItem(selectedProduct)
+    const itemToAdd = {
+      ...selectedProduct,
+      ...(shopId ? { shop_id: shopId, shop_name: shopName } : {})
+    }
+    addItem(itemToAdd)
   }
 
   const changeQuantity = (e, quantity) => {
@@ -46,8 +46,14 @@ function ProductCard({ product, showAddToCart = true, showNewBadge = false }) {
     setSelectedId(e.target.value)
   }
 
+  const handleCardClick = () => {
+    navigate(`/products/${selectedProduct.id}`, {
+      state: shopId ? { shopId, shopName } : undefined
+    })
+  }
+
   return (
-    <div className="product-card" onClick={() => navigate(`/products/${selectedProduct.id}`)}>
+    <div className="product-card" onClick={handleCardClick}>
       <div className="product-card__image-wrap" style={{ background: bgColor }}>
         {!imageFailed && selectedProduct.image_url ? (
           <img
