@@ -18,9 +18,8 @@ const DELIVERY_OPTIONS = [
 
 const DEFAULT_ADDRESS = '42 Oak Valley, Apt 12B, Central Square'
 const PROMO_CODES = {
-  WELCOME50: { discountPercent: 50, firstOrderOnly: true },
-  SAVE20: { discountPercent: 20 },
-  FLAT10: { discountPercent: 10 }
+  RAKHI25: { discountPercent: 25, type: 'festive' },
+  INDIA20: { discountPercent: 20, minimumOrder: 499, type: 'cart' }
 }
 const SMALL_ORDER_THRESHOLD = 100
 const SMALL_ORDER_FEE = 49
@@ -106,7 +105,20 @@ function CartPage() {
     parseFloat(localStorage.getItem('digibazaar_cart_discount_amount') || '0') || 0
   )
   const [discountMessage, setDiscountMessage] = useState('')
-  const [hasPreviousOrders, setHasPreviousOrders] = useState(null)
+  const [usedPromoCodes, setUsedPromoCodes] = useState([])
+
+  const getPromoDiscount = (code) => {
+    const promo = PROMO_CODES[code]
+    if (!promo || (promo.minimumOrder && itemsTotal < promo.minimumOrder)) return 0
+    if (promo.type === 'festive') {
+      const eligibleTotal = items.reduce((sum, item) => {
+        const category = `${item.category_name || ''} ${item.category_slug || ''}`.toLowerCase()
+        return /sweet|chocolate/.test(category) ? sum + (Number(item.price) * item.quantity) : sum
+      }, 0)
+      return eligibleTotal * (promo.discountPercent / 100)
+    }
+    return itemsTotal * (promo.discountPercent / 100)
+  }
 
   const itemsTotal = useMemo(() => total, [total])
   const deliveryFee = (deliveryOption === 'home' || deliveryOption === 'digibazaar_delivery') ? digiBazaarCharge : 0
@@ -135,21 +147,23 @@ function CartPage() {
       setDiscountAmount(0)
       return
     }
-    setDiscountAmount(itemsTotal * (promo.discountPercent / 100))
-  }, [discountApplied, discountCode, itemsTotal])
+    const amount = getPromoDiscount(discountCode.trim().toUpperCase())
+    if (!amount) setDiscountApplied(false)
+    setDiscountAmount(amount)
+  }, [discountApplied, discountCode, itemsTotal, items])
 
   useEffect(() => {
     if (!isLoggedIn) {
-      setHasPreviousOrders(false)
+      setUsedPromoCodes([])
       return
     }
 
     fetchJson('/orders/my-orders/')
       .then(data => {
         const orders = Array.isArray(data) ? data : (data?.results || [])
-        setHasPreviousOrders(orders.length > 0)
+        setUsedPromoCodes(orders.map(order => String(order.coupon_code || '').toUpperCase()).filter(Boolean))
       })
-      .catch(() => setHasPreviousOrders(false))
+      .catch(() => setUsedPromoCodes([]))
   }, [isLoggedIn])
 
   useEffect(() => {
@@ -202,25 +216,25 @@ function CartPage() {
       return
     }
 
-    let userHasPreviousOrders = hasPreviousOrders
-    if (promo.firstOrderOnly && isLoggedIn && userHasPreviousOrders === null) {
-      const data = await fetchJson('/orders/my-orders/')
-      const orders = Array.isArray(data) ? data : (data?.results || [])
-      userHasPreviousOrders = orders.length > 0
-      setHasPreviousOrders(userHasPreviousOrders)
-    }
-
-    if (promo.firstOrderOnly && userHasPreviousOrders) {
+    if (usedPromoCodes.includes(code)) {
       setDiscountApplied(false)
       setDiscountAmount(0)
-      setDiscountMessage('This promo code is only valid for first-time users.')
+      setDiscountMessage('You have already used this festive promo code.')
+      return
+    }
+
+    const amount = getPromoDiscount(code)
+    if (!amount) {
+      setDiscountApplied(false)
+      setDiscountAmount(0)
+      setDiscountMessage(code === 'RAKHI25' ? 'RAKHI25 is valid on sweets and chocolates only.' : 'INDIA20 requires a cart value of ₹499 or more.')
       return
     }
 
     setDiscountCode(code)
     setDiscountApplied(true)
-    setDiscountAmount(itemsTotal * (promo.discountPercent / 100))
-    setDiscountMessage(`${code} applied: ${promo.discountPercent}% off`)
+    setDiscountAmount(amount)
+    setDiscountMessage(`${code} applied: ${promo.discountPercent}% off${code === 'RAKHI25' ? ' on eligible products' : ''}`)
   }
 
   const handleDiscountCodeChange = (value) => {
@@ -338,12 +352,6 @@ function CartPage() {
 
   const handleProceed = () => {
     if (items.length === 0) return
-    if (discountApplied && discountCode.trim().toUpperCase() === 'WELCOME50' && hasPreviousOrders) {
-      setDiscountApplied(false)
-      setDiscountAmount(0)
-      setDiscountMessage('This promo code is only valid for first-time users.')
-      return
-    }
     if (!isLoggedIn) {
       navigate('/login')
     } else {

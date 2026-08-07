@@ -194,6 +194,7 @@ export default function Checkout() {
         fulfillment_option: fulfillment,
         delivery_address: address,
         payment_method: paymentMethod,
+        coupon_code: discountApplied ? discountCode.trim().toUpperCase() : '',
         discount_amount: discountAmount,
         lat: coords.lat,
         long: coords.long
