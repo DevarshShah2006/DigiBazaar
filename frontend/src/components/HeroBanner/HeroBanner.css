@@ -1,86 +1,26 @@
-.hero-banner {
-  position: relative;
-  width: 100%;
-  min-height: 420px;
-  border-radius: 28px;
-  overflow: hidden;
-  box-shadow: 0 30px 60px rgba(14, 12, 10, 0.08);
-  margin-bottom: 32px;
-}
-
-.hero-banner__image {
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-  filter: saturate(1.05);
-}
-
-.hero-banner__overlay {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 22% 40%, rgba(255, 255, 255, 0.28), transparent 24%),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.24) 0%, rgba(0, 0, 0, 0.05) 52%, rgba(0, 0, 0, 0.08) 100%);
-}
-
-.hero-banner__content {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  height: 100%;
-  padding: 48px 40px;
-  color: #fff;
-  max-width: 620px;
-}
-
-.hero-banner__label {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 16px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(18px);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 20px;
-}
-
-.hero-banner__title {
-  font-size: clamp(2.5rem, 3vw, 4rem);
-  line-height: 1.02;
-  letter-spacing: -0.03em;
-  margin: 0 0 24px;
-  max-width: 10ch;
-}
-
-.hero-banner__cta {
-  width: fit-content;
-  background: rgba(255, 255, 255, 0.85);
-  color: #4b2b0f;
-  border: 1px solid rgba(255, 255, 255, 0.92);
-  border-radius: 999px;
-  padding: 14px 30px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  transition: transform 0.2s ease, background 0.2s ease;
-}
-
-.hero-banner__cta:hover {
-  transform: translateY(-1px);
-  background: #fff;
-}
-
-@media (max-width: 900px) {
-  .hero-banner {
-    min-height: 340px;
-  }
-  .hero-banner__content {
-    padding: 30px 24px;
-  }
-}
+.hero-banner { position: relative; overflow: hidden; border-radius: 28px; min-height: 470px; margin-bottom: 32px; box-shadow: 0 24px 54px rgba(65, 31, 12, .16); background: #f9e5cf; touch-action: pan-y; }
+.hero-banner__track { display: flex; height: 100%; min-height: 470px; transition: transform .7s cubic-bezier(.22,.8,.28,1); }
+.hero-banner__slide { position: relative; flex: 0 0 100%; min-height: 470px; overflow: hidden; isolation: isolate; }
+.hero-banner__image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; transform: scale(1.02); transition: transform 6s ease; }
+.hero-banner__slide.is-active .hero-banner__image { transform: scale(1.09); }
+.hero-banner__shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(255,248,234,.92) 0%, rgba(255,248,234,.68) 32%, transparent 65%), linear-gradient(0deg, rgba(34,27,17,.36), transparent 42%); }
+.hero-banner__slide--india .hero-banner__shade { background: linear-gradient(0deg, rgba(255,248,234,.92) 0%, rgba(255,248,234,.72) 43%, transparent 75%); }
+.hero-banner__content { position: relative; z-index: 2; max-width: 570px; min-height: 470px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: 50px 7%; color: #56240f; }
+.hero-banner__slide--india .hero-banner__content { padding-top: 165px; margin: 0 auto; text-align: center; align-items: center; color: #173d20; }
+.hero-banner__campaign { font-size: .73rem; font-weight: 900; text-transform: uppercase; letter-spacing: .12em; margin-bottom: 10px; }
+.hero-banner__offer { display: inline-block; background: #9b2518; color: #fff9e7; border-radius: 999px; padding: 7px 13px; font-size: .76rem; font-weight: 900; letter-spacing: .08em; animation: offerPulse 2.4s ease-in-out infinite; }
+.hero-banner__slide--india .hero-banner__offer { background: #e57505; }
+.hero-banner h1 { font-size: clamp(2rem, 3.4vw, 3.55rem); line-height: 1.05; letter-spacing: -.045em; margin: 14px 0 12px; max-width: 12ch; }
+.hero-banner__slide--india h1 { max-width: none; }
+.hero-banner p { font-size: clamp(.91rem, 1.25vw, 1.05rem); line-height: 1.5; max-width: 49ch; margin: 0 0 17px; font-weight: 600; }
+.hero-banner__coupon { font-weight: 900; font-size: .9rem; color: #fffaf0; background: #57230f; padding: 10px 14px; border-radius: 9px; border: 1px dashed #f1c773; animation: couponFloat 3.2s ease-in-out infinite; }
+.hero-banner__slide--india .hero-banner__coupon { background: #174421; }
+.hero-banner__cta { display: inline-flex; align-items: center; gap: 9px; margin-top: 16px; padding: 13px 23px; border: 0; border-radius: 999px; background: #a52d1c; color: #fff; font-weight: 800; cursor: pointer; box-shadow: 0 8px 20px rgba(104,37,16,.22); transition: transform .2s ease; }
+.hero-banner__slide--india .hero-banner__cta { background: #16511e; }.hero-banner__cta:hover { transform: translateY(-2px) scale(1.02); }
+.hero-banner__nearby { display: inline-flex; align-items: center; gap: 5px; margin-top: 14px; font-size: .7rem; font-weight: 700; }
+.hero-banner__arrow { position: absolute; z-index: 4; top: 50%; transform: translateY(-50%); border: 0; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; color: #4b2612; background: rgba(255,255,255,.8); cursor: pointer; }.hero-banner__arrow--left{left:16px}.hero-banner__arrow--right{right:16px}
+.hero-banner__dots { position: absolute; z-index: 4; bottom: 17px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; }.hero-banner__dots button { width: 9px; height: 9px; padding: 0; border: 0; border-radius: 9px; background: rgba(255,255,255,.64); cursor: pointer; transition: width .25s; }.hero-banner__dots button.is-active { width: 28px; background: #87351d; }
+.hero-banner__chakra { position: absolute; z-index: 1; left: 8%; top: 20%; font-size: 80px; color: #16417b; opacity: .3; animation: chakraSpin 24s linear infinite; }
+.hero-banner__sparkles i { position:absolute; z-index:1; width:7px; height:7px; background:#ffc650; border-radius:50%; animation:sparkle 2.5s infinite ease-in-out; }.hero-banner__sparkles i:nth-child(1){top:22%;left:41%}.hero-banner__sparkles i:nth-child(2){top:72%;left:50%;animation-delay:.6s}.hero-banner__sparkles i:nth-child(3){top:16%;right:13%;animation-delay:1.2s}.hero-banner__sparkles i:nth-child(4){top:64%;right:26%;animation-delay:1.7s}
+@keyframes offerPulse{50%{transform:scale(1.06)}} @keyframes couponFloat{50%{transform:translateY(-4px)}} @keyframes chakraSpin{to{transform:rotate(360deg)}} @keyframes sparkle{50%{opacity:.15;transform:scale(2)}}
+@media (max-width: 700px) { .hero-banner,.hero-banner__track,.hero-banner__slide { min-height: 440px; border-radius: 20px; }.hero-banner__image { object-position: 62% center; }.hero-banner__shade { background: linear-gradient(0deg, rgba(255,248,234,.94) 0%, rgba(255,248,234,.78) 52%, transparent 100%); }.hero-banner__content,.hero-banner__slide--india .hero-banner__content { justify-content: flex-end; min-height: 440px; padding: 30px 26px 53px; margin: 0; text-align: left; align-items: flex-start; }.hero-banner h1{font-size:2rem;margin:9px 0}.hero-banner p{font-size:.85rem;margin-bottom:10px}.hero-banner__campaign{margin-bottom:5px}.hero-banner__offer{font-size:.65rem;padding:6px 10px}.hero-banner__coupon{font-size:.76rem;padding:8px 10px}.hero-banner__cta{padding:11px 17px;margin-top:10px}.hero-banner__nearby{font-size:.61rem}.hero-banner__arrow{display:none}.hero-banner__chakra{font-size:52px;left:70%;top:7%;} }

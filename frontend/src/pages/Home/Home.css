@@ -5,6 +5,11 @@
   padding-bottom: 80px;
 }
 
+/* Keep all home-page bands aligned to the wider original content frame. */
+.home .container {
+  max-width: 1440px;
+}
+
 /* Sliding Hero Carousel Section */
 .hero-carousel-section {
   padding: 32px 0;
@@ -390,6 +395,9 @@
 }
 
 @media (max-width: 992px) {
+  .home .container {
+    max-width: 1200px;
+  }
   .carousel-content-grid {
     grid-template-columns: 1fr;
   }

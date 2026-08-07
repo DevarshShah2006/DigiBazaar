@@ -547,7 +547,7 @@ class CheckoutView(APIView):
         fulfillment_option = request.data.get('fulfillment_option', 'digibazaar_delivery')
         delivery_address = request.data.get('delivery_address', '')
         payment_method = request.data.get('payment_method', 'upi')
-        discount_amount = Decimal(str(request.data.get('discount_amount', 0)))
+        coupon_code = str(request.data.get('coupon_code', '')).strip().upper()
         lat = request.data.get('lat')
         long_ = request.data.get('long')
         user_lat = float(lat) if lat is not None else 23.0125
@@ -618,10 +618,27 @@ class CheckoutView(APIView):
         if not orders_by_shop:
             return Response({'detail': 'No valid products found in available shops'}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Campaign offers are calculated here rather than trusting browser input.
+        campaign_codes = {'RAKHI25', 'INDIA20'}
+        if coupon_code and coupon_code not in campaign_codes:
+            return Response({'detail': 'Invalid promo code.'}, status=status.HTTP_400_BAD_REQUEST)
+        if coupon_code and Order.objects.filter(user=request.user, coupon_code=coupon_code).exists():
+            return Response({'detail': 'This promo code has already been used.'}, status=status.HTTP_400_BAD_REQUEST)
+        basket_subtotal = sum(item['price'] * item['quantity'] for group in orders_by_shop.values() for item in group['items'])
+        if coupon_code == 'INDIA20' and basket_subtotal < Decimal('499.00'):
+            return Response({'detail': 'INDIA20 requires a cart value of ₹499 or more.'}, status=status.HTTP_400_BAD_REQUEST)
+        for group in orders_by_shop.values():
+            eligible_subtotal = sum(item['price'] * item['quantity'] for item in group['items'] if item['product'].category and ('sweet' in item['product'].category.name.lower() or 'chocolate' in item['product'].category.name.lower()))
+            group_subtotal = sum(item['price'] * item['quantity'] for item in group['items'])
+            group['promo_discount'] = eligible_subtotal * Decimal('0.25') if coupon_code == 'RAKHI25' else group_subtotal * Decimal('0.20') if coupon_code == 'INDIA20' else Decimal('0.00')
+        if coupon_code == 'RAKHI25' and not any(group['promo_discount'] for group in orders_by_shop.values()):
+            return Response({'detail': 'RAKHI25 is valid on sweets and chocolates only.'}, status=status.HTTP_400_BAD_REQUEST)
+
         created_orders = []
 
         for group in orders_by_shop.values():
             shop = group['shop']
+            discount_amount = group['promo_discount'].quantize(Decimal('0.01'))
 
             # ── Calculate distance & delivery charge ─────────────────────────
             distance_km = 1.0
@@ -673,6 +690,8 @@ class CheckoutView(APIView):
                 delivery_charge=charge,
                 tax_amount=tax_amount,
                 discount_amount=discount_amount,
+                coupon_code=coupon_code,
+                coupon_discount=discount_amount,
                 total_amount=total_amount,
                 payment_method=payment_method,
                 payment_status=payment_status,
