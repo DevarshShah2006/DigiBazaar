@@ -46,9 +46,22 @@
   flex-wrap: wrap;
 }
 
-.footer__brand {
-  flex: 1 1 220px;
-  min-width: 220px;
+.footer-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.footer-brand-row strong {
+  margin: 0;
+}
+
+.footer__brand .footer-brand-logo {
+  display: block;
+  height: 30px;
+  width: auto;
+  margin: 0;
 }
 
 .footer__brand strong {

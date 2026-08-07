@@ -66,7 +66,10 @@ export default function TaxInvoiceModal({ order, onClose }) {
           {/* Header */}
           <div className="invoice-header-row">
             <div className="company-branding">
-              <h1 className="brand-logo">DigiBazaar</h1>
+              <div className="invoice-brand-row">
+                <img src="/logo.png" alt="DigiBazaar" className="invoice-brand-image" />
+                <h1 className="brand-logo">DigiBazaar</h1>
+              </div>
               <p className="company-legal">DigiBazaar Hyperlocal Commerce Pvt. Ltd.</p>
               <p className="company-address">Paldi Cross Roads, Ahmedabad, Gujarat - 380007</p>
               <p className="company-gstin"><strong>GSTIN:</strong> 24AAACD1234F1Z9 · <strong>FSSAI:</strong> 10721001000456</p>

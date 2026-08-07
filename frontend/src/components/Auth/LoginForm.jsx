@@ -68,7 +68,10 @@ const LoginForm = () => {
     <div className={`auth-page portal-${role}`}>
       <div className="auth-card glass-card fade-in">
         <div className="auth-header">
-          <span className="auth-logo"><img src="/logo.png" alt="DigiBazaar" className="auth-logo-image" /></span>
+          <div className="auth-brand">
+            <img src="/logo.png" alt="DigiBazaar" className="auth-logo-image" />
+            <span>DigiBazaar</span>
+          </div>
           <h2>Sign In</h2>
           <p>Passwordless phone verification</p>
         </div>

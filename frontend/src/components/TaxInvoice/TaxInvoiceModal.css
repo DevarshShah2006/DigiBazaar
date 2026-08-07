@@ -372,3 +372,15 @@
     padding: 20px;
   }
 }
+
+.invoice-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.invoice-brand-image {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}

@@ -194,6 +194,7 @@ function CustomerNavbar() {
       {/* Left Logo */}
       <Link to="/" className="customer-nav-logo" style={{ textDecoration: 'none' }}>
         <img src={LOGO_SRC} alt="DigiBazaar" className="brand-logo-image" />
+        <span>DigiBazaar</span>
       </Link>
 
       {/* Middle Search Bar with Suggestions Popover */}
@@ -532,7 +533,7 @@ function ShopOwnerNavbar() {
     <header className="shop-owner-navbar">
       <Link to="/dashboard" className="shop-owner-nav-logo">
         <img src={LOGO_SRC} alt="DigiBazaar" className="brand-logo-image" />
-        <span>{shopName}</span>
+        <span>DigiBazaar</span>
       </Link>
 
       {/* Light-Themed Search Container */}
@@ -1274,7 +1275,10 @@ function CustomerFooter() {
     <footer className="footer footer--customer">
       <div className="footer__inner footer__inner--grid">
         <div className="footer__brand">
-          <img src={LOGO_SRC} alt="DigiBazaar" className="footer-brand-logo" />
+          <div className="footer-brand-row">
+            <img src={LOGO_SRC} alt="DigiBazaar" className="footer-brand-logo" />
+            <strong>DigiBazaar</strong>
+          </div>
           <p>Local shopping made better for customers, shop owners, and rider partners.</p>
         </div>
         <div className="footer__col">
@@ -1309,8 +1313,10 @@ function ShopOwnerFooter() {
     <footer className="footer footer--shop">
       <div className="footer__inner footer__inner--grid">
         <div className="footer__brand">
-          <img src={LOGO_SRC} alt="DigiBazaar" className="footer-brand-logo" />
-          <strong>DigiBazaar Shop</strong>
+          <div className="footer-brand-row">
+            <img src={LOGO_SRC} alt="DigiBazaar" className="footer-brand-logo" />
+            <strong>DigiBazaar Shop</strong>
+          </div>
           <p>Tools for store owners to manage orders, inventory, promotions, and growth.</p>
         </div>
         <div className="footer__col">
@@ -1346,8 +1352,10 @@ function RiderFooter() {
     <footer className="footer footer--rider">
       <div className="footer__inner footer__inner--grid">
         <div className="footer__brand">
-          <img src={LOGO_SRC} alt="DigiBazaar" className="footer-brand-logo" />
-          <strong>DigiBazaar Rider</strong>
+          <div className="footer-brand-row">
+            <img src={LOGO_SRC} alt="DigiBazaar" className="footer-brand-logo" />
+            <strong>DigiBazaar Rider</strong>
+          </div>
           <p>Fast, friendly delivery partner tools built for your route, earnings, and safety.</p>
         </div>
         <div className="footer__col">

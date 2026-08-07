@@ -65,7 +65,10 @@ const SignupForm = () => {
     <div className={`auth-page portal-${formData.role}`}>
       <div className="auth-card glass-card fade-in">
         <div className="auth-header">
-          <span className="auth-logo"><img src="/logo.png" alt="DigiBazaar" className="auth-logo-image" /></span>
+          <div className="auth-brand">
+            <img src="/logo.png" alt="DigiBazaar" className="auth-logo-image" />
+            <span>DigiBazaar</span>
+          </div>
           <h2>Create Account</h2>
           <p>Register using your phone number</p>
         </div>
