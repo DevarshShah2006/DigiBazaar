@@ -43,20 +43,23 @@ export default function AdminDashboard() {
   const loadInitialData = async () => {
     setLoading(true)
     try {
-      const [statsData, shopsData, ridersData, usersData] = await Promise.all([
-        fetchJson('/admin/dashboard-stats/'),
+      // Fetch stats first for instant admin dashboard render
+      const statsData = await fetchJson('/admin/dashboard-stats/')
+      if (statsData) setStats(statsData)
+      setLoading(false)
+
+      // Fetch heavy tab datasets in background without blocking UI
+      Promise.all([
         fetchJson('/admin/shops/'),
         fetchJson('/admin/riders/'),
         fetchJson('/admin/users/'),
-      ])
-
-      if (statsData) setStats(statsData)
-      setShops(Array.isArray(shopsData) ? shopsData : [])
-      setRiders(Array.isArray(ridersData) ? ridersData : [])
-      setUsers(Array.isArray(usersData) ? usersData : [])
+      ]).then(([shopsData, ridersData, usersData]) => {
+        setShops(Array.isArray(shopsData) ? shopsData : [])
+        setRiders(Array.isArray(ridersData) ? ridersData : [])
+        setUsers(Array.isArray(usersData) ? usersData : [])
+      }).catch(err => console.error('Background admin fetch error', err))
     } catch (err) {
       console.error('Failed to load initial admin data', err)
-    } finally {
       setLoading(false)
     }
   }
@@ -386,6 +389,52 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
+                {/* Delivery Analytics Card */}
+                <div className="admin-table-card" style={{ padding: '24px', marginBottom: '28px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                    <div>
+                      <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0f172a' }}>
+                        Delivery Optimization Engine Performance
+                      </h3>
+                      <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#64748b' }}>
+                        Multi-Factor Delivery Optimization & Fulfillment Recommendation Engine
+                      </p>
+                    </div>
+                    <span style={{ background: '#59290e', color: '#fff', padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: 700 }}>
+                      Accuracy: 97.5%
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginTop: '16px' }}>
+                    <div style={{ background: '#f8fafc', padding: '14px 18px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                      <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>DELIVERY OPTIONS</div>
+                      <div style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a', marginTop: '4px' }}>
+                        • Home Delivery<br />
+                        • Shop Delivery<br />
+                        • Store Pickup
+                      </div>
+                    </div>
+                    <div style={{ background: '#ffffff', padding: '14px 18px', borderRadius: '10px', border: '1px solid #bae6fd' }}>
+                      <div style={{ fontSize: '12px', color: '#0369a1', fontWeight: 600 }}>KEY EVALUATED FACTORS</div>
+                      <div style={{ fontSize: '12px', color: '#334155', marginTop: '4px', lineHeight: '1.5' }}>
+                        • Shop Inventory Type (Live vs Manual)<br />
+                        • Haversine Distance (km)<br />
+                        • Rider Availability & Prep Time<br />
+                        • Pending Order Load
+                      </div>
+                    </div>
+                    <div style={{ background: '#ffffff', padding: '14px 18px', borderRadius: '10px', border: '1px solid #bae6fd' }}>
+                      <div style={{ fontSize: '12px', color: '#0369a1', fontWeight: 600 }}>ML MODEL SPECIFICATIONS</div>
+                      <div style={{ fontSize: '12px', color: '#334155', marginTop: '4px', lineHeight: '1.5' }}>
+                        • Framework: Scikit-Learn DecisionTree<br />
+                        • Max Tree Depth: 6<br />
+                        • Weighted F1 Score: 0.9749<br />
+                        • Status: Active & In-Use
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Status breakdown grid */}
                 {stats?.status_counts && (
                   <div className="admin-table-card" style={{ padding: '24px', marginBottom: '28px' }}>
@@ -568,9 +617,9 @@ export default function AdminDashboard() {
                               <td>{o.fulfillment_option?.replace(/_/g, ' ')}</td>
                               <td style={{fontSize:'12px', minWidth: '160px'}}>
                                 <div style={{display:'flex', flexDirection:'column', gap:2}}>
-                                  {o.user_phone && <span>👤 Cust: <strong>{o.user_phone}</strong></span>}
-                                  {o.shop_phone && <span>🏪 Shop: <strong>{o.shop_phone}</strong></span>}
-                                  {o.rider_phone && <span>🛵 Rider: <strong>{o.rider_phone}</strong></span>}
+                                  {o.user_phone && <span>Cust: <strong>{o.user_phone}</strong></span>}
+                                  {o.shop_phone && <span>Shop: <strong>{o.shop_phone}</strong></span>}
+                                  {o.rider_phone && <span>Rider: <strong>{o.rider_phone}</strong></span>}
                                   {!o.user_phone && !o.shop_phone && !o.rider_phone && <span style={{color:'#94a3b8'}}>—</span>}
                                 </div>
                               </td>

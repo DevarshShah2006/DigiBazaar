@@ -7,17 +7,25 @@ import Cart from './components/Cart/Cart'
 import './App.css'
 import { fetchJson, apiFetch, clearCache, TTL } from './api/api'
 
+const LOGO_SRC = 'logo.png'
+
 // ── 1. CUSTOMER NAVBAR (TEXT ONLY) ──
 function CustomerNavbar() {
   const { user, logout, isLoggedIn } = useAuth()
-  const { itemCount, setIsOpen } = useCart()
+  const { itemCount } = useCart()
   const navigate = useNavigate()
   const location = useLocation()
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/signup'
   const activeShopId = location.pathname.match(/^\/shops\/(\d+)/)?.[1]
   
   // Location States
   const [address, setAddress] = useState(
     localStorage.getItem('delivery_address') || '102, Patel Residency, Paldi, Ahmedabad, Gujarat - 380007'
+  )
+  const [coordinates, setCoordinates] = useState(
+    localStorage.getItem('delivery_coordinates') && localStorage.getItem('delivery_coordinates') !== 'null' 
+      ? localStorage.getItem('delivery_coordinates') 
+      : null
   )
   const [savedAddresses, setSavedAddresses] = useState(
     JSON.parse(localStorage.getItem('saved_addresses')) || [
@@ -28,6 +36,7 @@ function CustomerNavbar() {
   const [locationOpen, setLocationOpen] = useState(false)
   const [newAddressText, setNewAddressText] = useState('')
   const [detecting, setDetecting] = useState(false)
+  const [showAddressInput, setShowAddressInput] = useState(false)
   
   // Search States
   const [searchVal, setSearchVal] = useState('')
@@ -40,24 +49,29 @@ function CustomerNavbar() {
   const searchRef = useRef(null)
   const profileRef = useRef(null)
 
-  // Autocomplete Suggestions List
-  const suggestionList = [
-    { text: 'Milk', type: 'Product' },
-    { text: 'Amul Butter', type: 'Product' },
-    { text: 'Fresh Vegetables', type: 'Category' },
-    { text: 'Patel Dairy', type: 'Shop' },
-    { text: 'Medical Store', type: 'Shop' },
-    { text: 'Eggs', type: 'Product' },
-    { text: 'Fresh Bread', type: 'Product' },
-    { text: 'Apples', type: 'Product' },
-    { text: 'Banana', type: 'Product' },
-    { text: 'Aloe Vera Shampoo', type: 'Product' }
-  ]
+  // Autocomplete Suggestions from backend API (debounced)
+  const [suggestions, setSuggestions] = useState([])
 
-  // Filtered Suggestions
-  const filteredSuggestions = searchVal.trim() === ''
-    ? suggestionList.slice(0, 5)
-    : suggestionList.filter(s => s.text.toLowerCase().includes(searchVal.toLowerCase()))
+  useEffect(() => {
+    if (searchVal.trim() === '') {
+      setSuggestions([])
+      return
+    }
+    const timer = setTimeout(() => {
+      fetchJson(`/products/search/?q=${encodeURIComponent(searchVal.trim())}&page_size=5`)
+        .then(data => {
+          if (Array.isArray(data)) {
+            setSuggestions(data.map(p => ({ text: p.name, type: 'Product' })))
+          } else if (data?.results) {
+            setSuggestions(data.results.map(p => ({ text: p.name, type: 'Product' })))
+          } else {
+            setSuggestions([])
+          }
+        })
+        .catch(() => setSuggestions([]))
+    }, 250)
+    return () => clearTimeout(timer)
+  }, [searchVal])
 
   // Detect clicks outside
   useEffect(() => {
@@ -79,20 +93,50 @@ function CustomerNavbar() {
   // Detect Location
   const handleDetectLocation = () => {
     setDetecting(true)
-    setTimeout(() => {
-      const detected = '7B, Paldi Cross Roads, Ahmedabad, Gujarat - 380007'
-      localStorage.setItem('delivery_address', detected)
-      setAddress(detected)
+    setShowAddressInput(false)
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude.toFixed(6)
+          const lng = position.coords.longitude.toFixed(6)
+          const coords = `${lat}, ${lng}`
+          setCoordinates(coords)
+          localStorage.setItem('delivery_coordinates', coords)
+          setDetecting(false)
+          setShowAddressInput(true)
+        },
+        (error) => {
+          console.error('Geolocation error:', error)
+          const fallback = '7B, Paldi Cross Roads, Ahmedabad, Gujarat - 380007'
+          localStorage.setItem('delivery_address', fallback)
+          setAddress(fallback)
+          setCoordinates(null)
+          localStorage.removeItem('delivery_coordinates')
+          setDetecting(false)
+          setShowAddressInput(false)
+          alert('Unable to detect location. Please enter address manually.')
+        }
+      )
+    } else {
+      const fallback = '7B, Paldi Cross Roads, Ahmedabad, Gujarat - 380007'
+      localStorage.setItem('delivery_address', fallback)
+      setAddress(fallback)
+      setCoordinates(null)
+      localStorage.removeItem('delivery_coordinates')
       setDetecting(false)
-      setLocationOpen(false)
-      window.dispatchEvent(new Event('addressUpdated'))
-    }, 1200)
+      setShowAddressInput(false)
+      alert('Geolocation not supported. Please enter address manually.')
+    }
   }
 
   // Select Address
   const handleSelectAddress = (addr) => {
     localStorage.setItem('delivery_address', addr)
     setAddress(addr)
+    setCoordinates(null)
+    localStorage.removeItem('delivery_coordinates')
+    setShowAddressInput(false)
+    setNewAddressText('')
     setLocationOpen(false)
     window.dispatchEvent(new Event('addressUpdated'))
   }
@@ -105,9 +149,26 @@ function CustomerNavbar() {
       localStorage.setItem('saved_addresses', JSON.stringify(newList))
       localStorage.setItem('delivery_address', newAddressText.trim())
       setAddress(newAddressText.trim())
+      setCoordinates(null)
+      localStorage.removeItem('delivery_coordinates')
       setNewAddressText('')
+      setShowAddressInput(false)
       setLocationOpen(false)
       window.dispatchEvent(new Event('addressUpdated'))
+    }
+  }
+
+  // Save address after coordinates captured
+  const handleSaveAddressWithCoordinates = () => {
+    if (newAddressText.trim()) {
+      localStorage.setItem('delivery_address', newAddressText.trim())
+      setAddress(newAddressText.trim())
+      setNewAddressText('')
+      setShowAddressInput(false)
+      setLocationOpen(false)
+      window.dispatchEvent(new Event('addressUpdated'))
+    } else {
+      alert('Please enter an address')
     }
   }
 
@@ -132,83 +193,123 @@ function CustomerNavbar() {
     <header className="customer-navbar">
       {/* Left Logo */}
       <Link to="/" className="customer-nav-logo" style={{ textDecoration: 'none' }}>
-        <span>DigiBazaar</span>
+        <img src={LOGO_SRC} alt="DigiBazaar" className="brand-logo-image" />
       </Link>
 
       {/* Middle Search Bar with Suggestions Popover */}
-      <div className="nav-search-container" ref={searchRef}>
-        <form onSubmit={handleSearchSubmit} className="search-input-wrapper">
-          <input
-            type="text"
-            className="nav-search-input"
-            style={{ paddingLeft: '16px' }}
-            placeholder={activeShopId ? 'Search within this shop...' : 'Search products, category, shop, brand...'}
-            value={searchVal}
-            onChange={e => setSearchVal(e.target.value)}
-            onFocus={() => setSearchFocused(true)}
-          />
-        </form>
+      {!isAuthPage && (
+        <div className="nav-search-container" ref={searchRef}>
+          <form onSubmit={handleSearchSubmit} className="search-input-wrapper">
+            <input
+              type="text"
+              className="nav-search-input"
+              style={{ paddingLeft: '16px' }}
+              placeholder={activeShopId ? 'Search within this shop...' : 'Search products, category, shop, brand...'}
+              value={searchVal}
+              onChange={e => setSearchVal(e.target.value)}
+              onFocus={() => setSearchFocused(true)}
+            />
+          </form>
 
-        {searchFocused && (
-          <div className="search-suggestions-dropdown">
-            <div className="suggestion-header">
-              {searchVal.trim() === '' ? 'Try Searching For' : 'Matching Results'}
-            </div>
-            {filteredSuggestions.map((s, idx) => (
-              <div 
-                key={idx} 
-                className="suggestion-item" 
-                onClick={() => handleSelectSuggestion(s.text)}
-              >
-                <span>{s.text}</span>
-                <span className="suggestion-match-type">{s.type}</span>
+          {searchFocused && suggestions.length > 0 && (
+            <div className="search-suggestions-dropdown">
+              <div className="suggestion-header">
+                Matching Results
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+              {suggestions.map((s, idx) => (
+                <div 
+                  key={idx} 
+                  className="suggestion-item" 
+                  onClick={() => handleSelectSuggestion(s.text)}
+                >
+                  <span>{s.text}</span>
+                  <span className="suggestion-match-type">{s.type}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Right Actions */}
       <div className="customer-nav-actions">
         {/* Location Selector */}
-        <div className="nav-location-selector" onClick={() => setLocationOpen(!locationOpen)} ref={locRef}>
-          <span style={{ marginRight: '4px' }}>Deliver:</span>
-          <span className="location-address-txt">{address}</span>
-          <span style={{ fontSize: '9px', marginLeft: '4px' }}>▼</span>
+        {!isAuthPage && (
+          <div className="nav-location-selector" onClick={() => { setLocationOpen(!locationOpen); if (!locationOpen) { setShowAddressInput(false); setNewAddressText(''); } }} ref={locRef}>
+            <span style={{ marginRight: '4px' }}>Deliver:</span>
+            <span className="location-address-txt">{address}</span>
+            {coordinates && (
+              <span className="location-coordinates-txt" style={{ fontSize: '10px', color: '#64748b', marginLeft: '6px' }}>
+                ({coordinates})
+              </span>
+            )}
+            <span style={{ fontSize: '9px', marginLeft: '4px' }}>▼</span>
 
-          {locationOpen && (
-            <div className="location-dropdown-popover" onClick={e => e.stopPropagation()}>
-              <button className="detect-loc-btn" onClick={handleDetectLocation} disabled={detecting}>
-                {detecting ? 'Detecting Location...' : 'Detect Current Location'}
-              </button>
-              <div className="popover-subtitle">Saved Addresses</div>
-              <div className="saved-addr-list">
-                {savedAddresses.map((addr, idx) => (
-                  <div key={idx} className="saved-addr-row" onClick={() => handleSelectAddress(addr)}>
-                    <input type="radio" checked={address === addr} readOnly />
-                    <span>{addr}</span>
-                  </div>
-                ))}
+            {locationOpen && (
+              <div className="location-dropdown-popover" onClick={e => e.stopPropagation()}>
+                <button className="detect-loc-btn" onClick={handleDetectLocation} disabled={detecting}>
+                  {detecting ? 'Detecting Location...' : 'Detect Current Location'}
+                </button>
+                
+                {showAddressInput && coordinates && (
+                  <>
+                    <div className="popover-subtitle" style={{ marginTop: '8px', fontSize: '11px', color: '#475569' }}>
+                      Coordinates Captured: <strong>{coordinates}</strong>
+                    </div>
+                    <div className="popover-subtitle" style={{ marginTop: '8px', color: '#dc2626', fontSize: '12px' }}>
+                      Please enter your address below:
+                    </div>
+                    <div className="add-addr-form" style={{ marginTop: '8px' }}>
+                      <input 
+                        type="text" 
+                        placeholder="Enter your full address..." 
+                        value={newAddressText}
+                        onChange={e => setNewAddressText(e.target.value)}
+                        style={{ width: '100%' }}
+                      />
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                        <button onClick={handleSaveAddressWithCoordinates} style={{ flex: 1 }}>Save Address</button>
+                        <button onClick={() => { setShowAddressInput(false); setNewAddressText(''); }} style={{ flex: 1, background: '#fee2e2', color: '#dc2626', border: 'none' }}>Cancel</button>
+                      </div>
+                    </div>
+                  </>
+                )}
+                
+                {!showAddressInput && (
+                  <>
+                    <div className="popover-subtitle">Saved Addresses</div>
+                    <div className="saved-addr-list">
+                      {savedAddresses.map((addr, idx) => (
+                        <div key={idx} className="saved-addr-row" onClick={() => handleSelectAddress(addr)}>
+                          <input type="radio" checked={address === addr} readOnly />
+                          <span>{addr}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="popover-subtitle">Add New Address</div>
+                    <div className="add-addr-form">
+                      <input 
+                        type="text" 
+                        placeholder="Street, Block, City..." 
+                        value={newAddressText}
+                        onChange={e => setNewAddressText(e.target.value)}
+                      />
+                      <button onClick={handleAddAddress}>Add</button>
+                    </div>
+                  </>
+                )}
               </div>
-              <div className="popover-subtitle">Add New Address</div>
-              <div className="add-addr-form">
-                <input 
-                  type="text" 
-                  placeholder="Street, Block, City..." 
-                  value={newAddressText}
-                  onChange={e => setNewAddressText(e.target.value)}
-                />
-                <button onClick={handleAddAddress}>Add</button>
-              </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* Cart */}
-        <button className="nav-cart-btn-new" onClick={() => navigate('/cart')}>
-          <span>Cart</span>
-          {itemCount > 0 && <span className="nav-cart-badge-new">{itemCount}</span>}
-        </button>
+        {!isAuthPage && (
+          <button className="nav-cart-btn-new" onClick={() => navigate('/cart')}>
+            <span>Cart</span>
+            {itemCount > 0 && <span className="nav-cart-badge-new">{itemCount}</span>}
+          </button>
+        )}
 
         {/* Profile Popover */}
         {isLoggedIn ? (
@@ -224,7 +325,7 @@ function CustomerNavbar() {
                   <h4>{user?.username}</h4>
                   <p>{user?.email || 'Registered Account'}</p>
                 </div>
-                {(user?.role === 'admin' || user?.username?.includes('admin') || user?.username?.includes('9111111111')) && (
+                {user?.role === 'admin' && (
                   <Link to="/admin" className="profile-dropdown-link" style={{ background: '#e0e7ff', color: '#4338ca', fontWeight: 'bold' }} onClick={() => setProfileOpen(false)}>
                     Admin Portal
                   </Link>
@@ -262,7 +363,7 @@ function ShopOwnerNavbar() {
   const [revenue, setRevenue] = useState(0)
   // Initialize shop name immediately from stored data, fall back to user info
   const [shopName, setShopName] = useState(() => {
-    return 'My Store'
+    return 'DigiBazaar'
   })
 
   // Search, Alerts & Help Modals
@@ -430,7 +531,8 @@ function ShopOwnerNavbar() {
   return (
     <header className="shop-owner-navbar">
       <Link to="/dashboard" className="shop-owner-nav-logo">
-        {shopName}
+        <img src={LOGO_SRC} alt="DigiBazaar" className="brand-logo-image" />
+        <span>{shopName}</span>
       </Link>
 
       {/* Light-Themed Search Container */}
@@ -827,8 +929,15 @@ function ShopOwnerSidebar() {
 
 // ── 3. RIDER TOP & BOTTOM PORTAL NAVBARS (TEXT ONLY) ──
 function RiderTopNavbar() {
+  const { logout } = useAuth()
+  const navigate = useNavigate()
   const [online, setOnline] = useState(true)
-  const [theme, setTheme] = useState(localStorage.getItem('rider_theme') || 'light')
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem('rider_theme')
+    return savedTheme === 'dark' ? 'dark' : 'light'
+  })
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+  const profileMenuRef = useRef(null)
 
   useEffect(() => {
     const handleStatusUpdate = () => {
@@ -842,8 +951,33 @@ function RiderTopNavbar() {
   useEffect(() => {
     document.body.classList.toggle('rider-dark-theme', theme === 'dark')
     localStorage.setItem('rider_theme', theme)
-    return () => document.body.classList.remove('rider-dark-theme')
   }, [theme])
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setProfileMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const openProfileTab = () => {
+    setProfileMenuOpen(false)
+    localStorage.setItem('active_rider_tab', 'profile')
+    window.dispatchEvent(new Event('riderTabChanged'))
+  }
+
+  const handleProfileDoubleClick = () => {
+    openProfileTab()
+  }
+
+  const handleLogout = () => {
+    logout()
+    setProfileMenuOpen(false)
+    navigate('/')
+  }
 
   return (
     <header className="rider-top-navbar">
@@ -851,7 +985,7 @@ function RiderTopNavbar() {
         localStorage.setItem('active_rider_tab', 'home')
         window.dispatchEvent(new Event('riderTabChanged'))
       }}>
-        <span className="rider-brand-mark">D</span>
+        <img src={LOGO_SRC} alt="DigiBazaar" className="brand-logo-image" />
         <span>DigiBazaar <em>Rider</em></span>
       </Link>
       <nav className="rider-desktop-nav" aria-label="Rider navigation">
@@ -879,10 +1013,27 @@ function RiderTopNavbar() {
         >
           {theme === 'light' ? 'Dark' : 'Light'}
         </button>
-        <button className="rider-nav-avatar" aria-label="Open profile" onClick={() => {
-          localStorage.setItem('active_rider_tab', 'profile')
-          window.dispatchEvent(new Event('riderTabChanged'))
-        }}>R</button>
+        <div className="rider-profile-menu-wrap" ref={profileMenuRef}>
+          <button
+            className="rider-nav-avatar"
+            aria-label="Open profile menu"
+            title="Open profile menu"
+            onClick={() => setProfileMenuOpen(prev => !prev)}
+            onDoubleClick={handleProfileDoubleClick}
+          >
+            R
+          </button>
+          {profileMenuOpen && (
+            <div className="rider-profile-dropdown" role="menu">
+              <div className="rider-profile-dropdown__header">
+                <strong>Rider account</strong>
+                <span>Quick actions</span>
+              </div>
+              <button className="rider-profile-dropdown__item" onClick={openProfileTab}>View profile</button>
+              <button className="rider-profile-dropdown__item rider-profile-dropdown__item--danger" onClick={handleLogout}>Logout</button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   )
@@ -976,6 +1127,7 @@ function AdminTopNavbar() {
       {/* Brand & Badge */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
         <Link to="/admin" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <img src={LOGO_SRC} alt="DigiBazaar" className="brand-logo-image" />
           <span style={{ fontSize: '20px', fontWeight: '800', color: '#8B4513', letterSpacing: '-0.5px' }}>
             DigiBazaar <span style={{ color: '#654321' }}>Admin</span>
           </span>
@@ -1117,6 +1269,109 @@ function AdminTopNavbar() {
 }
 
 // ── MAIN APPLICATION WRAPPER ──
+function CustomerFooter() {
+  return (
+    <footer className="footer footer--customer">
+      <div className="footer__inner footer__inner--grid">
+        <div className="footer__brand">
+          <img src={LOGO_SRC} alt="DigiBazaar" className="footer-brand-logo" />
+          <p>Local shopping made better for customers, shop owners, and rider partners.</p>
+        </div>
+        <div className="footer__col">
+          <h4>Marketplace</h4>
+          <Link className="footer-link" to="/">Home</Link>
+          <Link className="footer-link" to="/products">Products</Link>
+          <Link className="footer-link" to="/cart">My Cart</Link>
+        </div>
+        <div className="footer__col">
+          <h4>Account</h4>
+          <Link className="footer-link" to="/my-orders">My Orders</Link>
+          <Link className="footer-link" to="/login">Login</Link>
+          <Link className="footer-link" to="/signup">Sign Up</Link>
+        </div>
+        <div className="footer__col">
+          <h4>Support</h4>
+          <a className="footer-link" href="mailto:support@digibazaar.in">support@digibazaar.in</a>
+          <Link className="footer-link" to="/privacy-policy">Privacy Policy</Link>
+        </div>
+      </div>
+    </footer>
+  )
+}
+
+function ShopOwnerFooter() {
+  const handleDashboardTab = (tabName) => {
+    localStorage.setItem('active_shop_tab', tabName)
+    window.dispatchEvent(new Event('shopTabChanged'))
+  }
+
+  return (
+    <footer className="footer footer--shop">
+      <div className="footer__inner footer__inner--grid">
+        <div className="footer__brand">
+          <img src={LOGO_SRC} alt="DigiBazaar" className="footer-brand-logo" />
+          <strong>DigiBazaar Shop</strong>
+          <p>Tools for store owners to manage orders, inventory, promotions, and growth.</p>
+        </div>
+        <div className="footer__col">
+          <h4>Quick Links</h4>
+          <Link className="footer-link" to="/dashboard" onClick={() => handleDashboardTab('dashboard')}>Overview</Link>
+          <Link className="footer-link" to="/dashboard" onClick={() => handleDashboardTab('orders')}>Orders</Link>
+          <Link className="footer-link" to="/dashboard" onClick={() => handleDashboardTab('inventory')}>Inventory</Link>
+        </div>
+        <div className="footer__col">
+          <h4>Growth</h4>
+          <Link className="footer-link" to="/dashboard" onClick={() => handleDashboardTab('analytics')}>Analytics</Link>
+          <Link className="footer-link" to="/dashboard" onClick={() => handleDashboardTab('promotions')}>Promotions</Link>
+          <Link className="footer-link" to="/dashboard" onClick={() => handleDashboardTab('customers')}>Customers</Link>
+        </div>
+        <div className="footer__col">
+          <h4>Resources</h4>
+          <Link className="footer-link" to="/dashboard">Dashboard Help</Link>
+          <Link className="footer-link" to="/dashboard/terms-of-service">Terms of Service</Link>
+          <Link className="footer-link" to="/dashboard/privacy-policy">Privacy Policy</Link>
+        </div>
+      </div>
+    </footer>
+  )
+}
+
+function RiderFooter() {
+  const handleRiderTab = (tabName) => {
+    localStorage.setItem('active_rider_tab', tabName)
+    window.dispatchEvent(new Event('riderTabChanged'))
+  }
+
+  return (
+    <footer className="footer footer--rider">
+      <div className="footer__inner footer__inner--grid">
+        <div className="footer__brand">
+          <img src={LOGO_SRC} alt="DigiBazaar" className="footer-brand-logo" />
+          <strong>DigiBazaar Rider</strong>
+          <p>Fast, friendly delivery partner tools built for your route, earnings, and safety.</p>
+        </div>
+        <div className="footer__col">
+          <h4>Navigate</h4>
+          <Link className="footer-link" to="/rider" onClick={() => handleRiderTab('home')}>Dashboard</Link>
+          <Link className="footer-link" to="/rider" onClick={() => handleRiderTab('deliveries')}>Deliveries</Link>
+          <Link className="footer-link" to="/rider" onClick={() => handleRiderTab('map')}>Live Map</Link>
+        </div>
+        <div className="footer__col">
+          <h4>Delivery Partner</h4>
+          <Link className="footer-link" to="/rider" onClick={() => handleRiderTab('history')}>Delivery History</Link>
+          <Link className="footer-link" to="/rider" onClick={() => handleRiderTab('profile')}>My Profile</Link>
+          <a className="footer-link" href="mailto:rider-support@digibazaar.in">rider-support@digibazaar.in</a>
+        </div>
+        <div className="footer__col">
+          <h4>Help</h4>
+          <Link className="footer-link" to="/privacy-policy">Privacy Policy</Link>
+          <Link className="footer-link" to="/safe-delivery-tips">Safe Delivery Tips</Link>
+        </div>
+      </div>
+    </footer>
+  )
+}
+
 function AppInner() {
   const location = useLocation()
   const { user, authChecked } = useAuth()
@@ -1157,9 +1412,12 @@ function AppInner() {
         <ShopOwnerNavbar />
         <div className="shop-owner-layout-wrapper">
           <ShopOwnerSidebar />
-          <main className="shop-owner-main-content-panel">
-            <AppRoutes />
-          </main>
+          <div className="shop-owner-content-area">
+            <main className="shop-owner-main-content-panel">
+              <AppRoutes />
+            </main>
+            <ShopOwnerFooter />
+          </div>
         </div>
       </>
     )
@@ -1172,6 +1430,7 @@ function AppInner() {
         <main className="rider-layout-wrapper-panel">
           <AppRoutes />
         </main>
+        <RiderFooter />
       </>
     )
   }
@@ -1181,15 +1440,10 @@ function AppInner() {
     <>
       <CustomerNavbar />
       <Cart />
-      <main>
+      <main className="customer-page-main">
         <AppRoutes />
       </main>
-      <footer className="footer">
-        <div className="footer__inner">
-          <span>DigiBazaar — AI-Powered Local Shopping</span>
-          <span style={{ color: '#888', fontSize: '13px' }}>Built in Paldi, Ahmedabad, Gujarat</span>
-        </div>
-      </footer>
+      <CustomerFooter />
     </>
   )
 }

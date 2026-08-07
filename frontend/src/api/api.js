@@ -68,9 +68,8 @@ export async function fetchJson(endpoint, options = {}) {
       isRefreshing = true
       newToken = await refreshAccessToken()
       isRefreshing = false
-      if (newToken) {
-        onRefreshed(newToken)
-      } else {
+      onRefreshed(newToken)
+      if (!newToken) {
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
         localStorage.removeItem('user')

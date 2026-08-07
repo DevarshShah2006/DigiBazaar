@@ -339,7 +339,7 @@ function Products() {
               </div>
             ) : products.length === 0 ? (
               <div className="products-empty">
-                <p>😕 No products match your selected filters.</p>
+                <p>No products match your selected filters.</p>
                 <button onClick={resetAllFilters}>Clear all filters</button>
               </div>
             ) : (

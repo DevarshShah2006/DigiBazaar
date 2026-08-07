@@ -25,13 +25,7 @@ export function CartProvider({ children }) {
 
   const addItem = useCallback((product, quantity = 1) => {
     setItems(prev => {
-      if (!product || !product.id) {
-        const existing = prev.find(i => i.id === product.id)
-        if (existing) {
-          return prev.map(i => i.id === product.id ? { ...i, quantity: i.quantity + quantity } : i)
-        }
-        return [...prev, { ...product, quantity }]
-      }
+      if (!product || !product.id) return prev  // guard: ignore invalid products
 
       const existing = prev.find(i => i.id === product.id)
       if (existing) {

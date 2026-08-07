@@ -28,13 +28,50 @@ WEATHER_CODES = {
 }
 
 
-def seed_starter_inventory(shop, limit=12):
+def seed_starter_inventory(shop, limit=15):
     if not shop or Inventory.objects.filter(shop=shop).exists():
         return
 
-    products = Product.objects.filter(status='active', visibility=True).order_by('id')[:limit]
+    shop_type = getattr(shop, 'shop_type', 'kirana') or 'kirana'
+
+    # Filter categories appropriate for shop_type
+    type_keywords = {
+        'medical': ['health', 'pharma', 'baby', 'bath', 'grooming', 'beauty', 'personal care', 'hygiene'],
+        'snacks': ['snack', 'biscuit', 'sweet', 'chocolat', 'beverage', 'drink', 'tea', 'coffee', 'bakery', 'namkeen'],
+        'kirana': ['grocery', 'dairy', 'bakery', 'produce', 'fruit', 'vegetable', 'spice', 'dry fruit', 'pantry', 'instant', 'frozen', 'oil', 'ghee', 'flour', 'rice', 'grain', 'pulse', 'lentil', 'sugar', 'salt'],
+        'clothing': ['clothing', 'fashion', 'footwear', 'wear', 'apparel'],
+        'household': ['home & living', 'home-living', 'household', 'cleaning', 'electronics', 'stationery', 'kitchen'],
+        'pet': ['pet']
+    }
+
+    exclusions = {
+        'medical': ['cloth', 'fashion', 'footwear', 'home & living', 'home-living', 'snack', 'biscuit', 'sweet', 'chocolat', 'grocery'],
+        'snacks': ['cloth', 'fashion', 'footwear', 'home & living', 'home-living', 'health', 'pharma', 'baby'],
+        'kirana': ['cloth', 'fashion', 'footwear', 'health', 'pharma', 'home & living', 'home-living', 'pet'],
+        'clothing': ['grocery', 'health', 'pharma', 'snack', 'beverage', 'home & living', 'home-living', 'pet'],
+        'household': ['cloth', 'fashion', 'footwear', 'health', 'pharma', 'fresh produce', 'pet'],
+    }
+
+    kw_list = type_keywords.get(shop_type, ['grocery'])
+    exc_list = exclusions.get(shop_type, [])
+
+    q = Q(status='active', visibility=True)
+
+    # Apply category pattern filter
+    cat_q = Q()
+    for kw in kw_list:
+        cat_q |= Q(category__name__icontains=kw) | Q(category__slug__icontains=kw)
+    q &= cat_q
+
+    # Exclude banned category patterns
+    for exc in exc_list:
+        q &= ~Q(category__name__icontains=exc) & ~Q(category__slug__icontains=exc)
+
+    products = list(Product.objects.filter(q).order_by('id')[:limit])
+
     if not products:
-        products = Product.objects.all().order_by('id')[:limit]
+        # Fallback if specific search yielded empty
+        products = list(Product.objects.filter(status='active', visibility=True).exclude(category__name__icontains='clothing')[:limit])
 
     for idx, product in enumerate(products):
         price = product.effective_price or product.price or product.selling_price or 0
@@ -124,17 +161,17 @@ class ShopRevenueTodayView(APIView):
         today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
         yesterday_start = today_start - timedelta(days=1)
 
-        # Revenue Today (Completed / Delivered)
+        # Revenue Today (Accepted and beyond - all confirmed orders)
         today_rev = OrderItem.objects.filter(
             order__shop=shop,
-            order__status__in=['completed', 'delivered'],
+            order__status__in=['accepted', 'preparing', 'ready', 'picked_up', 'out_for_delivery', 'delivered', 'completed'],
             order__created_at__gte=today_start
         ).aggregate(total=Sum(F('price_at_order') * F('quantity')))['total'] or 0.0
 
         # Revenue Yesterday
         yesterday_rev = OrderItem.objects.filter(
             order__shop=shop,
-            order__status__in=['completed', 'delivered'],
+            order__status__in=['accepted', 'preparing', 'ready', 'picked_up', 'out_for_delivery', 'delivered', 'completed'],
             order__created_at__range=(yesterday_start, today_start)
         ).aggregate(total=Sum(F('price_at_order') * F('quantity')))['total'] or 0.0
 
@@ -180,14 +217,14 @@ class ShopRevenueMonthView(APIView):
         # Revenue This Month
         this_month_rev = OrderItem.objects.filter(
             order__shop=shop,
-            order__status__in=['completed', 'delivered'],
+            order__status__in=['accepted', 'preparing', 'ready', 'picked_up', 'out_for_delivery', 'delivered', 'completed'],
             order__created_at__gte=this_month_start
         ).aggregate(total=Sum(F('price_at_order') * F('quantity')))['total'] or 0.0
 
         # Revenue Last Month
         last_month_rev = OrderItem.objects.filter(
             order__shop=shop,
-            order__status__in=['completed', 'delivered'],
+            order__status__in=['accepted', 'preparing', 'ready', 'picked_up', 'out_for_delivery', 'delivered', 'completed'],
             order__created_at__range=(last_month_start, this_month_start)
         ).aggregate(total=Sum(F('price_at_order') * F('quantity')))['total'] or 0.0
 
@@ -315,9 +352,7 @@ class ShopLowStockView(APIView):
             }
             for item in low_stock
         ]
-        resp = Response(items)
-        resp["Cache-Control"] = "max-age=30, stale-while-revalidate=60"
-        return resp
+        return Response(items)
 
 
 class ShopOutOfStockView(APIView):
@@ -551,7 +586,7 @@ class ShopDashboardSummaryView(APIView):
         def get_revenue():
             result = OrderItem.objects.filter(
                 order__shop=shop,
-                order__status__in=['completed', 'delivered'],
+                order__status__in=['accepted', 'preparing', 'ready', 'picked_up', 'out_for_delivery', 'delivered', 'completed'],
                 order__created_at__gte=today_start
             ).aggregate(total=Sum(F('price_at_order') * F('quantity')))['total']
             return float(result or 0.0)
@@ -577,16 +612,21 @@ class ShopDashboardSummaryView(APIView):
             low_stock_count = low_stock_future.result()
             weather = weather_future.result()
 
-        response = Response({
-            'shop_name': shop.name,
-            'is_open': shop.is_open,
-            'revenue_today': revenue_today,
-            'pending_orders_count': pending_orders_count,
-            'low_stock_count': low_stock_count,
-            'weather': weather,
-        })
-        # Cache for 30 seconds — safe for near-real-time data
-        response['Cache-Control'] = 'max-age=30, stale-while-revalidate=60'
+            shop_info = {
+                'name': shop.name,
+                'is_open': shop.is_open,
+                'live_inventory': shop.live_inventory,
+                'tier': shop.effective_tier,
+                'commission_pct': shop.commission_rate_pct,
+            }
+
+            response = Response({
+                'shop_info': shop_info,
+                'revenue_today': revenue_today,
+                'pending_orders_count': pending_orders_count,
+                'low_stock_count': low_stock_count,
+                'weather': weather,
+            })
         return response
 
 class ShopSalesReportView(APIView):
@@ -627,8 +667,8 @@ class ShopSalesReportView(APIView):
         completed_orders_count = period_orders.count()
         avg_order_value = gross_sales / completed_orders_count if completed_orders_count > 0 else 0.0
 
-        # Commission calculation (10% for free tier, 5% for premium/live)
-        commission_rate = 0.05 if (shop.tier == 'premium' or shop.live_inventory) else 0.10
+        # Commission calculation (dynamic based on tier and expiry)
+        commission_rate = shop.commission_rate_pct / 100.0
         platform_fee = round(gross_sales * commission_rate, 2)
         net_revenue = round(gross_sales - platform_fee, 2)
 
@@ -1108,9 +1148,21 @@ class ShopGrowthHubView(APIView):
         if not shop:
             return Response({'detail': 'Shop not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        # Current Tier details
-        current_tier = shop.tier  # 'free' or 'premium'
-        commission_pct = 5 if (current_tier == 'premium' or shop.live_inventory) else 10
+        # Auto-expire tier if past date
+        if shop.tier == 'premium' and shop.tier_expires_at and shop.tier_expires_at < timezone.now():
+            shop.tier = 'free'
+            shop.tier_expires_at = None
+            shop.save(update_fields=['tier', 'tier_expires_at'])
+
+        current_tier = shop.effective_tier
+        commission_pct = shop.commission_rate_pct
+
+        days_remaining = None
+        tier_expires_at_str = None
+        if current_tier == 'premium' and shop.tier_expires_at:
+            delta = shop.tier_expires_at - timezone.now()
+            days_remaining = max(0, delta.days)
+            tier_expires_at_str = shop.tier_expires_at.strftime('%d %b %Y')
 
         # Calculate total volume & commission paid for this shop
         thirty_days_ago = timezone.now() - timedelta(days=30)
@@ -1128,11 +1180,8 @@ class ShopGrowthHubView(APIView):
         monthly_commission_paid = round(monthly_volume * (commission_pct / 100.0), 2)
 
         # ML Growth & Revenue Simulator
-        # Predicts savings and revenue boost if upgraded from Free to Premium tier (5% commission + Featured homepage slot)
         simulated_premium_commission = round(monthly_volume * 0.05, 2)
         estimated_monthly_savings = max(0.0, round(monthly_commission_paid - simulated_premium_commission, 2))
-        
-        # Predicted sales volume uplift with featured badge (estimated +22% sales boost)
         predicted_revenue_uplift_pct = 22.0
         predicted_new_monthly_revenue = round(monthly_volume * 1.22, 2)
         predicted_net_profit_gain = round((predicted_new_monthly_revenue - monthly_volume) * 0.85 + estimated_monthly_savings, 2)
@@ -1141,6 +1190,9 @@ class ShopGrowthHubView(APIView):
             'shop_name': shop.name,
             'current_tier': current_tier,
             'commission_pct': commission_pct,
+            'tier_expires_at': tier_expires_at_str,
+            'days_remaining': days_remaining,
+            'upgrade_cost': 5000,
             'monthly_volume': round(monthly_volume, 2),
             'monthly_commission_paid': monthly_commission_paid,
             'tiers': [
@@ -1155,7 +1207,7 @@ class ShopGrowthHubView(APIView):
                     'id': 'premium',
                     'name': 'Gold Super-Seller Plan',
                     'commission_rate': '5% Flat Rate',
-                    'features': ['50% Lower Commission (5% Flat)', 'Featured Banner & Top Search Ranking', 'Auto-Assign Priority Instant Dispatch', 'ML Demand & Churn Predictive Engine', 'Dedicated Merchant Account Manager'],
+                    'features': ['50% Lower Commission (5% Flat) for 30 Days', 'Featured Banner & Top Search Ranking', 'Auto-Assign Priority Instant Dispatch', 'ML Demand & Churn Predictive Engine', 'Dedicated Merchant Account Manager'],
                     'is_current': current_tier == 'premium'
                 }
             ],
@@ -1172,23 +1224,55 @@ class ShopGrowthHubView(APIView):
 class ShopUpgradeTierView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
+    UPGRADE_COST = 5000   # INR
+    TIER_DURATION_DAYS = 30
+
     def post(self, request):
         shop = get_shop_for_owner(request.user)
         if not shop:
             return Response({'detail': 'Not a shop owner'}, status=status.HTTP_403_FORBIDDEN)
 
         target_tier = request.data.get('tier', 'premium')
-        shop.tier = target_tier
+        
         if target_tier == 'premium':
-            shop.live_inventory = True
-        shop.save()
+            # Simulate payment confirmation
+            payment_amount = request.data.get('payment_amount', 0)
+            try:
+                payment_amount = float(payment_amount)
+            except (ValueError, TypeError):
+                payment_amount = 0
 
-        return Response({
-            'status': 'success',
-            'message': f"Store successfully upgraded to '{target_tier.title()}' Tier! Lower 5% commission rate activated.",
-            'tier': shop.tier,
-            'live_inventory': shop.live_inventory
-        })
+            if payment_amount < self.UPGRADE_COST:
+                return Response({
+                    'detail': f'Payment of ₹{self.UPGRADE_COST} is required to upgrade to Gold Tier.',
+                    'required_amount': self.UPGRADE_COST,
+                }, status=status.HTTP_402_PAYMENT_REQUIRED)
+
+            shop.tier = 'premium'
+            shop.tier_expires_at = timezone.now() + timedelta(days=self.TIER_DURATION_DAYS)
+            shop.live_inventory = True
+            shop.save(update_fields=['tier', 'tier_expires_at', 'live_inventory'])
+
+            return Response({
+                'status': 'success',
+                'message': f"Store successfully upgraded to Gold Tier! Lower 5% commission rate activated for 30 days.",
+                'tier': shop.tier,
+                'tier_expires_at': shop.tier_expires_at.strftime('%d %b %Y'),
+                'days_remaining': self.TIER_DURATION_DAYS,
+                'commission_pct': 5,
+                'live_inventory': shop.live_inventory
+            })
+        else:
+            # Downgrade to free
+            shop.tier = 'free'
+            shop.tier_expires_at = None
+            shop.save(update_fields=['tier', 'tier_expires_at'])
+            return Response({
+                'status': 'success',
+                'message': 'Store moved back to Starter Plan.',
+                'tier': 'free',
+                'commission_pct': 10,
+            })
 
 
 class ShopSettingsView(APIView):

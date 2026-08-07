@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { fetchJson } from '../../api/api'
 import { useCart } from '../../context/CartContext'
+import TaxInvoiceModal from '../../components/TaxInvoice/TaxInvoiceModal'
 import './MyOrders.css'
 
 const STATUS_CONFIG = {
@@ -19,6 +20,7 @@ const STATUS_CONFIG = {
 function MyOrders() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
+  const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState(null)
   const { addItem } = useCart()
   const navigate = useNavigate()
 
@@ -82,11 +84,7 @@ function MyOrders() {
                     </div>
                   )}
                   
-                  {order.recommended_delivery_mode && (
-                    <div style={{ marginTop: '8px', fontSize: '13px', color: '#6366f1', background: '#e0e7ff', padding: '4px 8px', borderRadius: '4px', display: 'inline-block' }}>
-                      Smart Recommendation: <strong>{order.recommended_delivery_mode.replace('_', ' ')}</strong> ({order.delivery_mode_confidence}%)
-                    </div>
-                  )}
+
                 </div>
                 <div className="order-row__right">
                   <span
@@ -96,13 +94,22 @@ function MyOrders() {
                     {cfg.label}
                   </span>
                   
-                  <div className="order-row__actions">
+                  <div className="order-row__actions" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     <button 
                       className="order-row__track-btn"
                       onClick={() => navigate(`/order-confirmation/${order.id}`)}
                     >
                       Track Order
                     </button>
+                    {(order.status === 'delivered' || order.status === 'completed') && (
+                      <button 
+                        className="order-row__invoice-btn"
+                        onClick={() => setSelectedInvoiceOrder(order)}
+                        style={{ background: '#059669', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}
+                      >
+                        Download Invoice
+                      </button>
+                    )}
                     <button 
                       className="order-row__reorder-btn"
                       onClick={() => handleReorder(order)}
@@ -115,6 +122,10 @@ function MyOrders() {
             )
           })}
         </div>
+      )}
+
+      {selectedInvoiceOrder && (
+        <TaxInvoiceModal order={selectedInvoiceOrder} onClose={() => setSelectedInvoiceOrder(null)} />
       )}
     </div>
   )

@@ -11,7 +11,8 @@ import RecommendedProductCard from '../../components/CartPage/RecommendedProduct
 import './CartPage.css'
 
 const DELIVERY_OPTIONS = [
-  { id: 'home', title: 'Home Delivery', subtitle: 'Today, 5-7 PM', label: 'FREE' },
+  { id: 'home', title: 'Delivery by DigiBazaar', subtitle: '12-18 mins fast delivery', label: '₹20' },
+  { id: 'shop_delivery', title: 'Delivery by Shop', subtitle: 'Delivered by shop', label: 'FREE' },
   { id: 'pickup', title: 'Pickup', subtitle: 'Ready in 20m', label: 'FREE' }
 ]
 
@@ -30,16 +31,69 @@ function CartPage() {
   const [deliveryOption, setDeliveryOption] = useState(
     localStorage.getItem('digibazaar_cart_delivery_option') || 'home'
   )
+  const [digiBazaarCharge, setDigiBazaarCharge] = useState(20.00)
+  const [recommendedMode, setRecommendedMode] = useState('home')
+
+  useEffect(() => {
+    if (items.length > 0) {
+      const shopId = items[0]?.shop_id || (items[0]?.shops && items[0]?.shops[0]?.id)
+      let coords = { lat: 23.0125, long: 72.5575 }
+      try {
+        const saved = JSON.parse(localStorage.getItem('digibazaar_customer_location'))
+        if (saved && Number.isFinite(saved.lat) && Number.isFinite(saved.long)) coords = saved
+      } catch (e) {}
+
+      fetchJson('/orders/recommend-delivery/', {
+        method: 'POST',
+        body: JSON.stringify({
+          shop_id: shopId,
+          order_value: total,
+          lat: coords.lat,
+          long: coords.long
+        })
+      }).then(data => {
+        if (data) {
+          if (data.pricing_options?.digibazaar_delivery) {
+            const charge = data.pricing_options.digibazaar_delivery
+            setDigiBazaarCharge(charge)
+            localStorage.setItem('digibazaar_delivery_charge', charge.toString())
+          }
+          if (data.recommended_delivery_mode) {
+            let mode = data.recommended_delivery_mode
+            if (mode === 'digibazaar_delivery') mode = 'home'
+            setRecommendedMode(mode)
+            if (!localStorage.getItem('digibazaar_user_selected_delivery')) {
+              setDeliveryOption(mode)
+              localStorage.setItem('digibazaar_cart_delivery_option', mode)
+            }
+          }
+        }
+      }).catch(() => {})
+    }
+  }, [items, total])
+
+  const deliveryOptionsList = useMemo(() => [
+    { id: 'home', title: 'Delivery by DigiBazaar', subtitle: '12-18 mins fast delivery', label: `₹${digiBazaarCharge.toFixed(0)}` },
+    { id: 'shop_delivery', title: 'Delivery by Shop', subtitle: 'Delivered by shop', label: 'FREE' },
+    { id: 'pickup', title: 'Pickup', subtitle: 'Ready in 20m', label: 'FREE' }
+  ], [digiBazaarCharge])
+
   const [address, setAddress] = useState(
-    localStorage.getItem('digibazaar_cart_delivery_address') || DEFAULT_ADDRESS
+    localStorage.getItem('digibazaar_cart_delivery_address') || localStorage.getItem('delivery_address') || DEFAULT_ADDRESS
+  )
+  const [coordinates, setCoordinates] = useState(
+    localStorage.getItem('delivery_coordinates') && localStorage.getItem('delivery_coordinates') !== 'null'
+      ? localStorage.getItem('delivery_coordinates')
+      : null
   )
   const [savedAddresses, setSavedAddresses] = useState([
-    localStorage.getItem('digibazaar_cart_delivery_address') || DEFAULT_ADDRESS,
+    localStorage.getItem('digibazaar_cart_delivery_address') || localStorage.getItem('delivery_address') || DEFAULT_ADDRESS,
     'NID Campus Hostel Block B, Paldi, Ahmedabad - 380007'
   ])
   const [addressPickerOpen, setAddressPickerOpen] = useState(false)
   const [detectingAddress, setDetectingAddress] = useState(false)
   const [newAddressText, setNewAddressText] = useState('')
+  const [showAddressInput, setShowAddressInput] = useState(false)
   const [recommended, setRecommended] = useState([])
   const [discountCode, setDiscountCode] = useState(
     localStorage.getItem('digibazaar_cart_discount_code') || ''
@@ -67,7 +121,7 @@ function CartPage() {
   }
 
   const itemsTotal = useMemo(() => total, [total])
-  const deliveryFee = 0
+  const deliveryFee = (deliveryOption === 'home' || deliveryOption === 'digibazaar_delivery') ? digiBazaarCharge : 0
   const smallOrderCharge = deliveryOption === 'home' && itemsTotal > 0 && itemsTotal < SMALL_ORDER_THRESHOLD
     ? SMALL_ORDER_FEE
     : 0
@@ -135,6 +189,8 @@ function CartPage() {
 
   const handleDeliveryChange = (optionId) => {
     setDeliveryOption(optionId)
+    localStorage.setItem('digibazaar_cart_delivery_option', optionId)
+    localStorage.setItem('digibazaar_user_selected_delivery', 'true')
   }
 
   const handleApplyDiscount = async () => {
@@ -188,15 +244,25 @@ function CartPage() {
     setDiscountMessage('')
   }
 
-  const setCartAddress = (newAddress) => {
+  const setCartAddress = (newAddress, coords = null) => {
     setAddress(newAddress)
     localStorage.setItem('digibazaar_cart_delivery_address', newAddress)
     localStorage.setItem('delivery_address', newAddress)
+    if (coords) {
+      setCoordinates(coords)
+      localStorage.setItem('delivery_coordinates', coords)
+    } else {
+      setCoordinates(null)
+      localStorage.removeItem('delivery_coordinates')
+    }
     window.dispatchEvent(new Event('addressUpdated'))
   }
 
   const handleSelectAddress = (addr) => {
     setCartAddress(addr)
+    setCoordinates(null)
+    localStorage.removeItem('delivery_coordinates')
+    setShowAddressInput(false)
     setAddressPickerOpen(false)
     if (!savedAddresses.includes(addr)) {
       const updatedAddresses = [...savedAddresses, addr]
@@ -218,27 +284,70 @@ function CartPage() {
     setSavedAddresses(updatedAddresses)
     localStorage.setItem('saved_addresses', JSON.stringify(updatedAddresses))
     setNewAddressText('')
+    setShowAddressInput(false)
     setAddressPickerOpen(false)
   }
 
   const handleDetectLocation = () => {
     setDetectingAddress(true)
-    setTimeout(() => {
-      const detected = '7B, Paldi Cross Roads, Ahmedabad, Gujarat - 380007'
-      setCartAddress(detected)
-      if (!savedAddresses.includes(detected)) {
-        const updatedAddresses = [...savedAddresses, detected]
-        setSavedAddresses(updatedAddresses)
-        localStorage.setItem('saved_addresses', JSON.stringify(updatedAddresses))
-      }
+    setShowAddressInput(false)
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude.toFixed(6)
+          const lng = position.coords.longitude.toFixed(6)
+          const coords = `${lat}, ${lng}`
+          setCoordinates(coords)
+          localStorage.setItem('delivery_coordinates', coords)
+          setDetectingAddress(false)
+          setShowAddressInput(true)
+          setDiscountMessage('')
+        },
+        (error) => {
+          console.error('Geolocation error:', error)
+          const fallback = '7B, Paldi Cross Roads, Ahmedabad, Gujarat - 380007'
+          setCartAddress(fallback)
+          setCoordinates(null)
+          localStorage.removeItem('delivery_coordinates')
+          setDetectingAddress(false)
+          setShowAddressInput(false)
+          setDiscountMessage('')
+          alert('Unable to detect location. Please enter address manually.')
+        }
+      )
+    } else {
+      const fallback = '7B, Paldi Cross Roads, Ahmedabad, Gujarat - 380007'
+      setCartAddress(fallback)
+      setCoordinates(null)
+      localStorage.removeItem('delivery_coordinates')
       setDetectingAddress(false)
-      setAddressPickerOpen(false)
+      setShowAddressInput(false)
       setDiscountMessage('')
-    }, 1200)
+      alert('Geolocation not supported. Please enter address manually.')
+    }
   }
 
   const handleAddressChange = () => {
     setAddressPickerOpen(prev => !prev)
+    setShowAddressInput(false)
+    setNewAddressText('')
+  }
+
+  const handleSaveAddressWithCoordinates = () => {
+    const trimmed = newAddressText.trim()
+    if (!trimmed) {
+      setDiscountMessage('Please enter a delivery address to save.')
+      return
+    }
+    setCartAddress(trimmed, coordinates)
+    const updatedAddresses = savedAddresses.includes(trimmed)
+      ? savedAddresses
+      : [...savedAddresses, trimmed]
+    setSavedAddresses(updatedAddresses)
+    localStorage.setItem('saved_addresses', JSON.stringify(updatedAddresses))
+    setNewAddressText('')
+    setShowAddressInput(false)
+    setAddressPickerOpen(false)
   }
 
   const handleProceed = () => {
@@ -291,49 +400,88 @@ function CartPage() {
                 </div>
               </div>
               <div className="delivery-options">
-                {DELIVERY_OPTIONS.map(option => (
+                {deliveryOptionsList.map(option => (
                   <DeliveryOption
                     key={option.id}
-                    option={option}
+                    option={{
+                      ...option,
+                      isRecommended: recommendedMode === option.id
+                    }}
                     selected={deliveryOption === option.id}
                     onSelect={() => handleDeliveryChange(option.id)}
                   />
                 ))}
               </div>
 
-              <AddressCard address={address} onChange={handleAddressChange} />
+              <AddressCard address={address} coordinates={coordinates} onChange={handleAddressChange} />
               {addressPickerOpen && (
                 <div className="address-picker-panel cart-address-picker">
-                  <div className="saved-addresses-list">
-                    {savedAddresses.map((addr, idx) => (
-                      <label key={idx} className="address-label-card">
-                        <input
-                          type="radio"
-                          name="cart_address_choice"
-                          checked={address === addr}
-                          onChange={() => handleSelectAddress(addr)}
-                        />
-                        <span>{addr}</span>
-                      </label>
-                    ))}
-                  </div>
-                  <div className="add-new-address-form">
-                    <input
-                      type="text"
-                      placeholder="Enter new delivery address"
-                      value={newAddressText}
-                      onChange={(e) => setNewAddressText(e.target.value)}
-                    />
-                    <button onClick={handleAddNewAddress}>Save Address</button>
-                  </div>
                   <button
                     className="detect-location-btn"
                     type="button"
                     onClick={handleDetectLocation}
                     disabled={detectingAddress}
+                    style={{ marginBottom: '12px' }}
                   >
                     {detectingAddress ? 'Detecting Location…' : 'Detect Current Location'}
                   </button>
+                  
+                  {showAddressInput && coordinates && (
+                    <>
+                      <div style={{ marginBottom: '12px', padding: '10px', background: '#f0f9ff', borderRadius: '8px', border: '1px solid #bae6fd' }}>
+                        <p style={{ margin: '0 0 6px 0', fontSize: '13px', color: '#0369a1', fontWeight: '600' }}>
+                          Coordinates Captured: <strong>{coordinates}</strong>
+                        </p>
+                        <p style={{ margin: '0', fontSize: '12px', color: '#0891b2' }}>
+                          Please enter your address below:
+                        </p>
+                      </div>
+                      <div className="add-new-address-form">
+                        <input
+                          type="text"
+                          placeholder="Enter your full address..."
+                          value={newAddressText}
+                          onChange={(e) => setNewAddressText(e.target.value)}
+                          style={{ width: '100%' }}
+                        />
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                          <button onClick={handleSaveAddressWithCoordinates} style={{ flex: 1, background: '#16a34a', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', cursor: 'pointer' }}>
+                            Save Address
+                          </button>
+                          <button onClick={() => { setShowAddressInput(false); setNewAddressText(''); }} style={{ flex: 1, background: '#fee2e2', color: '#dc2626', border: 'none', padding: '10px', borderRadius: '6px', cursor: 'pointer' }}>
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  
+                  {!showAddressInput && (
+                    <>
+                      <div className="saved-addresses-list">
+                        {savedAddresses.map((addr, idx) => (
+                          <label key={idx} className="address-label-card">
+                            <input
+                              type="radio"
+                              name="cart_address_choice"
+                              checked={address === addr}
+                              onChange={() => handleSelectAddress(addr)}
+                            />
+                            <span>{addr}</span>
+                          </label>
+                        ))}
+                      </div>
+                      <div className="add-new-address-form">
+                        <input
+                          type="text"
+                          placeholder="Enter new delivery address"
+                          value={newAddressText}
+                          onChange={(e) => setNewAddressText(e.target.value)}
+                        />
+                        <button onClick={handleAddNewAddress}>Save Address</button>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
             </section>
@@ -361,8 +509,8 @@ function CartPage() {
       <section className="recommended-section container">
         <div className="recommended-header">
           <div>
-            <p className="cart-eyebrow">Before you go...</p>
-            <h2 className="section-heading">Recommended Products</h2>
+            <p className="cart-eyebrow">Quick Add Snacks & Beverages</p>
+            <h2 className="section-heading">Recommended Snacks, Munchies & Beverages</h2>
           </div>
         </div>
         <div className="recommended-grid">

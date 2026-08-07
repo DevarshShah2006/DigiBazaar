@@ -13,8 +13,21 @@
 .shop-dashboard {
   padding: 40px 0;
   background: var(--background);
-  min-height: calc(100vh - 64px);
   transition: all 0.3s;
+}
+
+.shop-dashboard-sticky-header {
+  position: sticky;
+  top: 64px;
+  z-index: 50;
+  background: var(--background);
+  padding-top: 24px;
+  margin-bottom: 32px;
+}
+
+.shop-dashboard-sticky-header .shop-info-banner {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 /* Info Banner */

@@ -37,6 +37,8 @@ from .views import (
     UpdateDeliveryAssignmentView,
     DeliveryRecommendationView,
     ShopDemandForecastView,
+    TrendingProductsView,
+    RecommendProductsView,
 )
 from .dashboard_views import (
     ShopRevenueTodayView,
@@ -85,8 +87,10 @@ urlpatterns = [
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/send-otp/', SendOTPView.as_view(), name='send_otp'),
     path('auth/verify-otp/', VerifyOTPView.as_view(), name='verify_otp'),
-    path('products/list/', ProductListView.as_view(), name='product_list'),
     path('products/search/', ProductSearchView.as_view(), name='product_search'),
+    path('trending/', TrendingProductsView.as_view(), name='trending_products'),
+    path('recommend/popular/', RecommendProductsView.as_view(), name='recommend_popular'),
+    path('recommend/<int:user_id>/', RecommendProductsView.as_view(), name='recommend_user'),
     path('categories/', CategoryListView.as_view(), name='category_list'),
     path('categories/<slug:category_slug>/products/', CategoryProductsView.as_view(), name='category_products'),
     path('products/recommended/', RecommendedProductsView.as_view(), name='recommended_products'),

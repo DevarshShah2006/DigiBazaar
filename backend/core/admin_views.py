@@ -35,15 +35,19 @@ class AdminStatsView(APIView):
     permission_classes = [IsAdminUserPermission]
 
     def get(self, request):
-        total_orders = Order.objects.count()
-        completed_orders = Order.objects.filter(status='completed').count()
-        pending_orders = Order.objects.filter(status='pending').count()
-        delivered_orders = Order.objects.filter(status='delivered').count()
-        cancelled_orders = Order.objects.filter(status__in=['cancelled', 'rejected']).count()
-
-        total_revenue = Order.objects.exclude(status__in=['cancelled', 'rejected']).aggregate(
-            total=Sum('total_amount')
-        )['total'] or Decimal('0.00')
+        order_aggregates = Order.objects.aggregate(
+            total_orders=Count('id'),
+            completed_orders=Count('id', filter=Q(status='completed')),
+            pending_orders=Count('id', filter=Q(status='pending')),
+            delivered_orders=Count('id', filter=Q(status='delivered')),
+            accepted_orders=Count('id', filter=Q(status='accepted')),
+            preparing_orders=Count('id', filter=Q(status='preparing')),
+            ready_orders=Count('id', filter=Q(status='ready')),
+            picked_up_orders=Count('id', filter=Q(status='picked_up')),
+            out_for_delivery_orders=Count('id', filter=Q(status='out_for_delivery')),
+            cancelled_orders=Count('id', filter=Q(status__in=['cancelled', 'rejected'])),
+            total_revenue=Sum('total_amount', filter=~Q(status__in=['cancelled', 'rejected']))
+        )
 
         total_shops = Shop.objects.count()
         open_shops = Shop.objects.filter(is_open=True).count()
@@ -52,28 +56,29 @@ class AdminStatsView(APIView):
         total_users = User.objects.count()
         total_products = Product.objects.count()
 
-        # Status breakdown
+        revenue_val = order_aggregates['total_revenue'] or Decimal('0.00')
+
         status_counts = {
-            'pending': pending_orders,
-            'accepted': Order.objects.filter(status='accepted').count(),
-            'preparing': Order.objects.filter(status='preparing').count(),
-            'ready': Order.objects.filter(status='ready').count(),
-            'picked_up': Order.objects.filter(status='picked_up').count(),
-            'out_for_delivery': Order.objects.filter(status='out_for_delivery').count(),
-            'delivered': delivered_orders,
-            'completed': completed_orders,
-            'cancelled': cancelled_orders,
+            'pending': order_aggregates['pending_orders'] or 0,
+            'accepted': order_aggregates['accepted_orders'] or 0,
+            'preparing': order_aggregates['preparing_orders'] or 0,
+            'ready': order_aggregates['ready_orders'] or 0,
+            'picked_up': order_aggregates['picked_up_orders'] or 0,
+            'out_for_delivery': order_aggregates['out_for_delivery_orders'] or 0,
+            'delivered': order_aggregates['delivered_orders'] or 0,
+            'completed': order_aggregates['completed_orders'] or 0,
+            'cancelled': order_aggregates['cancelled_orders'] or 0,
         }
 
-        recent_orders = Order.objects.order_by('-created_at')[:10]
+        recent_orders = Order.objects.select_related('shop', 'user', 'rider').prefetch_related('items__product').order_by('-created_at')[:10]
 
         return Response({
-            'total_orders': total_orders,
-            'completed_orders': completed_orders,
-            'pending_orders': pending_orders,
-            'delivered_orders': delivered_orders,
-            'cancelled_orders': cancelled_orders,
-            'total_revenue': float(total_revenue),
+            'total_orders': order_aggregates['total_orders'] or 0,
+            'completed_orders': order_aggregates['completed_orders'] or 0,
+            'pending_orders': order_aggregates['pending_orders'] or 0,
+            'delivered_orders': order_aggregates['delivered_orders'] or 0,
+            'cancelled_orders': order_aggregates['cancelled_orders'] or 0,
+            'total_revenue': float(revenue_val),
             'total_shops': total_shops,
             'open_shops': open_shops,
             'total_riders': total_riders,

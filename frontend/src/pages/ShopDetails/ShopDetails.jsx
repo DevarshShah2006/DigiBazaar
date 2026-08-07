@@ -7,7 +7,7 @@ import { withGroupedVariants } from '../../utils/productVariants'
 import './ShopDetails.css'
 
 const FALLBACK_BANNER = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1600&q=80'
-const categoryIcons = ['🥬', '🍎', '🥛', '🥖', '🍿', '🥤', '🧊', '🧺', '🧴', '🌿']
+const categoryIcons = ['', '', '', '', '', '', '', '', '', '']
 
 function ShopDetails() {
   const { id } = useParams()
@@ -78,7 +78,7 @@ function ShopDetails() {
           <div className="shop-hero__logo">{shop.logo_url ? <img src={shop.logo_url} alt={`${name} logo`} /> : <span>{name.charAt(0)}</span>}</div>
           <div className="shop-hero__summary"><div className="shop-title-row"><h1>{name}</h1><button className={`shop-heart ${favorite ? 'active' : ''}`} onClick={() => setFavorite(!favorite)} aria-label="Save shop">{favorite ? '♥' : '♡'}</button></div>
             <p>{shop.description || `Your neighbourhood source for carefully selected ${shop.shop_type || 'grocery'} essentials.`}</p>
-            <div className="shop-quick-meta"><span>★ {Number(shop.rating || 4.5).toFixed(1)} ({shop.review_count || 'New'} reviews)</span><span>◷ {shop.avg_preparation_time_mins || 15}–{(shop.avg_preparation_time_mins || 15) + 10} mins</span><span>⌖ {distance}</span><span className={shop.is_open === false ? 'closed' : 'open'}>● {shop.is_open === false ? 'Closed' : 'Open'}</span></div>
+            <div className="shop-quick-meta"><span>★ {Number(shop.rating || 4.5).toFixed(1)} ({shop.review_count || 'New'} reviews)</span><span className={shop.is_open === false ? 'closed' : 'open'}>● {shop.is_open === false ? 'Closed' : 'Open'}</span></div>
           </div>
         </div>
         <div className="shop-hero__details"><span><b>Categories</b>{categories.map(c => c.name).join(' · ') || 'Everyday essentials'}</span><span><b>Minimum order</b>₹{Number(shop.min_order_amount || 0).toFixed(0)}</span><span><b>Store timings</b>{shop.opening_time || '9:00 AM'} – {shop.closing_time || '9:00 PM'}</span><span><b>Contact</b>{shop.address || 'Contact shop for details'}</span></div>
@@ -96,10 +96,10 @@ function ShopDetails() {
       <label className="filter-toggle"><input type="checkbox" checked={vegOnly} onChange={e => setVegOnly(e.target.checked)} />Veg only</label><label className="filter-toggle"><input type="checkbox" checked={stockOnly} onChange={e => setStockOnly(e.target.checked)} />In stock</label><button onClick={clearFilters}>Clear</button>
     </div></section>
     <div className="container shop-products"><div className="shop-section-heading"><div><h2>{query ? `Results for “${query}”` : `From ${name}`}</h2><p>{visibleProducts.length} products available today</p></div></div>
-      {grouped.length ? grouped.map(group => <section id={`category-${group.slug}`} className="shop-product-group" key={group.slug}><h2>{group.name}</h2><div className="shop-products-grid">{group.products.map(product => <ProductCard product={product} key={product.id} />)}</div></section>) : <div className="shop-empty"><p>No products match these filters.</p><button onClick={clearFilters}>Clear filters</button></div>}
+      {grouped.length ? grouped.map(group => <section id={`category-${group.slug}`} className="shop-product-group" key={group.slug}><h2>{group.name}</h2><div className="shop-products-grid">{group.products.map(product => <ProductCard product={product} key={product.id} shopId={shop.id} shopName={name} />)}</div></section>) : <div className="shop-empty"><p>No products match these filters.</p><button onClick={clearFilters}>Clear filters</button></div>}
       <section className="shop-offers"><h2>Offers from {name}</h2><OfferCards /></section>
       <section className="shop-reviews"><div><h2>Customer reviews</h2><p>See what local shoppers love about this shop.</p><div className="review-score">★ {Number(shop.rating || 4.5).toFixed(1)} <span>Based on {shop.review_count || 'recent'} reviews</span></div></div><div className="rating-bars">{[5, 4, 3, 2, 1].map((rating, i) => <div key={rating}><span>{rating} ★</span><i><b style={{ width: `${Math.max(10, 82 - i * 18)}%` }} /></i></div>)}</div><button className="review-button" onClick={() => navigate('/my-orders')}>Write a review</button></section>
-      {visibleProducts.length > 0 && <section className="shop-recommended"><h2>You may also like</h2><div>{visibleProducts.slice(0, 6).map(product => <ProductCard product={product} key={`rec-${product.id}`} />)}</div></section>}
+      {visibleProducts.length > 0 && <section className="shop-recommended"><h2>You may also like</h2><div>{visibleProducts.slice(0, 6).map(product => <ProductCard product={product} key={`rec-${product.id}`} shopId={shop.id} shopName={name} />)}</div></section>}
     </div>
   </div>
 }

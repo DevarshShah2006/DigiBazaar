@@ -40,6 +40,10 @@ class Shop(models.Model):
     tier = models.CharField(
         max_length=10, choices=TIER_CHOICES, default="free",
     )
+    tier_expires_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text="When the paid tier expires.",
+    )
     logo_url = models.URLField(blank=True)
     banner_url = models.URLField(blank=True)
 
@@ -133,6 +137,19 @@ class Shop(models.Model):
             models.Index(fields=["is_open", "is_verified"]),
             models.Index(fields=["lat", "long"]),
         ]
+
+    @property
+    def effective_tier(self):
+        from django.utils import timezone
+        if self.tier == 'premium' and self.tier_expires_at and self.tier_expires_at < timezone.now():
+            return 'free'
+        return self.tier
+
+    @property
+    def commission_rate_pct(self):
+        if self.effective_tier == 'premium' or self.live_inventory:
+            return 5
+        return 10
 
     def __str__(self):
         return self.name

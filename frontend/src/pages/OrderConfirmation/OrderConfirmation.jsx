@@ -1,63 +1,75 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { fetchJson } from '../../api/api'
+import { fetchJson, apiFetch, TTL } from '../../api/api'
+import RouteMap from '../../components/RouteMap/RouteMap'
+import RecommendedProductCard from '../../components/CartPage/RecommendedProductCard'
+import TaxInvoiceModal from '../../components/TaxInvoice/TaxInvoiceModal'
 import './OrderConfirmation.css'
 
-function AnimatedDeliveryMap({ status, fulfillment }) {
-  // Simple animated SVG map representing Shop, Rider, and Customer
-  // Rider (dot) moves along the line depending on status
-  let riderPosPct = 0
-  let isRiderActive = false
+function AnimatedDeliveryMap({ order, status, fulfillment }) {
+  const shopLat = Number(order?.shop_lat)
+  const shopLon = Number(order?.shop_long)
+  const homeLat = Number(order?.lat)
+  const homeLon = Number(order?.long)
 
-  if (fulfillment === 'digibazaar_delivery' || fulfillment === 'shop_delivery') {
-    isRiderActive = true
+  const isPickup = fulfillment === 'pickup'
+
+  let riderPosPct = 0
+  if (!isPickup) {
     if (status === 'accepted') riderPosPct = 10
-    if (status === 'preparing') riderPosPct = 25
-    if (status === 'ready') riderPosPct = 40
-    if (status === 'picked_up') riderPosPct = 70
-    if (status === 'delivered') riderPosPct = 100
+    else if (status === 'preparing') riderPosPct = 25
+    else if (status === 'ready') riderPosPct = 40
+    else if (status === 'picked_up' || status === 'out_for_delivery') riderPosPct = 70
+    else if (status === 'delivered' || status === 'completed') riderPosPct = 100
+  }
+
+  // Pass rider position ONLY for delivery modes (NO rider for Store Pickup!)
+  const riderPos = (!isPickup && Number.isFinite(shopLat) && Number.isFinite(homeLat))
+    ? {
+        lat: shopLat + (homeLat - shopLat) * (riderPosPct / 100),
+        long: shopLon + (homeLon - shopLon) * (riderPosPct / 100),
+      }
+    : null
+
+  let statusText = `Delivery status: ${status.replace('_', ' ').toUpperCase()}`
+  if (isPickup) {
+    if (status === 'ready' || status === 'out_for_delivery') {
+      statusText = 'Ready for Store Pickup'
+    } else if (status === 'completed' || status === 'delivered') {
+      statusText = 'Order Picked Up successfully'
+    } else {
+      statusText = 'Shop is preparing your pickup order'
+    }
   }
 
   return (
     <div className="live-tracker-map">
       <div className="map-title-row">
-        <span>Simulated Live Tracking (Paldi, Ahmedabad Zone)</span>
+        <span>{isPickup ? `Store Pickup Location · ${order?.shop_name || 'Shop'}` : `${order?.shop_name || 'Shop'} → Your Home · Live Route`}</span>
         <span className="live-dot-indicator"></span>
       </div>
-      
-      <svg viewBox="0 0 400 180" className="vector-tracker-svg">
-        {/* Road Background lines */}
-        <line x1="40" y1="90" x2="360" y2="90" stroke="#e2e8f0" strokeWidth="8" strokeLinecap="round" />
-        <line x1="40" y1="90" x2="360" y2="90" stroke="#047857" strokeWidth="2" strokeDasharray="6,6" strokeLinecap="round" />
-        
-        {/* Shop Node */}
-        <circle cx="80" cy="90" r="16" fill="#fff" stroke="#0891b2" strokeWidth="3" />
-        <text x="80" y="94" textAnchor="middle" fontSize="9">Shop</text>
-        <text x="80" y="65" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#0891b2">SHOP</text>
 
-        {/* Customer Node */}
-        <circle cx="320" cy="90" r="16" fill="#fff" stroke="#047857" strokeWidth="3" />
-        <text x="320" y="94" textAnchor="middle" fontSize="9">Home</text>
-        <text x="320" y="65" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#047857">YOU</text>
+      <RouteMap
+        height={240}
+        origin={{
+          lat: shopLat,
+          long: shopLon,
+          label: order?.shop_name || 'Store Location',
+          icon: '',
+          color: '#59290e',
+        }}
+        destination={{
+          lat: homeLat,
+          long: homeLon,
+          label: 'Your Location',
+          icon: '',
+          color: '#10b981',
+        }}
+        rider={riderPos}
+      />
 
-        {/* Rider Moto dot */}
-        {isRiderActive && status !== 'delivered' && (
-          <g transform={`translate(${80 + (240 * riderPosPct) / 100}, 0)`}>
-            <circle cx="0" cy="90" r="12" fill="#6366f1" />
-            <text x="0" y="94" textAnchor="middle" fontSize="9" fill="#fff">Rider</text>
-            <circle cx="0" cy="90" r="20" fill="none" stroke="#6366f1" strokeWidth="2" opacity="0.3" className="pulse-ring" />
-          </g>
-        )}
-
-        {/* Delivered success state dot */}
-        {status === 'delivered' && (
-          <g transform="translate(320, 0)">
-            <circle cx="0" cy="90" r="22" fill="none" stroke="#10b981" strokeWidth="3" opacity="0.4" className="pulse-ring" />
-          </g>
-        )}
-      </svg>
       <div className="map-coordinates-info">
-        <span>Rider status: <strong className="status-highlight">{status.replace('_', ' ')}</strong></span>
+        <span><strong className="status-highlight">{statusText}</strong></span>
       </div>
     </div>
   )
@@ -68,7 +80,18 @@ function OrderConfirmation() {
   const navigate = useNavigate()
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [recommended, setRecommended] = useState([])
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false)
   const pollInterval = useRef(null)
+
+  useEffect(() => {
+    apiFetch('/products/recommended/?limit=4', {}, TTL.NORMAL)
+      .then(data => {
+        const products = data || []
+        setRecommended(products.slice(0, 4))
+      })
+      .catch(() => setRecommended([]))
+  }, [])
 
   const fetchOrderDetails = () => {
     fetchJson(`/orders/${orderId}/`)
@@ -124,9 +147,18 @@ function OrderConfirmation() {
     )
   }
 
-  // Get active steps
-  const steps = ['pending', 'accepted', 'preparing', 'ready', 'picked_up', 'delivered']
-  const currentStepIdx = steps.indexOf(order.status)
+  // Dynamic step index mapping supporting all 6 stages through 'completed'
+  const getStepProgressIndex = (status) => {
+    if (status === 'completed' || status === 'delivered') return 5
+    if (status === 'out_for_delivery' || status === 'picked_up') return 4
+    if (status === 'ready') return 3
+    if (status === 'preparing') return 2
+    if (status === 'accepted') return 1
+    return 0
+  }
+
+  const currentStepIdx = getStepProgressIndex(order.status)
+  const steps = ['pending', 'accepted', 'preparing', 'ready', 'out_for_delivery', 'delivered']
 
   // Delivery and tax are free in checkout. The final payable amount therefore
   // matches the cart calculation: items total less any applied promo.
@@ -149,23 +181,25 @@ function OrderConfirmation() {
             </div>
           </div>
 
-          {/* Interactive SVG Tracking Map */}
-          <AnimatedDeliveryMap status={order.status} fulfillment={order.fulfillment_option} />
+          {/* Live OpenStreetMap tracking map */}
+          <AnimatedDeliveryMap order={order} status={order.status} fulfillment={order.fulfillment_option} />
 
           {/* Stepper Progress bar */}
           <div className="order-stepper-box">
             <h3>Fulfillment Progress</h3>
             <div className="order-stepper">
               {steps.map((st, idx) => {
-                // If it is pickup, skip picked_up step
-                if (order.fulfillment_option === 'pickup' && st === 'picked_up') return null
-
                 const isCompleted = idx <= currentStepIdx
                 const isActive = idx === currentStepIdx
 
                 let label = st.charAt(0).toUpperCase() + st.slice(1)
                 if (st === 'pending') label = 'Placed'
-                if (st === 'picked_up') label = 'Out for Delivery'
+                if (st === 'out_for_delivery') {
+                  label = order.fulfillment_option === 'pickup' ? 'Ready for Pickup' : 'Out for Delivery'
+                }
+                if (st === 'delivered') {
+                  label = order.fulfillment_option === 'pickup' ? 'Picked Up' : 'Delivered'
+                }
 
                 return (
                   <div key={st} className={`step-node ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}`}>
@@ -181,7 +215,16 @@ function OrderConfirmation() {
 
           {/* Action buttons */}
           <div className="tracking-actions-row">
-            <button className="btn btn--primary" onClick={() => navigate('/my-orders')}>
+            {(order.status === 'delivered' || order.status === 'completed') ? (
+              <button className="btn btn--primary" onClick={() => setShowInvoiceModal(true)} style={{ background: '#059669', color: '#fff' }}>
+                Download Tax Invoice (PDF)
+              </button>
+            ) : (
+              <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: '10px 14px', borderRadius: '8px', fontSize: '13px', color: '#475569', width: '100%', textAlign: 'center', fontWeight: 600 }}>
+                Tax Invoice will be available once your order is Delivered
+              </div>
+            )}
+            <button className="btn btn--secondary" onClick={() => navigate('/my-orders')}>
               View Order History
             </button>
             <button className="btn btn--secondary" onClick={() => navigate('/')}>
@@ -192,6 +235,20 @@ function OrderConfirmation() {
 
         {/* Right column: Delivery partner & Bill details */}
         <div className="tracking-side-column">
+          {/* Delivery Method Summary */}
+          {order.ml_decision_tree_details && (
+            <div className="delivery-partner-card ml-decision-tree-card" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#59290e', background: '#f0ece5', padding: '3px 8px', borderRadius: '6px' }}>
+                  Recommended Delivery Method
+                </span>
+              </div>
+              <div style={{ fontSize: '13px', color: '#2d1609', fontWeight: 600 }}>
+                Selected Option: <span style={{ color: '#a64d22' }}>{order.fulfillment_option === 'digibazaar_delivery' ? 'Home Delivery' : order.fulfillment_option === 'shop_delivery' ? 'Shop Delivery' : 'Store Pickup'}</span>
+              </div>
+            </div>
+          )}
+
           {/* Rider profile if assigned */}
           {(order.fulfillment_option === 'digibazaar_delivery' || order.fulfillment_option === 'shop_delivery') && (
             <div className="delivery-partner-card">
@@ -204,7 +261,10 @@ function OrderConfirmation() {
                     <p>Vehicle: {order.rider.vehicle_type || 'Motorcycle'} ({order.rider.vehicle_number || 'KA-01-XX-9999'})</p>
                     <p className="rider-status-tag">Status: Online</p>
                   </div>
-                  <button className="contact-rider-btn" onClick={() => alert(`Calling rider +91 ${order.rider.phone || '9988776655'}`)}>
+                  <button className="contact-rider-btn" onClick={() => {
+                    const phone = order.rider?.phone || order.rider_phone || order.delivery_assignment?.rider?.phone || '9988776655';
+                    window.location.href = `tel:+91${phone.replace(/\D/g, '')}`;
+                  }}>
                     Call
                   </button>
                 </div>
@@ -267,6 +327,28 @@ function OrderConfirmation() {
           </div>
         </div>
       </div>
+
+      {recommended.length > 0 && (
+        <div className="container" style={{ marginTop: '40px' }}>
+          <section className="order-conf-recommended">
+            <div className="order-conf-recommended__header">
+              <div>
+                <p className="order-conf-eyebrow">Quick Snacks & Beverages</p>
+                <h2 className="order-conf-heading">Recommended Snacks, Munchies & Beverages</h2>
+              </div>
+            </div>
+            <div className="order-conf-recommended__grid">
+              {recommended.map(product => (
+                <RecommendedProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
+
+      {showInvoiceModal && (
+        <TaxInvoiceModal order={order} onClose={() => setShowInvoiceModal(false)} />
+      )}
     </div>
   )
 }

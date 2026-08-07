@@ -5,6 +5,22 @@ import { fetchJson } from '../../api/api'
 import { useNavigate } from 'react-router-dom'
 import './Checkout.css'
 
+const DEFAULT_COORD = { lat: 23.0125, long: 72.5575 }
+
+function getCurrentPosition() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('Geolocation not supported'))
+      return
+    }
+    navigator.geolocation.getCurrentPosition(resolve, reject, {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 60000,
+    })
+  })
+}
+
 export default function Checkout() {
   const { isLoggedIn } = useAuth()
   const { items, total, clearCart } = useCartState()
@@ -12,6 +28,8 @@ export default function Checkout() {
   const [address, setAddress] = useState(
     localStorage.getItem('digibazaar_cart_delivery_address') || localStorage.getItem('delivery_address') || '102, Patel Residency, Paldi, Ahmedabad, Gujarat - 380007'
   )
+  const [location, setLocation] = useState(null)
+  const [detectingLocation, setDetectingLocation] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState('upi')
   const [loading, setLoading] = useState(false)
   const [deliveryOption, setDeliveryOption] = useState(
@@ -50,26 +68,121 @@ export default function Checkout() {
     return () => window.removeEventListener('addressUpdated', handleUpdate)
   }, [])
 
+  // Capture the customer's real coordinates via navigator.geolocation
+  useEffect(() => {
+    let cancelled = false
+    getCurrentPosition()
+      .then(pos => {
+        if (cancelled) return
+        const coords = { lat: pos.coords.latitude, long: pos.coords.longitude }
+        setLocation(coords)
+        localStorage.setItem('digibazaar_customer_location', JSON.stringify(coords))
+      })
+      .catch(() => {
+        // Fall back to saved coords or default (Paldi, Ahmedabad)
+        try {
+          const saved = JSON.parse(localStorage.getItem('digibazaar_customer_location'))
+          if (saved && Number.isFinite(saved.lat) && Number.isFinite(saved.long)) setLocation(saved)
+        } catch (e) { /* ignore */ }
+      })
+    return () => { cancelled = true }
+  }, [])
+
+  const detectLocationNow = () => {
+    setDetectingLocation(true)
+    getCurrentPosition()
+      .then(pos => {
+        const coords = { lat: pos.coords.latitude, long: pos.coords.longitude }
+        setLocation(coords)
+        localStorage.setItem('digibazaar_customer_location', JSON.stringify(coords))
+      })
+      .catch(() => alert('Could not detect your current location. Make sure location permission is granted.'))
+      .finally(() => setDetectingLocation(false))
+  }
+
+  const [mlRecommendation, setMlRecommendation] = useState(null)
+  const [fulfillmentChoice, setFulfillmentChoice] = useState(
+    localStorage.getItem('digibazaar_cart_delivery_option') || 'digibazaar_delivery'
+  )
+  const [savedDeliveryCharge, setSavedDeliveryCharge] = useState(
+    parseFloat(localStorage.getItem('digibazaar_delivery_charge') || '20.00') || 20.00
+  )
+
+  // Fetch ML DecisionTreeClassifier Recommendation
+  useEffect(() => {
+    if (items.length > 0) {
+      const shopId = items[0]?.shop_id || (items[0]?.shops && items[0]?.shops[0]?.id)
+      const coords = location || DEFAULT_COORD
+      fetchJson('/orders/recommend-delivery/', {
+        method: 'POST',
+        body: JSON.stringify({
+          shop_id: shopId,
+          order_value: total,
+          lat: coords.lat,
+          long: coords.long
+        })
+      }).then(data => {
+        if (data && data.recommended_delivery_mode) {
+          setMlRecommendation(data)
+          if (data.pricing_options?.digibazaar_delivery) {
+            setSavedDeliveryCharge(data.pricing_options.digibazaar_delivery)
+            localStorage.setItem('digibazaar_delivery_charge', data.pricing_options.digibazaar_delivery.toString())
+          }
+          if (!localStorage.getItem('digibazaar_user_selected_delivery')) {
+            setFulfillmentChoice(data.recommended_delivery_mode)
+          }
+        }
+      }).catch(() => {})
+    }
+  }, [items, location, total])
+
   // Delivery charge calculations
-  const getDeliveryCharge = () => 0.00
+  const getDeliveryCharge = () => {
+    if (fulfillmentChoice === 'digibazaar_delivery' || fulfillmentChoice === 'home') {
+      return mlRecommendation?.pricing_options?.digibazaar_delivery ?? savedDeliveryCharge
+    }
+    return 0.00
+  }
 
   const getETA = () => {
-    if (deliveryOption === 'pickup') return 'Ready in 10 mins'
-    return 'Delivered today, 5-7 PM'
+    if (fulfillmentChoice === 'pickup') return mlRecommendation?.estimated_delivery_time || 'Ready in 10 mins'
+    if (fulfillmentChoice === 'shop_delivery') return mlRecommendation?.estimated_delivery_time || '15-25 mins'
+    return mlRecommendation?.estimated_delivery_time || '12-18 mins'
+  }
+
+  const handleFulfillmentChange = (choice) => {
+    setFulfillmentChoice(choice)
+    localStorage.setItem('digibazaar_user_selected_delivery', 'true')
+    localStorage.setItem('digibazaar_cart_delivery_option', choice)
   }
 
   const handlePlaceOrder = async () => {
     setLoading(true)
     try {
       // Pre-check: DigiExpress + multi-store warning
-      const fulfillment = deliveryOption === 'pickup' ? 'pickup' : 'digibazaar_delivery'
+      const fulfillment = fulfillmentChoice === 'home' ? 'digibazaar_delivery' : fulfillmentChoice
       if (fulfillment === 'digibazaar_delivery') {
         const shopIds = new Set(items.map(i => i.shop_id || (i.shops && i.shops[0]?.id)).filter(Boolean))
         if (shopIds.size > 1) {
-          alert('DigiBazaar Express only allows items from a SINGLE store per order. Please remove multi-store items or choose pickup.')
+          alert('DigiBazaar Express only allows items from a SINGLE store per order. Please remove multi-store items or choose Shop Delivery / Pickup.')
           setLoading(false)
           return
         }
+      }
+
+      // Get the customer's current coordinates at the time of placing the order
+      let coords = location || DEFAULT_COORD
+      try {
+        const pos = await getCurrentPosition()
+        coords = { lat: pos.coords.latitude, long: pos.coords.longitude }
+        setLocation(coords)
+        localStorage.setItem('digibazaar_customer_location', JSON.stringify(coords))
+      } catch (e) {
+        // Fall back to detected/previous/default coordinates
+        try {
+          const saved = JSON.parse(localStorage.getItem('digibazaar_customer_location'))
+          if (saved && Number.isFinite(saved.lat) && Number.isFinite(saved.long)) coords = saved
+        } catch (err) { /* ignore */ }
       }
 
       const payload = {
@@ -83,8 +196,8 @@ export default function Checkout() {
         payment_method: paymentMethod,
         coupon_code: discountApplied ? discountCode.trim().toUpperCase() : '',
         discount_amount: discountAmount,
-        lat: 23.0125,
-        long: 72.5575
+        lat: coords.lat,
+        long: coords.long
       }
 
       const res = await fetchJson('/orders/checkout/', {
@@ -115,7 +228,7 @@ export default function Checkout() {
 
   const subtotal = total
   const deliveryFee = getDeliveryCharge()
-  const smallOrderCharge = deliveryOption === 'home' && subtotal > 0 && subtotal < 100 ? 49.00 : 0.00
+  const smallOrderCharge = (fulfillmentChoice === 'home' || fulfillmentChoice === 'digibazaar_delivery') && subtotal > 0 && subtotal < 100 ? 49.00 : 0.00
   const grandTotal = subtotal + deliveryFee + smallOrderCharge - discountAmount
 
   return (
@@ -133,23 +246,44 @@ export default function Checkout() {
             <div className="address-display">
               <p>{address}</p>
             </div>
+            <div className="location-detect-row" style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+              <button
+                type="button"
+                className="detect-loc-btn"
+                onClick={detectLocationNow}
+                disabled={detectingLocation}
+                style={{ border: 'none', background: '#e0f2fe', color: '#0369a1', padding: '8px 14px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
+              >
+                {detectingLocation ? 'Detecting Current Location…' : 'Use My Current Location'}
+              </button>
+              <span style={{ fontSize: '12px', color: '#64748b' }}>
+                {location
+                  ? `Coordinates captured: ${location.lat.toFixed(5)}, ${location.long.toFixed(5)}`
+                  : 'Location not detected yet — will attempt again at checkout'}
+              </span>
+            </div>
           </div>
 
+          {/* Delivery Summary */}
           <div className="checkout-card delivery-card clean-card">
             <div className="card-header-icon">
               <div>
-                <h3>Delivery</h3>
+                <h3>Delivery Method</h3>
               </div>
-              <span className="delivery-badge">{deliveryOption === 'pickup' ? 'Pickup' : 'Home Delivery'}</span>
+              <span className="delivery-badge" style={{ background: '#59290e', color: '#ffffff' }}>
+                {fulfillmentChoice === 'pickup' ? 'Store Pickup' : fulfillmentChoice === 'shop_delivery' ? 'Delivery by Shop' : 'Delivery by DigiBazaar'}
+              </span>
             </div>
-            <div className="delivery-summary-card compact">
-              <div className="delivery-summary-row">
-                <span>ETA</span>
-                <strong>{getETA()}</strong>
+            <div className="delivery-summary-card compact" style={{ marginTop: '12px', padding: '12px 16px', background: '#f8fafc', borderRadius: '10px' }}>
+              <div className="delivery-summary-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span style={{ fontSize: '13px', color: '#64748b' }}>Estimated Time</span>
+                <strong style={{ fontSize: '13px', color: '#0f172a' }}>{getETA()}</strong>
               </div>
-              <div className="delivery-summary-row">
-                <span>Fee</span>
-                <strong>{deliveryFee === 0 ? 'FREE' : `₹${deliveryFee.toFixed(2)}`}</strong>
+              <div className="delivery-summary-row" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '13px', color: '#64748b' }}>Delivery Fee</span>
+                <strong style={{ fontSize: '13px', color: deliveryFee === 0 ? '#16a34a' : '#0f172a' }}>
+                  {deliveryFee === 0 ? 'FREE' : `₹${deliveryFee.toFixed(2)}`}
+                </strong>
               </div>
             </div>
           </div>

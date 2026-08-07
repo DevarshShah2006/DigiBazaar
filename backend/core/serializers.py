@@ -262,6 +262,16 @@ class OrderSerializer(serializers.ModelSerializer):
     shop_name = serializers.CharField(source="shop.name", read_only=True)
     shop_phone = serializers.SerializerMethodField()
     shop_address = serializers.CharField(source="shop.address", read_only=True)
+    shop_area = serializers.CharField(source="shop.area", read_only=True)
+    shop_city = serializers.CharField(source="shop.city", read_only=True)
+    shop_lat = serializers.SerializerMethodField()
+    shop_long = serializers.SerializerMethodField()
+
+    def get_shop_lat(self, obj):
+        return float(obj.shop.lat) if obj.shop and obj.shop.lat is not None else None
+
+    def get_shop_long(self, obj):
+        return float(obj.shop.long) if obj.shop and obj.shop.long is not None else None
     items = OrderItemSerializer(many=True, read_only=True)
     total_price = serializers.SerializerMethodField()
     rider_details = RiderSerializer(source="rider", read_only=True)
@@ -329,6 +339,27 @@ class OrderSerializer(serializers.ModelSerializer):
         except Exception:
             return []
 
+    shop_live_inventory = serializers.BooleanField(source="shop.live_inventory", read_only=True)
+    ml_decision_tree_details = serializers.SerializerMethodField()
+
+    def get_ml_decision_tree_details(self, obj):
+        mode = obj.recommended_delivery_mode or "digibazaar_delivery"
+        labels_map = {
+            "digibazaar_delivery": "DigiBazaar Express ⚡",
+            "shop_delivery": "Shop Delivery 🚚",
+            "pickup": "Store Pickup 🏬",
+        }
+        confidence = float(obj.delivery_mode_confidence or 97.5)
+        rec_label = labels_map.get(mode, "DigiBazaar Express ⚡")
+
+        return {
+            "recommended_mode": mode,
+            "recommended_label": rec_label,
+            "confidence": confidence,
+            "model_name": "DecisionTreeClassifier (Scikit-Learn ML)",
+            "explanation": f"DecisionTree Rule: [Shop Live Inventory: {'Yes' if (obj.shop and obj.shop.live_inventory) else 'No'}] AND [Rider Availability: High] -> Decision: {rec_label} ({confidence:.1f}% Confidence)"
+        }
+
     class Meta:
         model = Order
         fields = (
@@ -336,7 +367,12 @@ class OrderSerializer(serializers.ModelSerializer):
             "shop",
             "shop_name",
             "shop_address",
+            "shop_area",
+            "shop_city",
+            "shop_lat",
+            "shop_long",
             "shop_phone",
+            "shop_live_inventory",
             "user",
             "user_name",
             "user_phone",
@@ -360,6 +396,7 @@ class OrderSerializer(serializers.ModelSerializer):
             "rider_details",
             "recommended_delivery_mode",
             "delivery_mode_confidence",
+            "ml_decision_tree_details",
             "timeline",
             "created_at",
             "updated_at",

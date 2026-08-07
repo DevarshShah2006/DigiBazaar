@@ -1,7 +1,11 @@
+import random
+import math
 from decimal import Decimal
+from datetime import timedelta
 from django.utils import timezone
 from django.contrib.auth import authenticate, get_user_model
-from django.db.models import Count, OuterRef, Q, Subquery
+from django.db.models import Count, OuterRef, Q, Subquery, Sum, F, Min, Avg
+from django.db.models.functions import TruncDate
 from rest_framework import generics, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -9,7 +13,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Shop, Product, Order, OrderItem, ShopOwner, Wishlist, Rider, DeliveryAssignment, Category, Subcategory, Inventory, DemandForecast, ShopProduct, OrderTimeline, InventoryLog
+from .models import Shop, Product, Order, OrderItem, ShopOwner, UserProfile, Wishlist, Rider, DeliveryAssignment, Category, Subcategory, Inventory, DemandForecast, ShopProduct, OrderTimeline, InventoryLog, PhoneOTP
 from .services.order_service import OrderService
 from .serializers import (
     ShopSerializer,
@@ -24,6 +28,7 @@ from .serializers import (
 
 from .permissions import IsAdminOrReadOnly, IsShopOwnerOrReadOnly
 from ml_engine.ranking import get_ranked_shops, rank_shops_for_product, haversine_distance
+from ml_engine.delivery_predictor import delivery_predictor
 from rest_framework.pagination import PageNumberPagination
 
 User = get_user_model()
@@ -58,7 +63,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         min_price = self.request.query_params.get('min_price')
         max_price = self.request.query_params.get('max_price')
         min_rating = self.request.query_params.get('min_rating')
-        shop_id = self.request.query_params.get('shop')
+        shop_id = self.request.query_params.get('shop_id') or self.request.query_params.get('shop')
 
         if query:
             queryset = queryset.filter(
@@ -91,12 +96,14 @@ class ProductViewSet(viewsets.ModelViewSet):
         if shop_id:
             queryset = queryset.filter(shops__id=shop_id)
 
-        ordering = self.request.query_params.get('ordering', '-review_count')
+        ordering = self.request.query_params.get('ordering')
         valid_orderings = ['name', '-name', 'price', '-price',
                            'rating', '-rating', '-created_at',
-                           '-review_count', '-discount_percent']
+                           '-review_count', '-discount_percent', 'id', '-id']
         if ordering in valid_orderings:
             queryset = queryset.order_by(ordering)
+        elif shop_id:
+            queryset = queryset.order_by('id')
         else:
             queryset = queryset.order_by('-review_count', '-discount_percent', '-rating', 'name')
 
@@ -273,11 +280,6 @@ class MeView(APIView):
         return Response({'user': UserSerializer(request.user).data})
 
 # OTP Authentication Views
-import random
-from datetime import timedelta
-from django.utils import timezone
-from .models import PhoneOTP
-
 class SendOTPView(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -330,7 +332,6 @@ class VerifyOTPView(APIView):
             else:
                 user = User.objects.filter(username=f"rider_{phone}").first()
         elif requested_role == 'shopowner':
-            from .models import ShopOwner
             owner_prof = ShopOwner.objects.filter(phone=phone).first()
             if owner_prof:
                 user = owner_prof.user
@@ -339,7 +340,6 @@ class VerifyOTPView(APIView):
         else:
             user = User.objects.filter(username=f"user_{phone}").first()
             if not user:
-                from .models import UserProfile
                 u_prof = UserProfile.objects.filter(phone=phone).first()
                 if u_prof:
                     user = u_prof.user
@@ -370,13 +370,11 @@ class VerifyOTPView(APIView):
 
         # If user explicitly logged in as shopowner, ensure ShopOwner profile & Shop exist
         if requested_role == 'shopowner':
-            from .models import ShopOwner, Shop
             so, _ = ShopOwner.objects.get_or_create(user=user, defaults={'phone': phone})
             # Ensure a shop exists for this owner
             if not Shop.objects.filter(owner=so).exists():
                 first_cat = Category.objects.first()
                 shop_name = f"Merchant Store #{phone[-4:]}" if len(phone) >= 4 else "New Partner Store"
-                from decimal import Decimal
                 new_shop = Shop.objects.create(
                     owner=so,
                     name=shop_name,
@@ -494,16 +492,45 @@ class CategoryProductsView(APIView):
 
 
 class RecommendedProductsView(APIView):
-    """Get recommended products for home page and cart"""
+    """Get recommended products for home page, order page and cart (excludes clothing and pet/cat food, prioritizes snacks, munchies, beverages, dairy)"""
     permission_classes = [permissions.AllowAny]
     
     def get(self, request):
         limit = int(request.query_params.get('limit', 8))
         
-        products = Product.objects.select_related('category', 'subcategory').filter(
+        base_qs = Product.objects.select_related('category', 'subcategory').filter(
             visibility=True,
             status='active',
-        ).order_by('-discount_percent', '-review_count', '-rating', '-created_at')[:limit]
+        )
+        
+        # Exclude clothing / apparel / fashion and pet food / cat food / pet care products
+        excluded_keywords = [
+            'cloth', 'clothing', 'apparel', 'fashion', 'wear', 't-shirt', 'shirt', 'jeans', 'pant', 'dress', 'top',
+            'pet', 'cat food', 'dog food', 'pet food', 'cat care', 'dog care', 'whiskas', 'pedigree', 'drools', 'me-o', 'kitten', 'puppy'
+        ]
+        excluded_q = Q()
+        for kw in excluded_keywords:
+            excluded_q |= Q(category__name__icontains=kw) | Q(category__slug__icontains=kw) | Q(name__icontains=kw)
+        
+        base_qs = base_qs.exclude(excluded_q)
+        
+        # Prioritize Munchies, Snacks, Beverages, Dairy, Bakery, Sweets, Instant Food
+        food_keywords = [
+            'munchies', 'snack', 'biscuit', 'beverage', 'drink', 'juice', 'cola', 'soda', 'dairy', 'bakery', 'sweet',
+            'chocolat', 'tea', 'coffee', 'namkeen', 'chips', 'food', 'instant', 'crisps', 'cookie'
+        ]
+        food_q = Q()
+        for kw in food_keywords:
+            food_q |= Q(category__name__icontains=kw) | Q(category__slug__icontains=kw) | Q(name__icontains=kw)
+        
+        food_products = list(base_qs.filter(food_q).order_by('-discount_percent', '-review_count', '-rating', '-created_at')[:limit])
+        
+        if len(food_products) < limit:
+            existing_ids = [p.id for p in food_products]
+            other_products = list(base_qs.exclude(id__in=existing_ids).order_by('-discount_percent', '-review_count', '-rating', '-created_at')[:limit - len(food_products)])
+            products = food_products + other_products
+        else:
+            products = food_products
         
         serializer = ProductSerializer(products, many=True)
         response = Response(serializer.data)
@@ -649,19 +676,13 @@ class CheckoutView(APIView):
             if fulfillment_option == 'pickup':
                 charge = Decimal('0.00')
             elif fulfillment_option == 'shop_delivery':
-                charge = shop.delivery_charge_flat or Decimal('25.00')
+                charge = Decimal('0.00')
             elif fulfillment_option == 'digibazaar_delivery':
                 raw = max(20.0, 20.0 + (distance_km * 5.0))
                 charge = Decimal(str(round(raw, 2)))
 
             # ── Calculate totals ─────────────────────────────────────────────
             subtotal = sum(i['price'] * i['quantity'] for i in group['items'])
-
-            # ── BUSINESS RULE: Shop Delivery minimum ₹50 ────────────────────
-            if fulfillment_option == 'shop_delivery' and subtotal < Decimal('50.00'):
-                return Response({
-                    'detail': f'Minimum order for Shop Delivery is ₹50. Your subtotal is ₹{subtotal:.2f}.'
-                }, status=status.HTTP_400_BAD_REQUEST)
 
             tax_amount = round(subtotal * Decimal('0.05'), 2)
             total_amount = max(Decimal('0.00'), subtotal + charge + tax_amount - discount_amount)
@@ -674,7 +695,7 @@ class CheckoutView(APIView):
                 status_note = f'Order auto-accepted (Live Inventory) via {fulfillment_option}'
             else:
                 initial_status = 'pending'
-                status_note = f'Order placed via {fulfillment_option} — waiting for shop acceptance (1 min timeout)'
+                status_note = f'Order placed via {fulfillment_option} — waiting for shop acceptance (3 min timeout)'
 
             payment_status = 'paid' if payment_method in ['upi', 'card', 'netbanking', 'wallet'] else 'pending'
 
@@ -831,7 +852,6 @@ class ShopOrdersView(APIView):
         except (ValueError, TypeError):
             page = 1
 
-        import math
         total_pages = math.ceil(total_count / page_size) if total_count > 0 else 1
         page = max(1, min(page, total_pages))
         start = (page - 1) * page_size
@@ -880,7 +900,6 @@ class AcceptOrderView(APIView):
             shop = order.shop
             distance_km = 1.0
             if shop.lat and shop.long:
-                from ml_engine.ranking import haversine_distance
                 distance_km = haversine_distance(user_lat, user_long, float(shop.lat), float(shop.long))
 
             online_riders = Rider.objects.filter(is_online=True)
@@ -971,7 +990,6 @@ class RejectOrderView(APIView):
                         )
                     # If DigiBazaar delivery and new shop is live, assign rider
                     if new_order.fulfillment_option == 'digibazaar_delivery' and next_shop.live_inventory and not new_order.rider:
-                        from ml_engine.ranking import haversine_distance
                         distance_km = 1.0
                         if next_shop.lat and next_shop.long:
                             distance_km = haversine_distance(user_lat, user_long, float(next_shop.lat), float(next_shop.long))
@@ -1079,20 +1097,33 @@ class OrderTimeoutView(APIView):
             # Try to reroute to next shop
             rerouted_flag = False
             if items:
-                first_product = items[0].product
-                ranked_shops = rank_shops_for_product(
-                    first_product, user_lat=user_lat, user_long=user_long
-                )
-                next_shops = [s for s in ranked_shops if s.id != order.shop_id and s.is_open]
-                if next_shops:
-                    next_shop = next_shops[0]
-                    new_status = 'accepted' if next_shop.live_inventory else 'cancelled'
-                    if new_status == 'accepted':
-                        # Create rerouted order
+                # Get all unique products in this order
+                order_products = [item.product for item in items]
+                
+                # Find shops that have ALL products in the order
+                product_ids = [p.id for p in order_products]
+                shops_with_all_products = Shop.objects.filter(
+                    products__in=product_ids,
+                    is_open=True
+                ).exclude(id=order.shop_id).distinct()
+                
+                # Rank these shops by proximity and other factors
+                if shops_with_all_products.exists():
+                    # Get ranked shops for the first product (as a baseline for ranking)
+                    ranked_shops = rank_shops_for_product(
+                        order_products[0], user_lat=user_lat, user_long=user_long
+                    )
+                    # Filter to only shops that have all products and are open
+                    ranked_shops = [s for s in ranked_shops if s.id != order.shop_id and s.is_open and s in shops_with_all_products]
+                    
+                    if ranked_shops:
+                        next_shop = ranked_shops[0]
+                        # Create rerouted order with appropriate status
+                        new_order_status = 'accepted' if next_shop.live_inventory else 'pending'
                         new_order = Order.objects.create(
                             user=order.user,
                             shop=next_shop,
-                            status='accepted',
+                            status=new_order_status,
                             fulfillment_option=order.fulfillment_option,
                             delivery_address=order.delivery_address,
                             lat=order.lat,
@@ -1107,9 +1138,9 @@ class OrderTimeoutView(APIView):
                         )
                         OrderTimeline.objects.create(
                             order=new_order,
-                            status='accepted',
+                            status=new_order_status,
                             timestamp=timezone.now(),
-                            note=f'Auto-rerouted: {order.shop.name} timed out. Assigned to {next_shop.name}'
+                            note=f'Auto-rerouted from {order.shop.name} (timeout). All products available at {next_shop.name}'
                         )
                         for item in items:
                             OrderItem.objects.create(
@@ -1127,9 +1158,9 @@ class OrderTimeoutView(APIView):
                             order=order,
                             status='cancelled',
                             timestamp=timezone.now(),
-                            note='Auto-cancelled: shop did not accept within 1 minute'
+                            note=f'Auto-cancelled: shop did not accept within 3 minutes, rerouted to {next_shop.name}'
                         )
-                        rerouted.append({'original_order_id': order.id, 'new_order_id': new_order.id, 'shop': next_shop.name})
+                        rerouted.append({'original_order_id': order.id, 'new_order_id': new_order.id, 'shop': next_shop.name, 'status': new_order_status})
                         rerouted_flag = True
 
             if not rerouted_flag:
@@ -1153,10 +1184,6 @@ class OrderTimeoutView(APIView):
         })
 
 
-from django.db.models import Min, Sum, F
-from django.db.models.functions import TruncDate
-
-
 class ProductShopsView(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -1171,7 +1198,7 @@ class ProductShopsView(APIView):
             return Response([])
 
         ranked_shops = rank_shops_for_product(product, user_lat=user_lat, user_long=user_long)
-        serializer = ShopSerializer(ranked_shops, many=True)
+        serializer = ShopListSerializer(ranked_shops, many=True)
         return Response(serializer.data)
 
 
@@ -1181,7 +1208,10 @@ class OrderDetailView(generics.RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Order.objects.all()
+        # Admin can see all orders; customers can only access their own
+        if self.request.user.is_staff or self.request.user.is_superuser:
+            return Order.objects.all()
+        return Order.objects.filter(user=self.request.user)
 
 
 class WishlistViewSet(viewsets.ModelViewSet):
@@ -1301,7 +1331,6 @@ class ShopProductsListView(APIView):
         except (ValueError, TypeError):
             page = 1
 
-        import math
         total_pages = math.ceil(total_inventories / page_size) if total_inventories > 0 else 1
         page = max(1, min(page, total_pages))
         start = (page - 1) * page_size
@@ -1339,13 +1368,14 @@ class ShopProductsListView(APIView):
             "shop_name": shop.name,
             "is_open": shop.is_open,
             "live_inventory": shop.live_inventory,
+            "tier": shop.effective_tier,
+            "commission_pct": shop.commission_rate_pct,
             "total_count": total_inventories,
             "total_pages": total_pages,
             "current_page": page,
             "page_size": page_size,
             "products": products_data
         })
-        resp['Cache-Control'] = 'max-age=30, stale-while-revalidate=60'
         return resp
 
     def post(self, request):
@@ -1484,14 +1514,24 @@ class ShopToggleLiveInventoryView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        owner = getattr(request.user, "shop_owner_profile", None)
-        if owner is None:
-            return Response({"detail": "Not a shop owner"}, status=status.HTTP_403_FORBIDDEN)
-        
-        shop = Shop.objects.filter(owner=owner).first()
+        # Only admin (staff/superuser) can toggle live inventory
+        if not (request.user.is_staff or request.user.is_superuser):
+            return Response(
+                {"detail": "Only admins can enable or disable Live Inventory for a shop."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Admin passes shop_id; if omitted fall back to their own shop
+        shop_id = request.data.get("shop_id")
+        if shop_id:
+            shop = Shop.objects.filter(pk=shop_id).first()
+        else:
+            owner = getattr(request.user, "shop_owner_profile", None)
+            shop = Shop.objects.filter(owner=owner).first() if owner else None
+
         if not shop:
             return Response({"detail": "Shop not found"}, status=status.HTTP_404_NOT_FOUND)
-            
+
         shop.live_inventory = not shop.live_inventory
         shop.save()
         return Response({"live_inventory": shop.live_inventory, "shop_name": shop.name})
@@ -1616,8 +1656,6 @@ class UpdateDeliveryAssignmentView(APIView):
         return Response(DeliveryAssignmentSerializer(assignment).data)
 
 
-from ml_engine.delivery_predictor import delivery_predictor
-
 class DeliveryRecommendationView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -1715,22 +1753,165 @@ class DeliveryRecommendationView(APIView):
             predicted_mode = mode
             confidence = 90.0 + (float(shop.id) % 9.0)
 
+        labels_map = {
+            "digibazaar_delivery": "DigiBazaar Express ⚡",
+            "shop_delivery": "Shop Delivery 🚚",
+            "pickup": "Store Pickup 🏬",
+        }
+
+        eta_map = {
+            "digibazaar_delivery": f"{max(12, int(8 + distance_km * 3))} mins",
+            "shop_delivery": f"{max(15, int((shop.avg_preparation_time_mins or 15) + distance_km * 4))} mins",
+            "pickup": f"{max(10, int(shop.avg_preparation_time_mins or 10))} mins",
+        }
+
+        rec_label = labels_map.get(predicted_mode, "DigiBazaar Express ⚡")
+        eta_str = eta_map.get(predicted_mode, "18 mins")
+
+        # Decision Tree logic explanation
+        explanation = (
+            f"Decision Tree Rule: [Distance: {distance_km:.1f}km] AND [Rider Availability: {rider_availability}] "
+            f"AND [Shop Live Inventory: {'Yes' if shop.live_inventory else 'No'}] -> "
+            f"ML Recommendation: {rec_label} ({confidence:.1f}% Confidence)"
+        )
+
+        express_charge = max(20.0, round(20.0 + (distance_km * 5.0), 2))
+        shop_charge = 0.0
+
         return Response({
             "recommended_delivery_mode": predicted_mode,
-            "delivery_mode_confidence": confidence
+            "recommended_label": rec_label,
+            "estimated_delivery_time": eta_str,
+            "delivery_mode_confidence": float(confidence),
+            "model_type": "DecisionTreeClassifier (Scikit-Learn ML)",
+            "decision_tree_explanation": explanation,
+            "features_evaluated": {
+                "distance_km": round(distance_km, 2),
+                "order_value": float(order_value),
+                "rider_availability": rider_availability,
+                "available_riders_count": available_riders,
+                "shop_live_inventory": shop.live_inventory,
+                "shop_delivery_enabled": shop.self_delivery_enabled,
+                "pickup_enabled": shop.pickup_enabled,
+                "digibazaar_delivery_enabled": shop.digibazaar_delivery_enabled,
+                "shop_rating": float(shop.rating or 4.5),
+                "avg_prep_time_mins": int(shop.avg_preparation_time_mins or 15),
+                "current_pending_orders": pending_orders,
+            },
+            "pricing_options": {
+                "digibazaar_delivery": express_charge,
+                "shop_delivery": shop_charge,
+                "pickup": 0.0,
+            }
         })
+
+
+class TrendingProductsView(APIView):
+    """Returns trending products based on recent order volume."""
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        hours = int(request.query_params.get('hours', 24))
+        limit = int(request.query_params.get('limit', 10))
+        cutoff = timezone.now() - timedelta(hours=hours)
+
+        trending_ids = list(
+            OrderItem.objects
+            .filter(order__created_at__gte=cutoff)
+            .exclude(order__status='cancelled')
+            .values('product_id')
+            .annotate(order_count=Count('product_id'))
+            .order_by('-order_count')
+            .values_list('product_id', flat=True)[:limit]
+        )
+
+        if trending_ids:
+            products_qs = Product.objects.filter(
+                id__in=trending_ids, visibility=True, status='active'
+            ).select_related('category', 'subcategory')
+            id_order = {pid: idx for idx, pid in enumerate(trending_ids)}
+            products = sorted(products_qs, key=lambda p: id_order.get(p.id, 9999))
+        else:
+            # Fallback: most reviewed active products
+            products = list(Product.objects.filter(
+                visibility=True, status='active'
+            ).select_related('category', 'subcategory').order_by('-review_count', '-rating')[:limit])
+
+        serializer = ProductSerializer(products, many=True)
+        response = Response(serializer.data)
+        response['Cache-Control'] = 'max-age=300, stale-while-revalidate=600'
+        return response
+
+
+class RecommendProductsView(APIView):
+    """Returns personalised product recommendations for a user (or popular products for anonymous)."""
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, user_id=None):
+        limit = int(request.query_params.get('limit', 10))
+
+        # Resolve target user
+        target_user = None
+        if user_id:
+            try:
+                target_user = User.objects.get(pk=user_id)
+            except User.DoesNotExist:
+                pass
+        elif request.user.is_authenticated:
+            target_user = request.user
+
+        if target_user:
+            bought_category_ids = list(
+                OrderItem.objects
+                .filter(order__user=target_user)
+                .exclude(order__status='cancelled')
+                .values_list('product__category_id', flat=True)
+                .distinct()
+            )
+            bought_product_ids = list(
+                OrderItem.objects
+                .filter(order__user=target_user)
+                .values_list('product_id', flat=True)
+                .distinct()
+            )
+
+            if bought_category_ids:
+                products = list(Product.objects.filter(
+                    category_id__in=bought_category_ids,
+                    visibility=True, status='active'
+                ).exclude(id__in=bought_product_ids)
+                .select_related('category', 'subcategory')
+                .order_by('-review_count', '-rating')[:limit])
+
+                if len(products) < limit:
+                    seen_ids = bought_product_ids + [p.id for p in products]
+                    extra = list(Product.objects.filter(
+                        visibility=True, status='active'
+                    ).exclude(id__in=seen_ids)
+                    .select_related('category', 'subcategory')
+                    .order_by('-review_count', '-rating')[:limit - len(products)])
+                    products += extra
+            else:
+                products = list(Product.objects.filter(
+                    visibility=True, status='active'
+                ).select_related('category', 'subcategory')
+                .order_by('-review_count', '-rating')[:limit])
+        else:
+            products = list(Product.objects.filter(
+                visibility=True, status='active'
+            ).select_related('category', 'subcategory')
+            .order_by('-review_count', '-rating')[:limit])
+
+        serializer = ProductSerializer(products, many=True)
+        response = Response(serializer.data)
+        response['Cache-Control'] = 'max-age=60, stale-while-revalidate=120'
+        return response
 
 
 class ShopDemandForecastView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        from django.utils import timezone
-        from datetime import timedelta
-        from django.db.models import Sum, Avg
-        import numpy as np
-        import math
-
         owner = getattr(request.user, 'shop_owner_profile', None)
         if not owner:
             return Response({'detail': 'Not a shop owner'}, status=status.HTTP_403_FORBIDDEN)

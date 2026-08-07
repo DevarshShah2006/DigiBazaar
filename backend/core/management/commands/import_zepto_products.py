@@ -263,82 +263,72 @@ class Command(BaseCommand):
         target_count = options['target']
         clear_db = options['clear']
 
-        file_path = r"C:\Users\Devarsh\Desktop\Coding\DigiBazaar\zepto dataset.xlsx"
+        backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+        repo_dir = os.path.dirname(backend_dir)
+        file_path = os.path.join(repo_dir, "zepto dataset.xlsx")
         if not os.path.exists(file_path):
-            self.stdout.write(self.style.ERROR(f"Dataset not found at: {file_path}"))
-            return
-
-        self.stdout.write(self.style.SUCCESS(f"Reading dataset from {file_path}..."))
-        df = pd.read_excel(file_path)
-        self.stdout.write(self.style.SUCCESS(f"Loaded {len(df)} rows."))
-
-        # 1. Apply Exclusions
-        self.stdout.write("Applying exclusion rules...")
+            file_path = os.path.join(backend_dir, "zepto dataset.xlsx")
         
-        # Exclude Paan Corner (adult products)
-        df = df[df['Category'] != 'Paan Corner']
-        
-        # Exclude non-veg items from Meats, Fish & Eggs (keep Egg only)
-        def keep_meat_eggs_row(row):
-            if row['Category'] == 'Meats, Fish & Eggs':
-                sub_cat = str(row['Sub-Category']).lower()
-                return 'egg' in sub_cat
-            return True
-        df = df[df.apply(keep_meat_eggs_row, axis=1)]
-
-        # Exclude non-veg sub-categories from Frozen Food & Ice Creams
-        frozen_exclude_subs = ['Non Veg Snacks', 'Raw Meats', 'Sausages, Salami & Ham']
-        df = df[~((df['Category'] == 'Frozen Food & Ice Creams') & (df['Sub-Category'].isin(frozen_exclude_subs)))]
-
-        # Exclude Adult Nutrition from Tea, Coffee & More
-        df = df[~((df['Category'] == 'Tea, Coffee & More') & (df['Sub-Category'] == 'Adult Nutrition'))]
-
-        # Keep only available products
-        df = df[df['Status'] == 'Available']
-
-        self.stdout.write(f"Remaining available & eligible rows: {len(df)}")
-
-        # Clean/Parse numeric columns
-        df['Price'] = pd.to_numeric(df['Price'], errors='coerce').fillna(0.0)
-        df['Original Price'] = pd.to_numeric(df['Original Price'], errors='coerce')
-        df['Original Price'] = df.apply(
-            lambda r: r['Original Price'] if pd.notnull(r['Original Price']) and r['Original Price'] >= r['Price'] else r['Price'],
-            axis=1
-        )
-        df['Ratings'] = pd.to_numeric(df['Ratings'], errors='coerce')
-        df['Review'] = pd.to_numeric(df['Review'], errors='coerce').fillna(0.0)
-
-        # Deduplicate master records by Name and Quantity
-        df = df.sort_values(by=['Ratings', 'Review'], ascending=[False, False])
-        df_unique = df.drop_duplicates(subset=['Name', 'Quantity'], keep='first').copy()
-
-        # 2. Ranking and Sampling
-        ranking_ratings = df_unique['Ratings'].fillna(4.2)
-        reviews = df_unique['Review']
-        max_reviews = reviews.max() if reviews.max() > 0 else 1.0
-        normalized_reviews = reviews / max_reviews
-        df_unique['Score'] = (ranking_ratings * 0.6) + (normalized_reviews * 0.4)
-
-        # Proportional sampling
-        total_unique = len(df_unique)
-        if total_unique <= target_count:
-            selected_df = df_unique
+        if not os.path.exists(file_path):
+            self.stdout.write(self.style.WARNING(f"Dataset not found at {file_path}. Creating fallback custom catalog..."))
+            selected_df = pd.DataFrame()
         else:
-            category_counts = df_unique['Category'].value_counts()
-            selected_rows = []
-            for cat, count in category_counts.items():
-                cat_df = df_unique[df_unique['Category'] == cat].sort_values(by='Score', ascending=False)
-                cat_target = int(np.round((count / total_unique) * target_count))
-                cat_target = max(min(cat_target, count), min(5, count))
-                selected_rows.append(cat_df.head(cat_target))
-            selected_df = pd.concat(selected_rows).drop_duplicates(subset=['Name', 'Quantity'])
-            
-            if len(selected_df) < target_count:
-                remaining = df_unique[~df_unique.index.isin(selected_df.index)].sort_values(by='Score', ascending=False)
-                needed = target_count - len(selected_df)
-                selected_df = pd.concat([selected_df, remaining.head(needed)])
-            elif len(selected_df) > target_count:
-                selected_df = selected_df.head(target_count)
+            self.stdout.write(self.style.SUCCESS(f"Reading dataset from {file_path}..."))
+            df = pd.read_excel(file_path)
+            self.stdout.write(self.style.SUCCESS(f"Loaded {len(df)} rows."))
+
+            # 1. Apply Exclusions
+            self.stdout.write("Applying exclusion rules...")
+            df = df[df['Category'] != 'Paan Corner']
+            def keep_meat_eggs_row(row):
+                if row['Category'] == 'Meats, Fish & Eggs':
+                    sub_cat = str(row['Sub-Category']).lower()
+                    return 'egg' in sub_cat
+                return True
+            df = df[df.apply(keep_meat_eggs_row, axis=1)]
+            frozen_exclude_subs = ['Non Veg Snacks', 'Raw Meats', 'Sausages, Salami & Ham']
+            df = df[~((df['Category'] == 'Frozen Food & Ice Creams') & (df['Sub-Category'].isin(frozen_exclude_subs)))]
+            df = df[~((df['Category'] == 'Tea, Coffee & More') & (df['Sub-Category'] == 'Adult Nutrition'))]
+            df = df[df['Status'] == 'Available']
+
+            # Clean/Parse numeric columns
+            df['Price'] = pd.to_numeric(df['Price'], errors='coerce').fillna(0.0)
+            df['Original Price'] = pd.to_numeric(df['Original Price'], errors='coerce')
+            df['Original Price'] = df.apply(
+                lambda r: r['Original Price'] if pd.notnull(r['Original Price']) and r['Original Price'] >= r['Price'] else r['Price'],
+                axis=1
+            )
+            df['Ratings'] = pd.to_numeric(df['Ratings'], errors='coerce')
+            df['Review'] = pd.to_numeric(df['Review'], errors='coerce').fillna(0.0)
+
+            df = df.sort_values(by=['Ratings', 'Review'], ascending=[False, False])
+            df_unique = df.drop_duplicates(subset=['Name', 'Quantity'], keep='first').copy()
+
+            ranking_ratings = df_unique['Ratings'].fillna(4.2)
+            reviews = df_unique['Review']
+            max_reviews = reviews.max() if reviews.max() > 0 else 1.0
+            normalized_reviews = reviews / max_reviews
+            df_unique['Score'] = (ranking_ratings * 0.6) + (normalized_reviews * 0.4)
+
+            total_unique = len(df_unique)
+            if total_unique <= target_count:
+                selected_df = df_unique
+            else:
+                category_counts = df_unique['Category'].value_counts()
+                selected_rows = []
+                for cat, count in category_counts.items():
+                    cat_df = df_unique[df_unique['Category'] == cat].sort_values(by='Score', ascending=False)
+                    cat_target = int(np.round((count / total_unique) * target_count))
+                    cat_target = max(min(cat_target, count), min(5, count))
+                    selected_rows.append(cat_df.head(cat_target))
+                selected_df = pd.concat(selected_rows).drop_duplicates(subset=['Name', 'Quantity'])
+                
+                if len(selected_df) < target_count:
+                    remaining = df_unique[~df_unique.index.isin(selected_df.index)].sort_values(by='Score', ascending=False)
+                    needed = target_count - len(selected_df)
+                    selected_df = pd.concat([selected_df, remaining.head(needed)])
+                elif len(selected_df) > target_count:
+                    selected_df = selected_df.head(target_count)
 
         if dry_run:
             self.stdout.write("Dry run complete. No database changes were made.")
