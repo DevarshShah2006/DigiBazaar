@@ -11,8 +11,8 @@ const SLIDES = [
     offer: 'FLAT 25% OFF', coupon: 'Use Code: RAKHI25', cta: 'Order Now', path: '/products?q=sweets'
   },
   {
-    id: 'india', image: '/hero_banners/independence_offer.png', campaign: ' ',
-    title: ' ',
+    id: 'india', image: '/hero_banners/independence_offer.png', campaign: '                                    ',
+    title: '                                    ',
     subtitle: 'Get exciting discounts on daily essentials from trusted local stores.',
     offer: 'FLAT 20% OFF', coupon: 'Use Code: INDIA20 · On orders above ₹499', cta: 'Shop Now', path: '/products'
   }
