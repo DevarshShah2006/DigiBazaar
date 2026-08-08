@@ -12,7 +12,7 @@ const SLIDES = [
   },
   {
     id: 'india', image: '/hero_banners/independence_offer.png', campaign: 'Celebrate Independence Day Sale',
-    title: 'Celebrate Freedom, Shop More',
+    title: ' ',
     subtitle: 'Get exciting discounts on daily essentials from trusted local stores.',
     offer: 'FLAT 20% OFF', coupon: 'Use Code: INDIA20 · On orders above ₹499', cta: 'Shop Now', path: '/products'
   }
